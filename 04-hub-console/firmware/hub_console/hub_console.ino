@@ -189,6 +189,9 @@ static void onEspNowRecv(const esp_now_recv_info_t* info, const uint8_t* data, i
 
 static void setupEspNow() {
   WiFi.mode(WIFI_STA);
+  delay(100);  // WiFi.macAddress() reads all-zero if queried immediately
+               // after mode(STA), before the driver finishes bringing up —
+               // confirmed via eFuse-vs-macAddress() diagnostic on real hw.
   if (esp_now_init() != ESP_OK) {
     Serial.println("ESP-NOW init failed");
     return;

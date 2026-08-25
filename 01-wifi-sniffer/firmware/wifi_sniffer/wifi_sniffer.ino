@@ -7,8 +7,10 @@
 // deauth/disassoc counter. Step 1.7 (probe-req validation) is just a
 // field test against this same code, not separate logic.
 //
-// No display on this node — output is Serial only until it's wired into
-// the hub over ESP-NOW (see ../../../05-integration).
+// No display on this node. Reports each newly-discovered AP/prober to the
+// hub over ESP-NOW broadcast (deck_report_t, node_id=1) as well as
+// printing the full local summary table to Serial (see
+// ../../../05-integration).
 //
 // INITIAL CUT — not yet flashed/tested on real hardware. Frame-parsing
 // offsets below are standard 802.11 layout but should be sanity-checked
@@ -34,8 +36,13 @@ extern "C" {
   #include "nvs_flash.h"
 }
 #include <esp_netif.h>
+#include <WiFi.h>
+#include <esp_now.h>
+#include "../../../05-integration/shared/deck_report.h"
 
 static const uint8_t STATUS_LED_PIN = 8;
+
+static const uint8_t BROADCAST_MAC[6] = { 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF };
 
 static const uint32_t CHANNEL_HOP_MS = 300;   // 1.2
 static const uint8_t  CHANNEL_MIN = 1;
@@ -98,11 +105,30 @@ static int allocEntity() {
   return oldest;
 }
 
+// Sends one report per newly-discovered entity rather than per frame —
+// mgmt frames arrive far faster than ESP-NOW should reasonably be spammed,
+// and the hub only needs to know an AP/prober exists plus its latest
+// rssi/channel, not every beacon interval.
+static void sendWifiReport(const uint8_t* mac, const char* ssid, int8_t rssi, uint8_t channel) {
+  deck_report_t report;
+  memset(&report, 0, sizeof(report));
+  report.node_id = 1;  // NODE_WIFI
+  report.ts = millis();
+  memcpy(report.mac, mac, 6);
+  strncpy(report.label, ssid, sizeof(report.label) - 1);
+  report.label[sizeof(report.label) - 1] = '\0';
+  report.rssi = rssi;
+  report.channel = channel;
+
+  esp_now_send(BROADCAST_MAC, (uint8_t*)&report, sizeof(report));
+}
+
 static void recordEntity(const uint8_t* mac, const char* ssid, int8_t rssi,
                           uint8_t channel, uint8_t frameType) {
   uint32_t now = millis();
   int idx = findEntity(mac);
-  if (idx < 0) {
+  bool isNew = idx < 0;
+  if (isNew) {
     idx = allocEntity();
     memset(&entities[idx], 0, sizeof(EntityRecord));
     entities[idx].used = true;
@@ -122,6 +148,8 @@ static void recordEntity(const uint8_t* mac, const char* ssid, int8_t rssi,
   e.lastFrameType = frameType;
   e.lastSeenMs = now;
   e.hits++;
+
+  if (isNew) sendWifiReport(e.mac, e.ssid, rssi, channel);
 }
 
 // Walks tagged params looking for tag 0 (SSID). `body` must point just
@@ -242,11 +270,26 @@ void setup() {
   wifi_init_config_t cfg = WIFI_INIT_CONFIG_DEFAULT();
   esp_wifi_init(&cfg);
   esp_wifi_set_storage(WIFI_STORAGE_RAM);
-  esp_wifi_set_mode(WIFI_MODE_NULL);   // 1.1: no STA/AP, promiscuous only
+  // STA mode (not WIFI_MODE_NULL) — ESP-NOW requires the driver in STA or
+  // AP mode. We never call esp_wifi_connect(), so this stays unassociated;
+  // promiscuous capture + channel hopping work the same either way.
+  esp_wifi_set_mode(WIFI_MODE_STA);
   esp_wifi_start();
   esp_wifi_set_promiscuous(true);
   esp_wifi_set_promiscuous_rx_cb(&onPacket);
   esp_wifi_set_channel(currentChannel, WIFI_SECOND_CHAN_NONE);
+
+  if (esp_now_init() != ESP_OK) {
+    Serial.println("ESP-NOW init failed");
+  } else {
+    esp_now_peer_info_t peer = {};
+    memcpy(peer.peer_addr, BROADCAST_MAC, 6);
+    peer.channel = 0;
+    peer.encrypt = false;
+    if (esp_now_add_peer(&peer) != ESP_OK) {
+      Serial.println("ESP-NOW add broadcast peer failed");
+    }
+  }
 
   lastHopMs = millis();
   lastSummaryMs = millis();
