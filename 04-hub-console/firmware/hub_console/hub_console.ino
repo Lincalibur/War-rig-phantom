@@ -11,14 +11,16 @@
 //
 // INITIAL CUT — not yet flashed/tested on real hardware. Boots with
 // synthetic/fake sample data per 4.1 so the dashboard/menu system can be
-// exercised with no radio link at all; ESP-NOW (4.2) and UART (4.3)
-// receivers below are wired in but WON'T have live senders until
-// Components 1-3 are standalone-complete and 05-integration brings them
-// up one at a time.
+// exercised with no radio link at all; the ESP-NOW (4.2) receiver below
+// is wired in but WON'T have live senders until Components 1-3 are
+// standalone-complete and 05-integration brings them up one at a time.
+// (ESP-NOW-consolidated redesign: the sub-ghz node used to reach this hub
+// over UART from an Arduino Uno — see git history pre-esp-now-consolidation
+// — it's now a third ESP-NOW sender like the other two nodes, node_id=3.)
 //
-// Board: any ESP32 dev module (not C3 — needs a second hardware UART
-// free for 4.3 without clashing with the USB-CDC serial). Adjust
-// UART_RX_PIN/UART_TX_PIN below to whatever's free on the actual board.
+// Board: any ESP32 dev module. All three field nodes (wifi, ble, sub-ghz)
+// report over ESP-NOW now — no UART link to any node, so the earlier
+// "needs a second hardware UART" constraint no longer applies.
 //
 // Needs the shared struct from 05-integration — this include assumes the
 // firmware folder stays at its current relative path under the repo.
@@ -30,10 +32,6 @@
 // ---------------------------------------------------------------------
 // Config
 // ---------------------------------------------------------------------
-
-static const uint8_t  UART_RX_PIN = 16;
-static const uint8_t  UART_TX_PIN = 17;
-static const uint32_t UART_BAUD = 115200;
 
 static const uint8_t  MAX_WIFI_ENTRIES = 32;
 static const uint8_t  MAX_BLE_ENTRIES  = 32;
@@ -160,6 +158,18 @@ static void applyBleReport(const deck_report_t& r) {
   if (e.flagged && !wasFlagged) trackerAlertCount++;
 }
 
+static void applySubGhzReport(const deck_report_t& r) {
+  int idx = allocSubGhz();
+  SubGhzEntry& e = subghzTable[idx];
+  e.used = true;
+  strncpy(e.protocol, r.label, sizeof(e.protocol) - 1);
+  e.protocol[sizeof(e.protocol) - 1] = '\0';
+  e.code = r.subghz_code;
+  e.pulseLength = r.subghz_pulse_len;
+  e.repeats = r.subghz_repeats;
+  e.lastSeenMs = millis();
+}
+
 // arduino-esp32 core >= 2.0.x signature. If building against an older
 // core, swap this for: void onEspNowRecv(const uint8_t* mac, const
 // uint8_t* data, int len)
@@ -170,8 +180,9 @@ static void onEspNowRecv(const esp_now_recv_info_t* info, const uint8_t* data, i
 
   touchNodeHealth(report.node_id);
   switch (report.node_id) {
-    case NODE_WIFI: applyWifiReport(report); break;
-    case NODE_BLE:  applyBleReport(report);  break;
+    case NODE_WIFI:   applyWifiReport(report);   break;
+    case NODE_BLE:    applyBleReport(report);    break;
+    case NODE_SUBGHZ: applySubGhzReport(report); break;
     default: break;  // unknown node id, ignore
   }
 }
@@ -185,54 +196,6 @@ static void setupEspNow() {
   esp_now_register_recv_cb(onEspNowRecv);
   Serial.print("Hub MAC (give this to the node sketches' peer config): ");
   Serial.println(WiFi.macAddress());
-}
-
-// ---------------------------------------------------------------------
-// 4.3 — UART receiver (Arduino sub-ghz node), line-based CSV:
-// SUBGHZ,ts,protocol,code,pulse_len,repeats
-// ---------------------------------------------------------------------
-
-HardwareSerial NodeSerial(1);   // ESP32's second hardware UART
-static char uartLineBuf[96];
-static uint8_t uartLineLen = 0;
-
-static void handleSubGhzLine(char* line) {
-  // type,ts,protocol,code,pulse_len,repeats
-  char* type       = strtok(line, ",");
-  char* tsStr       = strtok(nullptr, ",");
-  char* protocol    = strtok(nullptr, ",");
-  char* codeStr     = strtok(nullptr, ",");
-  char* pulseStr    = strtok(nullptr, ",");
-  char* repeatsStr  = strtok(nullptr, ",");
-  if (!type || !tsStr || !protocol || !codeStr || !pulseStr || !repeatsStr) return;
-  if (strcmp(type, "SUBGHZ") != 0) return;
-
-  int idx = allocSubGhz();
-  SubGhzEntry& e = subghzTable[idx];
-  e.used = true;
-  strncpy(e.protocol, protocol, sizeof(e.protocol) - 1);
-  e.protocol[sizeof(e.protocol) - 1] = '\0';
-  e.code = strtoul(codeStr, nullptr, 10);
-  e.pulseLength = (uint16_t)atoi(pulseStr);
-  e.repeats = (uint8_t)atoi(repeatsStr);
-  e.lastSeenMs = millis();
-
-  touchNodeHealth(NODE_SUBGHZ);
-}
-
-static void pollUart() {
-  while (NodeSerial.available()) {
-    char c = NodeSerial.read();
-    if (c == '\n' || c == '\r') {
-      if (uartLineLen > 0) {
-        uartLineBuf[uartLineLen] = '\0';
-        handleSubGhzLine(uartLineBuf);
-        uartLineLen = 0;
-      }
-    } else if (uartLineLen < sizeof(uartLineBuf) - 1) {
-      uartLineBuf[uartLineLen++] = c;
-    }
-  }
 }
 
 // ---------------------------------------------------------------------
@@ -410,13 +373,11 @@ void setup() {
   loadSyntheticData();   // 4.1: fake data until real links are wired in
 
   setupEspNow();         // 4.2
-  NodeSerial.begin(UART_BAUD, SERIAL_8N1, UART_RX_PIN, UART_TX_PIN);  // 4.3
 
   renderCurrentScreen();
 }
 
 void loop() {
-  pollUart();
   pollScreenSelect();
 
   uint32_t now = millis();
