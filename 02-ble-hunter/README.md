@@ -33,4 +33,7 @@ Continuously scans BLE advertisements and flags devices that keep reappearing ac
 ## Standalone-complete checklist
 - [ ] All sub-tasks above pass their individual test
 - [ ] LCD renders persistence/RSSI view without stalling scans
-- No hub link yet — see `../05-integration` for ESP-NOW wiring once this is solid standalone.
+- [x] ESP-NOW wired: reports each newly-discovered device and each flagged transition to the hub as `deck_report_t` (node_id=2), broadcast — same pattern as the wifi sniffer node. Compiles clean but flash usage is tight (94%, NimBLE + WiFi/ESP-NOW + Adafruit graphics together) — watch headroom before adding more to this sketch.
+
+## Note (flash usage)
+Adding ESP-NOW pushed this sketch to 94% flash on ESP32-C3 (NimBLE-Arduino + Adafruit_GFX/SSD1306 + WiFi/esp_now together are heavy). Still fits, but there's little room left for more logic on this node without trimming something.

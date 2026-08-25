@@ -1,5 +1,10 @@
 // Component 2, steps 2.3-2.5 (ESP32-C3 #2)
 //
+// ESP-NOW: reports each newly-discovered device, and again whenever a
+// device crosses the flagged threshold (persistence or Find My payload
+// match), to the hub as deck_report_t (node_id=2), broadcast — same
+// pattern as the wifi sniffer node.
+//
 // 2.3 — persistence scoring: each tracked device keeps a rolling history
 // of the distinct windows it's appeared in. If a MAC shows up in
 // PERSISTENCE_THRESHOLD+ distinct windows within the trailing
@@ -57,12 +62,17 @@
 #include <Wire.h>
 #include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>
+#include <WiFi.h>
+#include <esp_now.h>
+#include "../../../05-integration/shared/deck_report.h"
 
 static const uint8_t OLED_SDA_PIN = 8;
 static const uint8_t OLED_SCL_PIN = 9;
 static const uint8_t OLED_I2C_ADDR = 0x3C;
 static const uint8_t OLED_WIDTH = 128;
 static const uint8_t OLED_HEIGHT = 64;
+
+static const uint8_t BROADCAST_MAC[6] = { 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF };
 
 Adafruit_SSD1306 display(OLED_WIDTH, OLED_HEIGHT, &Wire, -1);
 
@@ -101,6 +111,27 @@ struct TrackedDevice {
 static TrackedDevice tracked[MAX_TRACKED];
 static uint32_t lastSummaryMs = 0;
 
+// Parses "xx:xx:xx:xx:xx:xx" into 6 raw bytes for deck_report_t.mac.
+static void parseMacString(const char* macStr, uint8_t* out) {
+  unsigned int b[6];
+  sscanf(macStr, "%x:%x:%x:%x:%x:%x", &b[0], &b[1], &b[2], &b[3], &b[4], &b[5]);
+  for (int i = 0; i < 6; i++) out[i] = (uint8_t)b[i];
+}
+
+static void sendBleReport(const char* macStr, const char* name, int8_t rssi, bool flagged) {
+  deck_report_t report;
+  memset(&report, 0, sizeof(report));
+  report.node_id = 2;  // NODE_BLE
+  report.ts = millis();
+  parseMacString(macStr, report.mac);
+  strncpy(report.label, name, sizeof(report.label) - 1);
+  report.label[sizeof(report.label) - 1] = '\0';
+  report.rssi = rssi;
+  report.flags = flagged ? DECK_REPORT_FLAG_SUSPECT : 0;
+
+  esp_now_send(BROADCAST_MAC, (uint8_t*)&report, sizeof(report));
+}
+
 static int findTracked(const char* mac) {
   for (int i = 0; i < MAX_TRACKED; i++) {
     if (tracked[i].used && strcmp(tracked[i].mac, mac) == 0) return i;
@@ -136,7 +167,8 @@ static void recordSighting(const char* mac, int8_t rssi, const char* name) {
   uint32_t windowIndex = now / WINDOW_MS;
 
   int idx = findTracked(mac);
-  if (idx < 0) {
+  bool isNew = idx < 0;
+  if (isNew) {
     idx = allocTracked();
     memset(&tracked[idx], 0, sizeof(TrackedDevice));
     tracked[idx].used = true;
@@ -159,12 +191,18 @@ static void recordSighting(const char* mac, int8_t rssi, const char* name) {
     t.lastWindowIndex = windowIndex;
   }
 
+  // Report to the hub on first sighting (like the wifi node does for new
+  // entities), and again below if this sighting is what trips the flag —
+  // avoids spamming ESP-NOW on every single advertisement.
+  if (isNew) sendBleReport(mac, name, rssi, t.flagged);
+
   if (!t.flagged && countRecentWindows(t, windowIndex) >= PERSISTENCE_THRESHOLD) {
     t.flagged = true;
     Serial.printf(
       "*** SUSPICIOUS: mac=%s flagged — seen in %u of last %u windows, rssi=%d ***\n",
       t.mac, countRecentWindows(t, windowIndex), PERSISTENCE_SPAN_WINDOWS, rssi
     );
+    sendBleReport(mac, name, rssi, true);
   }
 }
 
@@ -196,6 +234,7 @@ static void flagRotatingMacSuspect(const char* mac, int8_t rssi) {
       "*** SUSPICIOUS (rotating-MAC / Find My payload): mac=%s rssi=%d ***\n",
       mac, rssi
     );
+    sendBleReport(mac, t.name, rssi, true);
   }
 }
 
@@ -324,6 +363,20 @@ void setup() {
   } else {
     display.clearDisplay();
     display.display();
+  }
+
+  WiFi.mode(WIFI_STA);
+  delay(100);  // driver init is async — see hub_console.ino's macAddress() fix
+  if (esp_now_init() != ESP_OK) {
+    Serial.println("ESP-NOW init failed");
+  } else {
+    esp_now_peer_info_t peer = {};
+    memcpy(peer.peer_addr, BROADCAST_MAC, 6);
+    peer.channel = 0;
+    peer.encrypt = false;
+    if (esp_now_add_peer(&peer) != ESP_OK) {
+      Serial.println("ESP-NOW add broadcast peer failed");
+    }
   }
 
   NimBLEDevice::init("");
