@@ -1,23 +1,25 @@
 # Component 4 — Hub Console
 
-**Device:** ESP32 + attached screen
-**Status:** 🟨 `firmware/hub_console/hub_console.ino` (steps 4.1-4.2, 4.4, synthetic data + ESP-NOW receiver wired) compiles clean against `esp32:esp32:esp32`, not yet flashed/tested on hardware
+**Device:** Sunton/NDE3D ESP32-1732S019 (integrated 1.9" ST7789 IPS screen, non-touch, no buttons)
+**Status:** 🟨 flashed and dashboard confirmed rendering (2026-09-03); wifi sniffer batch send fix just applied, not yet field-verified
 
-Central aggregator: receives ESP-NOW reports from all three C3/sensor nodes (wifi, ble, sub-ghz), renders a unified dashboard, optionally logs to SD.
+Central aggregator: receives ESP-NOW reports from the two active C3 field nodes (wifi sniffer, wifi spectrum), renders one static dashboard.
 
-**ESP-NOW-consolidated redesign:** the old Arduino Uno + big LCD control surface (former Component 3) is gone, along with its UART link into this hub (former step 4.3). All three field nodes — including sub-GHz, now on its own ESP32-C3 — report over ESP-NOW broadcast as `deck_report_t`, so this hub only needs one receive path.
+**ESP-NOW-consolidated redesign:** the old Arduino Uno + big LCD control surface (former Component 3) is gone, along with its UART link into this hub (former step 4.3). Field nodes report over ESP-NOW broadcast, so this hub only needs one receive path.
 
-## Build in this order — build the UI against FAKE data first, real links come later
+**Sub-ghz (node_id=3) is intentionally not handled here right now** — that board's hardware is confirmed faulty and isn't in use. See the header comment in `hub_console.ino` for how to reintroduce it if replacement hardware arrives.
 
-- [ ] **4.1 Dashboard UI skeleton, synthetic data** — overview screen (counts per node), WiFi detail list, BLE detail list + tracker alerts, sub-GHz detail list, node health (last-seen timestamp per node).
-  - Test: menu system, screens, and navigation are solid using hardcoded/fake sample data — no radio link needed yet.
-  - Confirm exact screen model/pin mapping before wiring the driver.
-- [ ] **4.2 ESP-NOW receiver** — register RX callback, parse incoming `deck_report_t` structs (see `../05-integration`), route by `node_id` (1=wifi, 2=ble, 3=sub-ghz).
-  - Test: dummy sender (or any of the three field nodes) delivers a packet, hub logs it and routes to the right in-memory table.
-- [ ] **4.4 Aggregation store** — in-memory table (or SD-card rolling summary log if an SD module gets added): per-node counts, unique-entity totals, flagged-tracker alerts.
-- [ ] **4.5 (Optional) WiFi AP + local web dashboard** — separate radio use, doesn't conflict with sniffer node's promiscuous mode since it's a different device.
+**Display:** since the board has no touch and no physical buttons, the hub renders everything — node health, networks, nearby devices, spectrum — on **one static dashboard** (`renderDashboard()`), redrawn every 3s. There is no screen switching or auto-cycling; nothing to navigate.
+
+**Wire format:** the wifi sniffer sends `deck_wifi_batch_t` (up to 8 network/device entries in one packet, see `05-integration/shared/deck_report.h`), not a single-entry `deck_report_t` — the hub tells the two apart by exact packet size. The wifi spectrum node still uses plain `deck_report_t` for its per-sweep snapshot and heartbeats.
+
+## Build order
+
+- [x] **4.1 Dashboard renderer** — `renderDashboard()`: node-health strip, networks list (APs, sorted by RSSI, with enc/hidden/rogue-AP flags + vendor), nearby-devices list (probe-req senders, distinguished from networks via `DECK_WIFI_ENTRY_IS_DEVICE`), spectrum mini bar-graph.
+- [x] **4.2 ESP-NOW receiver** — register RX callback, dispatch by exact packet size to `deck_wifi_batch_t` (wifi networks/devices) or `deck_report_t` (spectrum snapshot, heartbeats).
+- [x] **4.4 Aggregation store** — in-memory tables (networks, devices) plus per-node health (last-seen, total reports).
 
 ## Standalone-complete checklist
-- [ ] Dashboard fully navigable on synthetic data (do this BEFORE any node is wired in)
-- [ ] ESP-NOW callback parses a real/dummy `deck_report_t` correctly for all three node_ids
-- Swapping synthetic data for live node data is the last step — see Build Order phase 4 in `../docs/opsec-osint-deck-plan.md`.
+- [x] Dashboard renders correctly with all tables empty (fresh boot, no nodes reporting yet) — node-health strip shows "never" for both active nodes
+- [ ] ESP-NOW callback parses real `deck_wifi_batch_t`/`deck_report_t` packets correctly
+- [ ] Live field test with wifi sniffer + wifi spectrum running — see `../README.md` verification steps.

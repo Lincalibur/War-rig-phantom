@@ -33,6 +33,7 @@
 #include <RCSwitch.h>
 #include <WiFi.h>
 #include <esp_now.h>
+#include <esp_wifi.h>
 #include "../../../05-integration/shared/deck_report.h"
 
 static const uint8_t RCSWITCH_PIN = 4;
@@ -107,6 +108,21 @@ static void logSubGhzEvent(const char* protocol, uint32_t code,
   sendSubGhzReport(protocol, code, pulseLength, repeats);
 }
 
+// No periodic report otherwise — sub-ghz only sends when it decodes
+// something, so "never seen" on the hub's health screen used to be
+// indistinguishable from "board is dead". This makes "board is alive but
+// nothing decoded" verifiable from the hub screen alone.
+static uint32_t lastHeartbeatMs = 0;
+
+static void sendHeartbeat() {
+  deck_report_t report;
+  memset(&report, 0, sizeof(report));
+  report.node_id = 3;  // NODE_SUBGHZ
+  report.ts = millis();
+  report.flags = DECK_REPORT_FLAG_HEARTBEAT;
+  esp_now_send(BROADCAST_MAC, (uint8_t*)&report, sizeof(report));
+}
+
 static void pollSubGhz() {
   // 3.1 — rc-switch known-protocol decode
   if (rcSwitch.available()) {
@@ -144,6 +160,8 @@ static void pollSubGhz() {
 
 static void setupEspNow() {
   WiFi.mode(WIFI_STA);
+  delay(100);  // driver init is async — see hub_console.ino's macAddress() fix
+  esp_wifi_set_channel(DECK_ESPNOW_CHANNEL, WIFI_SECOND_CHAN_NONE);
   if (esp_now_init() != ESP_OK) {
     Serial.println("ESP-NOW init failed");
     return;
@@ -172,4 +190,9 @@ void setup() {
 
 void loop() {
   pollSubGhz();
+
+  if (millis() - lastHeartbeatMs >= DECK_HEARTBEAT_INTERVAL_MS) {
+    sendHeartbeat();
+    lastHeartbeatMs = millis();
+  }
 }
