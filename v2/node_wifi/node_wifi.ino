@@ -11,7 +11,7 @@
 // Board:  ESP32-C5 Dev Module (or XIAO_ESP32C5) — "USB CDC On Boot: Enabled".
 //         Fallback: XIAO_ESP32C6 (2.4 GHz only, channel list adapts automatically).
 //
-// NOT YET FLASHED. Pin numbers below are from the docs/PCB-DESIGN.md draft — VERIFY them for
+// NOT YET FLASHED. Pin numbers below are from docs/PCB-BOM-AND-NETLIST.md — VERIFY them for
 // your exact XIAO variant before wiring.
 
 extern "C" {

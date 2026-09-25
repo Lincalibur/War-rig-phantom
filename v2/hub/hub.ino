@@ -5,13 +5,13 @@
 // card in WiGLE CSV format (upload-ready) — access points and BLE devices to one file, client
 // devices to a second.
 //
-// Board: ESP32S3 Dev Module — "USB CDC On Boot: Enabled", PSRAM: OPI disabled (use N8R2 / N16R2).
+// Board: ESP32S3 Dev Module — "USB CDC On Boot: Enabled", PSRAM: "OPI PSRAM" (N16R8 board; GPIO33-37 are left unused for it).
 // Libraries: Adafruit GFX Library, Adafruit ILI9341 (SD, SPI come with the ESP32 core).
 //
 // Buttons: LEFT/RIGHT = page, UP/DOWN = scroll, SELECT = change sort.
 // Pages:   NETWORKS, BLE, CLIENTS, STATUS.
 //
-// NOT YET FLASHED. Pin numbers are from docs/PCB-DESIGN.md — VERIFY against your devkit.
+// NOT YET FLASHED. Pin numbers are from docs/PCB-BOM-AND-NETLIST.md — VERIFY against your devkit.
 
 #include <SPI.h>
 #include <SD.h>

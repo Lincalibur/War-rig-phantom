@@ -1,30 +1,32 @@
 # CyberDeck v2 firmware
 
-Firmware for the PCB design in `../docs/PCB-DESIGN.md`. Wired-UART architecture: two receive-only field nodes report to an ESP32-S3 hub. The old ESP-NOW build (`../01-*` … `../05-*`) is untouched and superseded.
+Firmware for the v2 PCB (`../docs/OVERVIEW.md`, pins in `../docs/PCB-BOM-AND-NETLIST.md`). Wired-UART architecture: two receive-only field nodes report to an ESP32-S3 hub.
+
+> **Board change pending:** this code was written for XIAO ESP32-C5/C6 nodes. The 2026-09-25 BOM switched to an **ESP32-C3 PRO Mini** (WiFi, 2.4 GHz only) and an **ESP32-H2 SuperMini** (BLE). Node pins, board targets and the C5-only 5 GHz call must be updated before the first build.
 
 ```
 v2/
   shared/deck_link.h        wire protocol: framing, CRC, message structs (nodes + hub)
   shared/deck_node_core.h   node common code: GPS parser, tx queue, UART link, heartbeat
-  node_wifi/node_wifi.ino   XIAO ESP32-C5 (or C6): 2.4+5 GHz sniffer
-  node_ble/node_ble.ino     XIAO ESP32-C6: BLE scanner
+  node_wifi/node_wifi.ino   WiFi sniffer node (target: ESP32-C3 PRO Mini; code still XIAO C5)
+  node_ble/node_ble.ino     BLE scanner node (target: ESP32-H2 SuperMini; code still XIAO C6)
   hub/hub.ino               ESP32-S3: tables, ILI9341 UI, WiGLE CSV logging to SD
 ```
 
 ## Status: written, NOT compiled, NOT flashed
 
 Nothing here has been built yet — no toolchain was reachable when it was written. Expect a round of compile fixes on the first build. In particular check:
-- `esp_wifi_set_band_mode(WIFI_BAND_MODE_AUTO)` in `node_wifi.ino` exists in your core's IDF version (C5 only).
+- `esp_wifi_set_band_mode(WIFI_BAND_MODE_AUTO)` in `node_wifi.ino` is C5-only; remove it for the C3.
 - The BLE API calls in `node_ble.ino` match your `esp32` core version (core 3.x vs 2.x differ slightly).
-- All pin numbers (`DECK_LINK_*`, `DECK_GPS_RX_PIN`, hub `PIN_*`) against the real boards — they come from the PCB draft.
+- All pin numbers (`DECK_LINK_*`, `DECK_GPS_RX_PIN`, hub `PIN_*`) against `../docs/PCB-BOM-AND-NETLIST.md` and the real boards. Proposed node pins: C3 link TX=GPIO7, RX=GPIO6, GPS RX=GPIO20; H2 pins still to be chosen from its silkscreen.
 
 ## Build settings
 
 | Sketch | FQBN (arduino-cli) | Notes |
 |---|---|---|
-| node_wifi | `esp32:esp32:esp32c5:CDCOnBoot=cdc` (or `XIAO_ESP32C6`) | needs an esp32 core with C5 support (3.3+) |
-| node_ble | `esp32:esp32:XIAO_ESP32C6:CDCOnBoot=cdc` | |
-| hub | `esp32:esp32:esp32s3:CDCOnBoot=cdc` | use an N8R2/N16R2 devkit, not octal-PSRAM (R8) |
+| node_wifi | `esp32:esp32:esp32c3:CDCOnBoot=cdc` | ESP32-C3 PRO Mini. Remove the C5-only `esp_wifi_set_band_mode` call |
+| node_ble | `esp32:esp32:esp32h2:CDCOnBoot=cdc` | ESP32-H2 SuperMini. Confirm BLE scanning works on H2 in core 3.x; fallback is a C3 SuperMini |
+| hub | `esp32:esp32:esp32s3:CDCOnBoot=cdc,PSRAM=opi` | ESP32-S3-DevKitC-1 N16R8 (octal PSRAM; GPIO33-37 unused) |
 
 `CDCOnBoot=cdc` is required on the nodes: hardware UART0 is used for the GPS, so `Serial` must be USB.
 
@@ -41,5 +43,5 @@ See `shared/deck_link.h`. Frame `A5 5A | type | len | payload | crc16`. Nodes re
 
 ## Not implemented yet
 - CC1101 sub-GHz (pins reserved on the hub; CS held high).
+- Battery voltage on GPIO6 (VBAT divider). The IP5310 board has no low-battery pin, so this is the only warning.
 - 802.15.4 (Zigbee/Thread) sniffing on the C6.
-- Device-side region/country configuration for 5 GHz channels.

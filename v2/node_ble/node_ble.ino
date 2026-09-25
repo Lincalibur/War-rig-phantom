@@ -10,7 +10,7 @@
 // Planned, not implemented: 802.15.4 (Zigbee/Thread) sniffing via esp_ieee802154 on this same
 // chip. The scan loop and reporting path here are radio-agnostic on purpose.
 //
-// NOT YET FLASHED. Pin numbers are from docs/PCB-DESIGN.md — VERIFY for your board.
+// NOT YET FLASHED. Pin numbers are from docs/PCB-BOM-AND-NETLIST.md — VERIFY for your board.
 
 #include <BLEDevice.h>
 #include <BLEUtils.h>

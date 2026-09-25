@@ -5,3 +5,11 @@ Thumbs.db
 build/
 *.hex
 *.bin
+
+# KiCad: lock files, local history, backups, caches, per-user settings
+*.lck
+.history/
+*-backups/
+_autosave-*
+fp-info-cache
+*.kicad_prl
