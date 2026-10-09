@@ -1,0 +1,116 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="880" height="630" viewBox="0 0 880 630" font-family="Helvetica, Arial, sans-serif">
+  <title>Cyberdeck physical layout</title>
+  <desc>Top-down layout of the lid and base of a 22 x 22 cm case, plus a side section of the closed case showing the depth stack.</desc>
+  <rect x="0" y="0" width="880" height="630" fill="#FFFFFF"/>
+
+  <text x="236" y="52" font-size="14" font-weight="bold" fill="#2C2C2A" text-anchor="middle">Lid (interior, opened)</text>
+  <text x="656" y="52" font-size="14" font-weight="bold" fill="#2C2C2A" text-anchor="middle">Base (interior)</text>
+
+  <rect x="60" y="70" width="352" height="352" rx="16" fill="#F7F6F2" stroke="#2C2C2A" stroke-width="1.5"/>
+  <rect x="164" y="78" width="144" height="56" rx="8" fill="#F1EFE8" stroke="#5F5E5A"/>
+  <text x="236" y="110" font-size="12" fill="#444441" text-anchor="middle">Handle recess</text>
+
+  <rect x="74" y="150" width="56" height="56" rx="4" fill="#E6F1FB" stroke="#185FA5"/>
+  <text x="102" y="175" font-size="12" fill="#0C447C" text-anchor="middle">OLED</text>
+  <text x="102" y="191" font-size="11" fill="#185FA5" text-anchor="middle">1.3 in</text>
+
+  <rect x="142" y="150" width="120" height="64" rx="4" fill="#E6F1FB" stroke="#185FA5"/>
+  <text x="202" y="178" font-size="12" fill="#0C447C" text-anchor="middle">2.0 in TFT</text>
+  <text x="202" y="194" font-size="11" fill="#185FA5" text-anchor="middle">Scan 2</text>
+
+  <rect x="74" y="226" width="188" height="92" rx="4" fill="#E6F1FB" stroke="#185FA5"/>
+  <text x="168" y="266" font-size="13" font-weight="bold" fill="#0C447C" text-anchor="middle">3.5 in TFT</text>
+  <text x="168" y="284" font-size="11" fill="#185FA5" text-anchor="middle">Scan 1 (main)</text>
+
+  <rect x="74" y="330" width="188" height="40" rx="4" fill="#F1EFE8" stroke="#5F5E5A"/>
+  <text x="168" y="347" font-size="12" fill="#444441" text-anchor="middle">Port panel</text>
+  <text x="168" y="362" font-size="11" fill="#5F5E5A" text-anchor="middle">USB-A · USB-C · audio · SD</text>
+
+  <rect x="275" y="150" width="123" height="220" rx="4" fill="#E6F1FB" stroke="#185FA5"/>
+  <text x="336" y="250" font-size="13" font-weight="bold" fill="#0C447C" text-anchor="middle">Hub screen</text>
+  <text x="336" y="268" font-size="11" fill="#185FA5" text-anchor="middle">5 in, portrait</text>
+  <text x="336" y="284" font-size="11" fill="#185FA5" text-anchor="middle">Control + logs</text>
+
+  <rect x="74" y="382" width="324" height="26" rx="4" fill="none" stroke="#888780" stroke-dasharray="5 4"/>
+  <text x="236" y="399" font-size="11" fill="#5F5E5A" text-anchor="middle">Cable slack loop to hinge</text>
+
+  <rect x="480" y="70" width="352" height="352" rx="16" fill="#F7F6F2" stroke="#2C2C2A" stroke-width="1.5"/>
+  <rect x="494" y="80" width="324" height="22" rx="4" fill="none" stroke="#888780" stroke-dasharray="5 4"/>
+  <text x="656" y="95" font-size="11" fill="#5F5E5A" text-anchor="middle">Hinge cable entry · SMA jacks on rear wall</text>
+
+  <rect x="494" y="112" width="146" height="138" rx="6" fill="#EAF3DE" stroke="#3B6D11"/>
+  <text x="567" y="140" font-size="13" font-weight="bold" fill="#27500A" text-anchor="middle">Power</text>
+  <text x="567" y="160" font-size="11" fill="#3B6D11" text-anchor="middle">Master switch + fuse</text>
+  <text x="567" y="190" font-size="11" fill="#3B6D11" text-anchor="middle">Below deck:</text>
+  <text x="567" y="206" font-size="11" fill="#3B6D11" text-anchor="middle">2S2P 18650 pack</text>
+  <text x="567" y="222" font-size="11" fill="#3B6D11" text-anchor="middle">BMS + 5V 5A buck</text>
+
+  <rect x="652" y="112" width="166" height="138" rx="6" fill="#FAEEDA" stroke="#854F0B"/>
+  <text x="735" y="136" font-size="13" font-weight="bold" fill="#633806" text-anchor="middle">Section switches</text>
+  <circle cx="670" cy="164" r="9" fill="none" stroke="#854F0B" stroke-width="1.2"/>
+  <text x="684" y="168" font-size="11" fill="#633806">Hub</text>
+  <circle cx="742" cy="164" r="9" fill="none" stroke="#854F0B" stroke-width="1.2"/>
+  <text x="756" y="168" font-size="11" fill="#633806">Scan 1</text>
+  <circle cx="670" cy="196" r="9" fill="none" stroke="#854F0B" stroke-width="1.2"/>
+  <text x="684" y="200" font-size="11" fill="#633806">Scan 2</text>
+  <circle cx="742" cy="196" r="9" fill="none" stroke="#854F0B" stroke-width="1.2"/>
+  <text x="756" y="200" font-size="11" fill="#633806">Scan 3</text>
+  <circle cx="670" cy="228" r="9" fill="none" stroke="#854F0B" stroke-width="1.2"/>
+  <text x="684" y="232" font-size="11" fill="#633806">RF/SDR</text>
+  <circle cx="742" cy="228" r="9" fill="none" stroke="#854F0B" stroke-width="1.2"/>
+  <text x="756" y="232" font-size="11" fill="#633806">Aux</text>
+
+  <rect x="494" y="262" width="136" height="90" rx="4" fill="none" stroke="#5F5E5A" stroke-dasharray="5 4"/>
+  <text x="562" y="296" font-size="12" font-weight="bold" fill="#444441" text-anchor="middle">Raspberry Pi 5</text>
+  <text x="562" y="313" font-size="11" fill="#5F5E5A" text-anchor="middle">below deck</text>
+  <text x="562" y="329" font-size="11" fill="#5F5E5A" text-anchor="middle">85 × 56 mm</text>
+
+  <rect x="642" y="262" width="176" height="90" rx="4" fill="none" stroke="#5F5E5A" stroke-dasharray="5 4"/>
+  <text x="730" y="296" font-size="12" font-weight="bold" fill="#444441" text-anchor="middle">USB hub + SDR</text>
+  <text x="730" y="313" font-size="11" fill="#5F5E5A" text-anchor="middle">below deck</text>
+  <text x="730" y="329" font-size="11" fill="#5F5E5A" text-anchor="middle">away from buck converter</text>
+
+  <rect x="494" y="366" width="80" height="44" rx="6" fill="#F1EFE8" stroke="#5F5E5A"/>
+  <text x="534" y="392" font-size="11" fill="#444441" text-anchor="middle">USB-C in</text>
+  <rect x="584" y="366" width="144" height="56" rx="8" fill="#F1EFE8" stroke="#5F5E5A"/>
+  <text x="656" y="398" font-size="12" fill="#444441" text-anchor="middle">Handle recess</text>
+  <rect x="738" y="366" width="80" height="44" rx="6" fill="#F1EFE8" stroke="#5F5E5A"/>
+  <text x="778" y="392" font-size="11" fill="#444441" text-anchor="middle">Batt meter</text>
+
+  <text x="236" y="440" font-size="11" fill="#5F5E5A" text-anchor="middle">Hinge along bottom edge</text>
+  <text x="656" y="440" font-size="11" fill="#5F5E5A" text-anchor="middle">Hinge along top edge</text>
+
+  <text x="60" y="470" font-size="14" font-weight="bold" fill="#2C2C2A">Side section, case closed</text>
+  <rect x="60" y="480" width="352" height="5" fill="#444441"/>
+  <rect x="60" y="485" width="352" height="24" fill="#B5D4F4"/>
+  <rect x="60" y="509" width="352" height="13" fill="#E6F1FB" stroke="#185FA5" stroke-width="0.5"/>
+  <rect x="60" y="522" width="352" height="14" fill="#FFFFFF"/>
+  <line x1="50" y1="536" x2="422" y2="536" stroke="#2C2C2A" stroke-width="1" stroke-dasharray="6 3"/>
+  <rect x="300" y="540" width="10" height="12" fill="#FAEEDA" stroke="#854F0B"/>
+  <rect x="330" y="540" width="10" height="12" fill="#FAEEDA" stroke="#854F0B"/>
+  <rect x="360" y="540" width="10" height="12" fill="#FAEEDA" stroke="#854F0B"/>
+  <rect x="60" y="552" width="352" height="5" fill="#888780"/>
+  <rect x="60" y="557" width="352" height="30" fill="#EAF3DE"/>
+  <rect x="60" y="587" width="352" height="5" fill="#444441"/>
+  <rect x="60" y="480" width="352" height="112" fill="none" stroke="#2C2C2A" stroke-width="1.2"/>
+
+  <g font-size="11" fill="#444441">
+    <line x1="412" y1="482" x2="428" y2="478" stroke="#888780"/><text x="432" y="482">Lid shell (3 mm)</text>
+    <line x1="412" y1="497" x2="428" y2="496" stroke="#888780"/><text x="432" y="500">ESP32 + driver boards (15 mm)</text>
+    <line x1="412" y1="515" x2="428" y2="514" stroke="#888780"/><text x="432" y="518">Screen modules (8 mm)</text>
+    <line x1="412" y1="529" x2="428" y2="531" stroke="#888780"/><text x="432" y="535">Gap to rim (9 mm)</text>
+    <line x1="412" y1="545" x2="428" y2="549" stroke="#888780"/><text x="432" y="553">Switch caps above deck (≤ 12 mm)</text>
+    <line x1="412" y1="554" x2="428" y2="566" stroke="#888780"/><text x="432" y="570">Deck plate (3 mm)</text>
+    <line x1="412" y1="572" x2="428" y2="584" stroke="#888780"/><text x="432" y="588">Electronics bay (19 mm)</text>
+    <line x1="412" y1="590" x2="428" y2="601" stroke="#888780"/><text x="432" y="605">Base floor (3 mm)</text>
+  </g>
+
+  <g font-size="11" fill="#444441">
+    <text x="660" y="490" font-weight="bold" font-size="12">Key</text>
+    <rect x="660" y="500" width="20" height="12" fill="#E6F1FB" stroke="#185FA5"/><text x="688" y="510">Screens</text>
+    <rect x="660" y="520" width="20" height="12" fill="#EAF3DE" stroke="#3B6D11"/><text x="688" y="530">Power</text>
+    <rect x="660" y="540" width="20" height="12" fill="#FAEEDA" stroke="#854F0B"/><text x="688" y="550">Switches</text>
+    <rect x="660" y="560" width="20" height="12" fill="none" stroke="#5F5E5A" stroke-dasharray="4 3"/><text x="688" y="570">Below deck / routing</text>
+    <text x="660" y="596" fill="#5F5E5A">Scale ≈ 1.6 px per mm</text>
+  </g>
+</svg>

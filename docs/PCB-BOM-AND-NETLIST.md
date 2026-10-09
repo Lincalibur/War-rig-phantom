@@ -1,5 +1,7 @@
 # CyberDeck v2 — exact BOM and netlist (KiCad input)
 
+> **Shelved 2026-10-09.** The build moved to a hand-wired 22 × 22 cm clamshell case with a 2S battery system; the current parts list is in [`hardware-layout.md`](hardware-layout.md) section 7. This PCB BOM (section 1) and power tree (section 2) no longer describe what is being built. **Still in use:** the S3 hub pin assignments in section 3.1 for SPI, microSD, CC1101 and the node UART links. The display, nav-button and GPIO6 VBAT-divider nets do not apply (the divider was sized for one cell; a 2S pack needs different values).
+
 Authoritative parts list and pin-by-pin connections for the 100 x 150 mm board. Where any other doc differs from this one, **this file wins** (see `OVERVIEW.md` for the why). As of the 2026-09-25 nde3d revision, the node boards changed (C3 PRO Mini / H2 SuperMini), so the firmware in `../v2/` still has XIAO pin labels and needs updating to match.
 
 Items marked **[VERIFY]** are footprint/pinout facts recalled from memory of the manufacturer's documentation. Check each against the datasheet or the physical board before sending the PCB to fabrication.
