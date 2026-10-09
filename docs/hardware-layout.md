@@ -23,7 +23,7 @@ Every board has one fixed name. Use it in docs, firmware comments and on a label
 
 | Name | Board | Job | Reference |
 |---|---|---|---|
-| `HUB` | ESP32-S3-DevKitC-1 N16R8 | Brain: collects node reports, logs to SD, runs CC1101 and GPS, drives alerts | Pins: [`PCB-BOM-AND-NETLIST.md`](PCB-BOM-AND-NETLIST.md) section 3.1 |
+| `HUB` | ESP32-S3-DevKitC-1 N16R8 | Brain: collects node reports, logs to SD, runs the CC1101, drives alerts | Pins: [`PCB-BOM-AND-NETLIST.md`](PCB-BOM-AND-NETLIST.md) section 3.1 |
 | `READOUT` | Arduino UNO R3 + 3.5" TFT shield | Hub display (dumb terminal for the `HUB`) | [`proto-readout-wiring.html`](proto-readout-wiring.html) |
 | `BLE-SCAN` | ESP32-1732S019 (classic ESP32 + built-in 1.9" screen) | Scan 2: BLE trackers | [`BOARD-BLE-SCAN-ESP32-1732S019.md`](BOARD-BLE-SCAN-ESP32-1732S019.md) |
 | `WIFI-NODE` | ESP32-C3 (first one) | Headless WiFi promiscuous scanner | `v2/proto_readout_c3` |
@@ -153,16 +153,17 @@ The deck sits 3 mm higher than first drawn: an 18650 in a holder is about 21 mm 
 ### Data (budget v1)
 
 ```
-ESP32-C3 WiFi node ──UART──┐
-ESP32-1732S019 (BLE) ─UART─┼─► ESP32-S3 hub ──row stream (one-way UART)──► UNO + 3.5" TFT
-NEO-7M GPS ──────────UART──┘        │
-                                    ├─ SPI: microSD shield (logging), CC1101 (433 MHz)
-                                    └─ LED + piezo alerts, mute button
+NEO-7M GPS TX ─┬─► WIFI-NODE (ESP32-C3) ──UART──┐
+               └─► BLE-SCAN (ESP32-1732S019) ─UART─┴─► HUB (ESP32-S3) ──row stream (one-way UART)──► READOUT (UNO + 3.5" TFT)
+                                                            │
+                                                            ├─ SPI: microSD shield (logging), CC1101 (433 MHz)
+                                                            └─ LED + piezo alerts, mute button
 ```
 
 - All links are wired 3.3 V UART; nodes are receive-only radios. Framing is `v2/shared/deck_link.h`. S3 pins follow section 3.1 of [`PCB-BOM-AND-NETLIST.md`](PCB-BOM-AND-NETLIST.md).
 - The hub display reuses the `R<rr><c><text>` row-stream protocol from `v2/proto_readout_c3` / `proto_readout_uno`; the S3 takes over the sender role from the C3.
-- The S3 has three hardware UARTs, all used as receivers above. Scan 3 (C3 + OLED) therefore runs standalone in v1.
+- The GPS TX line fans out to both nodes, as the existing node firmware expects (`v2/shared/deck_node_core.h`): each node stamps its own sightings and the `HUB` takes position and time from their reports.
+- The S3's three hardware UARTs are one per node link plus one for the `READOUT` stream. `STATUS` (C3 + OLED) runs standalone in v1; the `READOUT` UART's unused RX pin is free if it later needs a link.
 - Put a ~1 kΩ series resistor on each UART line between separately switched modules, so a powered board can't back-feed an unpowered one through its I/O pins.
 - The CH340E USB-TTL adapter is a bring-up tool: it captures C3 serial output (C3 USB-CDC capture has been unreliable) and later connects the GPS to the Pi.
 
@@ -273,6 +274,6 @@ The Pi 5 has no 3.5 mm jack, so audio on the port panel would need a USB audio a
 ## 9. Open questions
 
 - Exact inner dimensions of each half
-- Whether Scan 3 stays standalone or gets a link to the hub (the S3 is out of UARTs)
+- Whether `STATUS` stays standalone or gets a link to the hub (one UART RX pin is free)
 - Current rating of the SMTS-203 toggles (not in the listing); matters once a Pi draws 4–5 A through one
 - Pi location when it arrives: base (as drawn) or behind the hub screen in the lid

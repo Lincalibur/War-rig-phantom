@@ -10,7 +10,8 @@ Start here. This covers what the deck does, the hardware decisions and why they 
 | Board names (`HUB`, `READOUT`, `BLE-SCAN`, `WIFI-NODE`, `STATUS`) | [`hardware-layout.md`](hardware-layout.md#board-names) |
 | `BLE-SCAN` board spec (ESP32-1732S019: pins, display config, build settings) | [`BOARD-BLE-SCAN-ESP32-1732S019.md`](BOARD-BLE-SCAN-ESP32-1732S019.md) |
 | S3 hub pin assignments (and the shelved PCB BOM) | [`PCB-BOM-AND-NETLIST.md`](PCB-BOM-AND-NETLIST.md) |
-| Interactive build page: BOM checklist, board layout, searchable pin tables | [`esp32-hub-board.html`](esp32-hub-board.html) (also deployed to GitHub Pages) |
+| Build page on GitHub Pages: boards, layout, parts checklist, wiring | [`build-page.html`](build-page.html), deployed to <https://lincalibur.github.io/War-rig-phantom/> |
+| Shelved single-PCB interactive page | [`esp32-hub-board.html`](esp32-hub-board.html) (deployed as `pcb-v2.html`) |
 | KiCad project | [`../KiCad Design/`](../KiCad%20Design/) |
 | Firmware, build settings, bring-up order | [`../v2/README.md`](../v2/README.md) |
 | Remote flashing station | [`debian-esp32-server-guide.md`](debian-esp32-server-guide.md) |
@@ -25,14 +26,14 @@ A portable counter-surveillance deck that scans and logs the radio environment a
 ## Architecture (budget v1)
 
 ```
-  ESP32-C3 WiFi node ------UART--+
-  ESP32-1732S019 BLE + 1.9" -UART-+--> ESP32-S3 hub --row stream--> UNO + 3.5" TFT (hub display)
-  NEO-7M GPS --------------UART--+        |  SPI: microSD, CC1101 433 MHz
-  ESP32-C3 + OLED (standalone)            |  LED + piezo alerts
+  NEO-7M GPS TX --+--> WIFI-NODE (ESP32-C3) ----------UART--+
+                  +--> BLE-SCAN (ESP32-1732S019, 1.9") -UART--+--> HUB (ESP32-S3) --row stream--> READOUT (UNO + 3.5" TFT)
+  STATUS (ESP32-C3 + OLED, standalone)                              |  SPI: microSD, CC1101 433 MHz
+                                                                    |  LED + piezo alerts
   2S2P 18650 -> BMS -> fuse -> master switch -> 5 V buck -> section switch per module
 ```
 
-The GPS now feeds the hub directly, and the hub's display is the UNO + 3.5" shield already on hand. Details are in [`hardware-layout.md`](hardware-layout.md).
+The GPS still fans out to both nodes, and the hub's display is the UNO + 3.5" shield already on hand. Details are in [`hardware-layout.md`](hardware-layout.md).
 
 ## Architecture (original single-PCB design, shelved)
 
@@ -108,7 +109,7 @@ These figures are for the shelved IP5310 design. The current power system is in 
 - **Hardware:** clamshell layout planned in `hardware-layout.md`; the nde3d cart for budget v1 (about R1,390) is listed there. The PCB and KiCad work are shelved.
 - **Working on the bench:** the WiFi readout (`proto_readout_c3` + `proto_readout_uno`: C3 promiscuous scanner streaming rows to the UNO + 3.5" TFT).
 - **Firmware** (`../v2/`): `hub`, `node_wifi` and `node_ble` are written but **never compiled or flashed**, and still carry XIAO C5/C6 pin labels. Needed for budget v1:
-  - `hub.ino`: replace the ILI9341 UI with the row-stream sender for the UNO display; read the GPS on the hub; LED + piezo alerts.
+  - `hub.ino`: replace the ILI9341 UI with the row-stream sender for the UNO display; LED + piezo alerts.
   - `node_wifi`: retarget to the ESP32-C3 (remove the C5-only band call, remap pins).
   - BLE node: port to the ESP32-1732S019 with its ST7789 screen (start from `proto_tracker_tripwire`).
   - Not implemented yet: CC1101 reception, pack voltage sensing.

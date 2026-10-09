@@ -46,10 +46,11 @@ This is the classic ESP32 version of the board, not the ESP32-S3 version.
 |---|---|---|
 | Link TX | 17 | `HUB` BLE_LINK_RX (S3 GPIO1), through ~1 kΩ |
 | Link RX | 16 | `HUB` BLE_LINK_TX (S3 GPIO2), through ~1 kΩ |
+| GPS RX | 22 | NEO-7M TX (shared with `WIFI-NODE`) |
 | 5 V | 5 V pin | Section switch 3 |
 | GND | GND | Common ground |
 
-GPIO 16/17 are the ESP32's default UART2 pins. The remaining free GPIOs (4, 22, 25, 26, 27, 32, 33) are spare for a local alert LED, buzzer or button. These assignments are a plan and have not been wired or tested.
+GPIO 16/17 are the ESP32's default UART2 pins. The remaining free GPIOs (4, 25, 26, 27, 32, 33) are spare for a local alert LED, buzzer or button. These assignments are a plan and have not been wired or tested.
 
 ## Arduino build settings
 

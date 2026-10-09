@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>War-rig-phantom: clamshell build</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#EEF0EC; --card:#F7F8F5; --ink:#1B2420; --muted:#5B6660; --rule:#CDD3CE;
+  --copper:#A8672A; --copper-soft:#F1E1CD; --warn:#9A4A14; --warn-bg:#F6E4D4;
+  --ok:#1C6B4F; --ok-bg:#DCEFE6;
+  --sans:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme:dark){:root{
+  --paper:#121714; --card:#19201C; --ink:#E4E9E5; --muted:#97A39C; --rule:#2C3631;
+  --copper:#DE9C5A; --copper-soft:#3A2A1B; --warn:#F0A774; --warn-bg:#3A2418;
+  --ok:#7CE6C8; --ok-bg:#16332A;
+}}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--paper);color:var(--ink);font:15px/1.6 var(--sans)}
+.wrap{max-width:1100px;margin:0 auto;padding:0 24px}
+@media (max-width:560px){.wrap{padding:0 16px}}
+header{padding:48px 0 28px;border-bottom:1px solid var(--rule)}
+h1{font-size:34px;line-height:1.15;font-weight:500;margin:0 0 12px;letter-spacing:-.01em}
+h2{font-size:22px;font-weight:500;margin:0 0 6px}
+h3{font-size:16px;font-weight:500;margin:0 0 8px}
+a{color:var(--copper)}
+.lede{max-width:68ch;color:var(--muted);margin:0 0 20px;font-size:16px}
+.facts{display:flex;flex-wrap:wrap;gap:8px 28px;font-size:14px;color:var(--muted);margin:0;padding:0;list-style:none}
+.facts b{color:var(--ink);font-weight:500}
+nav{display:flex;flex-wrap:wrap;gap:8px 18px;margin-top:22px;font-size:14px}
+nav a{text-decoration:none;border-bottom:1px solid transparent}
+nav a:hover{border-color:var(--copper)}
+section{padding:40px 0;border-bottom:1px solid var(--rule)}
+.sec-intro{color:var(--muted);max-width:72ch;margin:0 0 20px}
+button{font:inherit;font-size:13px;color:var(--ink);background:transparent;border:1px solid var(--rule);border-radius:6px;padding:5px 11px;cursor:pointer}
+button:hover{border-color:var(--muted)}
+button:focus-visible,input:focus-visible,a:focus-visible{outline:2px solid var(--copper);outline-offset:2px}
+.toolbar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin:0 0 14px}
+.progress{font-size:14px;color:var(--muted);margin-right:auto}
+.progress b{color:var(--ink);font-weight:500}
+.bar{height:4px;background:var(--rule);border-radius:2px;margin:0 0 18px;overflow:hidden}
+.bar i{display:block;height:100%;background:var(--copper);width:0;transition:width .25s}
+.tablewrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th{text-align:left;font-weight:500;color:var(--muted);font-size:13px;padding:8px 10px;border-bottom:1px solid var(--rule)}
+td{padding:9px 10px;border-bottom:1px solid var(--rule);vertical-align:top}
+.bom tr.grp td{padding:22px 10px 6px;border-bottom:none;font-weight:500;font-size:15px}
+.bom tr.grp td span{color:var(--muted);font-weight:400;font-size:13px;margin-left:8px}
+.bom tr.done td:not(.ck){color:var(--muted)}
+.bom tr.done .pname,.bom tr.done .pname a{text-decoration:line-through;text-decoration-color:var(--rule)}
+.note{color:var(--muted);font-size:13px;margin-top:2px}
+.warn{display:inline-block;margin-top:4px;font-size:12.5px;color:var(--warn);background:var(--warn-bg);border-radius:4px;padding:1px 7px}
+.ck{width:34px}
+.ck input{width:17px;height:17px;accent-color:var(--copper);cursor:pointer}
+.mono,.qty,.price{font-family:var(--mono);font-size:13px;white-space:nowrap}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:18px}
+.card{background:var(--card);border:1px solid var(--rule);border-radius:10px;padding:16px 18px;min-width:0}
+.card p{margin:0 0 8px}
+.card ul,.card ol{margin:6px 0 0;padding-left:20px}
+.card li{margin:0 0 5px}
+.tag{font-family:var(--mono);font-size:13px;background:var(--copper-soft);border-radius:4px;padding:1px 7px;white-space:nowrap}
+.figure{background:#FFFFFF;border:1px solid var(--rule);border-radius:10px;padding:10px;overflow-x:auto}
+.figure img{display:block;width:100%;min-width:640px;height:auto}
+pre{font-family:var(--mono);font-size:12.5px;line-height:1.5;background:var(--card);border:1px solid var(--rule);border-radius:10px;padding:14px 16px;overflow-x:auto;margin:0 0 18px}
+.callout{background:var(--warn-bg);color:var(--warn);border-radius:10px;padding:14px 18px;margin:0 0 18px;max-width:90ch}
+.callout b{font-weight:600}
+.phase{display:inline-block;font-size:12.5px;color:var(--ok);background:var(--ok-bg);border-radius:4px;padding:1px 8px;margin-left:8px;vertical-align:middle}
+.steps{margin:0;padding-left:22px;max-width:80ch}
+.steps li{margin:0 0 8px}
+footer{padding:28px 0 60px;color:var(--muted);font-size:13px}
+@media print{nav,.toolbar{display:none!important}section{break-inside:avoid-page}}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}.bar i{transition:none}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <h1>War-rig-phantom: clamshell build <span class="phase">Budget v1</span></h1>
+  <p class="lede">A portable, passive counter-surveillance deck in a 22 × 22 cm clamshell case. It listens to WiFi, BLE and 433 MHz, tags sightings with GPS, and flags devices that keep following you. Each scan module has its own screen in the lid; an ESP32-S3 is the hub. A Raspberry Pi 5 replaces the hub later.</p>
+  <ul class="facts">
+    <li>Case <b>220 × 220 × 70 mm</b></li>
+    <li>Hub <b>ESP32-S3</b>, wired UART links</li>
+    <li>Power <b>2S2P 18650</b>, 5 V rail</li>
+    <li>Cart <b>R1,390</b> at nde3d</li>
+    <li><b>Receive only</b>: no deauth, injection or jamming</li>
+  </ul>
+  <nav><a href="#boards">Boards</a><a href="#layout">Layout</a><a href="#parts">Parts</a><a href="#power">Power</a><a href="#wiring">Wiring</a><a href="#build">Build order</a><a href="#later">Pi phase</a></nav>
+</header>
+
+<section id="boards">
+  <h2>Boards</h2>
+  <p class="sec-intro">Every board has one fixed name. It is used in the docs and firmware, and should be on a label stuck to the board.</p>
+  <div class="tablewrap">
+  <table>
+    <thead><tr><th>Name</th><th>Board</th><th>Job</th><th>Where</th></tr></thead>
+    <tbody>
+      <tr><td><span class="tag">HUB</span></td><td>ESP32-S3-DevKitC-1 N16R8</td><td>Collects node reports, logs to microSD, runs the CC1101, drives alerts</td><td>Base, under deck</td></tr>
+      <tr><td><span class="tag">READOUT</span></td><td>Arduino UNO R3 + 3.5" TFT shield</td><td>Hub display. A dumb terminal that draws rows sent by the HUB</td><td>Lid, middle-left</td></tr>
+      <tr><td><span class="tag">BLE-SCAN</span></td><td>ESP32-1732S019 (ESP32 + built-in 1.9" screen)</td><td>BLE tracker detection on its own screen</td><td>Lid, top-middle</td></tr>
+      <tr><td><span class="tag">WIFI-NODE</span></td><td>ESP32-C3 (first)</td><td>Headless WiFi promiscuous scanner</td><td>Base, under deck</td></tr>
+      <tr><td><span class="tag">STATUS</span></td><td>ESP32-C3 (second) + 128×64 OLED</td><td>Status and counters. Standalone in v1</td><td>Lid, top-left</td></tr>
+    </tbody>
+  </table>
+  </div>
+</section>
+
+<section id="layout">
+  <h2>Layout</h2>
+  <p class="sec-intro">Lid and base seen from inside, plus a side section of the closed case. Dimensions are planning figures; measure the case before cutting.</p>
+  <div class="figure"><img src="hardware-layout.svg" alt="Top-down layout of the lid and base and a side section of the closed case. Lid: STATUS OLED, BLE-SCAN 1.9 inch, READOUT 3.5 inch, alerts and SD strip, blank plate with GPS. Base: power zone, six section switches, HUB and WIFI-NODE bays under the deck, DC jack and battery meter."></div>
+  <div class="grid" style="margin-top:18px">
+    <div class="card">
+      <h3>Depth rule</h3>
+      <p>Each half is about 35 mm deep. With the deck raised for the cell holder, switch caps plus screen protrusion must stay under about 16 mm combined or the lid won't close.</p>
+    </div>
+    <div class="card">
+      <h3>Faceplate</h3>
+      <p>3 mm acrylic or a 3D print. Not aluminium: the ESP32 antennas sit behind the plate and metal would shield them.</p>
+    </div>
+    <div class="card">
+      <h3>Measure first</h3>
+      <p>The BLE-SCAN board outline against its 55 × 40 mm zone, and the READOUT stack height (about 25–30 mm against a 23 mm budget).</p>
+    </div>
+  </div>
+</section>
+
+<section id="parts">
+  <h2>Parts</h2>
+  <p class="sec-intro">Tick parts off as you collect them; ticks are saved in this browser. Prices are as nde3d.co.za listed them on 2026-10-09.</p>
+  <div class="toolbar">
+    <span class="progress"><b id="p-done">0</b> of <b id="p-total">0</b> items ticked</span>
+    <button id="copy-list" type="button">Copy shopping list</button>
+    <button id="reset-ticks" type="button">Clear ticks</button>
+  </div>
+  <div class="bar"><i id="p-bar"></i></div>
+  <div class="tablewrap">
+  <table class="bom">
+    <thead><tr><th class="ck"></th><th>Part</th><th>Qty</th><th>Price</th><th>Role</th></tr></thead>
+    <tbody id="bom-body"></tbody>
+  </table>
+  </div>
+</section>
+
+<section id="power">
+  <h2>Power</h2>
+  <p class="sec-intro">One 2S2P pack feeds a single 5 V buck. Every module has its own section switch. Load is about 1–1.5 A at 5 V; expect roughly 3–4 hours and measure it.</p>
+  <div class="callout"><b>Before connecting anything:</b> check the 4-cell holder with a multimeter and rewire it to 2S2P if it arrives as 4S (about 15 V). Set the charger to 8.4 V and the buck to about 5.1 V with no load. Never connect a single-cell USB charge/boost board to this pack.</div>
+<pre>12 V adapter -> DC jack -> XL4015 CC/CV (8.4 V, ~1 A) -+
+                                                       v
+18650 2S2P pack &lt;-> 2S 20 A BMS -> fuse 8 A -> master switch -> 5 A buck (5.1 V) -> section switches
+        |
+        +-> capacity indicator (2S)</pre>
+  <div class="tablewrap">
+  <table>
+    <thead><tr><th>Switch</th><th>Powers</th></tr></thead>
+    <tbody>
+      <tr><td>Master</td><td>Everything, after the fuse</td></tr>
+      <tr><td class="mono">1</td><td>HUB: ESP32-S3 + microSD + CC1101 + GPS</td></tr>
+      <tr><td class="mono">2</td><td>READOUT: UNO + 3.5" TFT (through the UNO's 5 V pin)</td></tr>
+      <tr><td class="mono">3</td><td>BLE-SCAN</td></tr>
+      <tr><td class="mono">4</td><td>STATUS: C3 + OLED</td></tr>
+      <tr><td class="mono">5</td><td>WIFI-NODE</td></tr>
+      <tr><td class="mono">6</td><td>Aux (spare)</td></tr>
+    </tbody>
+  </table>
+  </div>
+</section>
+
+<section id="wiring">
+  <h2>Wiring</h2>
+  <p class="sec-intro">All links are wired 3.3 V UART and the radios only receive. HUB pins for SPI, CC1101 and the node links come from the earlier netlist. Pins marked proposed are not in the firmware yet.</p>
+<pre>GPS (NEO-7M) TX --+--> WIFI-NODE (ESP32-C3) ---UART--+
+                  +--> BLE-SCAN (ESP32) -------UART--+--> HUB (ESP32-S3) --row stream, one-way UART--> READOUT (UNO + 3.5")
+                                                              |
+                                                              +-- SPI: microSD shield, CC1101 433 MHz
+                                                              +-- LED + piezo alerts</pre>
+  <div class="grid">
+    <div class="card">
+      <h3>HUB (ESP32-S3)</h3>
+      <table>
+        <thead><tr><th>GPIO</th><th>Net</th><th>Goes to</th></tr></thead>
+        <tbody>
+          <tr><td class="mono">12</td><td>SPI_SCLK</td><td>SD, CC1101</td></tr>
+          <tr><td class="mono">11</td><td>SPI_MOSI</td><td>SD, CC1101</td></tr>
+          <tr><td class="mono">13</td><td>SPI_MISO</td><td>SD, CC1101</td></tr>
+          <tr><td class="mono">14</td><td>SD_CS</td><td>microSD shield</td></tr>
+          <tr><td class="mono">15</td><td>CC_CS</td><td>CC1101 CSN</td></tr>
+          <tr><td class="mono">16</td><td>CC_GDO0</td><td>CC1101</td></tr>
+          <tr><td class="mono">17</td><td>CC_GDO2</td><td>CC1101</td></tr>
+          <tr><td class="mono">4</td><td>WIFI_LINK_RX</td><td>WIFI-NODE TX</td></tr>
+          <tr><td class="mono">5</td><td>WIFI_LINK_TX</td><td>WIFI-NODE RX</td></tr>
+          <tr><td class="mono">1</td><td>BLE_LINK_RX</td><td>BLE-SCAN GPIO17</td></tr>
+          <tr><td class="mono">2</td><td>BLE_LINK_TX</td><td>BLE-SCAN GPIO16</td></tr>
+          <tr><td class="mono">9</td><td>READOUT_TX (proposed)</td><td>UNO D0</td></tr>
+          <tr><td class="mono">18</td><td>BUZZER (proposed)</td><td>Piezo</td></tr>
+          <tr><td class="mono">21</td><td>ALERT_LED (proposed)</td><td>LED + resistor</td></tr>
+        </tbody>
+      </table>
+      <p class="note">GPIO35–37 stay unconnected (octal PSRAM). The CC1101, SD and GPS are powered from the HUB's 3V3 pin; the CC1101 must never see 5 V.</p>
+    </div>
+    <div class="card">
+      <h3>Nodes and display</h3>
+      <table>
+        <thead><tr><th>Board</th><th>Pin</th><th>Goes to</th></tr></thead>
+        <tbody>
+          <tr><td>BLE-SCAN</td><td class="mono">GPIO17 TX</td><td>HUB GPIO1</td></tr>
+          <tr><td>BLE-SCAN</td><td class="mono">GPIO16 RX</td><td>HUB GPIO2</td></tr>
+          <tr><td>BLE-SCAN</td><td class="mono">GPIO22 GPS RX (proposed)</td><td>GPS TX</td></tr>
+          <tr><td>WIFI-NODE</td><td class="mono">GPIO7 TX (proposed)</td><td>HUB GPIO4</td></tr>
+          <tr><td>WIFI-NODE</td><td class="mono">GPIO6 RX (proposed)</td><td>HUB GPIO5</td></tr>
+          <tr><td>WIFI-NODE</td><td class="mono">GPIO20 GPS RX (proposed)</td><td>GPS TX</td></tr>
+          <tr><td>READOUT</td><td class="mono">D0 RX</td><td>HUB GPIO9</td></tr>
+        </tbody>
+      </table>
+      <ul>
+        <li>Put about 1 kΩ in series on each UART line between separately switched boards.</li>
+        <li>The GPS TX line fans out to both nodes, so each node stamps its own sightings. The HUB takes position and time from their reports.</li>
+        <li>The S3 has three UARTs: one per node link and one for the READOUT stream.</li>
+        <li>Unplug the READOUT D0 wire while flashing the UNO.</li>
+        <li>Common ground between every board.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<section id="build">
+  <h2>Build order</h2>
+  <ol class="steps">
+    <li>Measure the case interior and make cardboard templates of the faceplate and deck. Test-fit with the case closed.</li>
+    <li>Build the power system on the bench: holder wiring, BMS, fuse, charger at 8.4 V, buck at 5.1 V, switches.</li>
+    <li>Bring up the HUB on the bench: microSD, then GPS, then one node at a time, then the READOUT link.</li>
+    <li>Cut the faceplate and deck plate. Cut the DC jack and battery meter openings in the front pockets.</li>
+    <li>Mount the screens and boards. Route the hinge bundle in mesh sleeve with a slack loop.</li>
+    <li>Close test: confirm nothing touches when the lid shuts.</li>
+    <li>Walk test, log check and a runtime measurement.</li>
+  </ol>
+</section>
+
+<section id="later">
+  <h2>Pi phase <span class="phase">Later</span></h2>
+  <p class="sec-intro">The case and power system are sized so a Raspberry Pi 5 can take over as hub without a rebuild. nde3d stocks none of the main parts, so these come from another supplier.</p>
+  <div class="grid">
+    <div class="card">
+      <h3>What gets added</h3>
+      <ul>
+        <li>Raspberry Pi 5, microSD and a low-profile cooler</li>
+        <li>5" display in the blank lid slot, DSI touch preferred</li>
+        <li>Powered USB hub and an RTL-SDR with SMA jacks</li>
+        <li>A second 5 V buck for the lid modules</li>
+        <li>USB-A, USB-C and microSD panel extensions</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3>What changes</h3>
+      <ul>
+        <li>The Pi gets the 5 A buck to itself.</li>
+        <li>Boards link to the Pi over USB serial, so section switches move to each cable's VBUS line.</li>
+        <li>A shutdown button goes on the Pi's power header; cutting power corrupts its SD card.</li>
+        <li>READOUT becomes the main scan view instead of the hub display.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<footer>
+  Full detail is in the repository: <a href="https://github.com/Lincalibur/War-rig-phantom/blob/main/docs/hardware-layout.md">hardware-layout.md</a> and <a href="https://github.com/Lincalibur/War-rig-phantom/blob/main/docs/OVERVIEW.md">OVERVIEW.md</a>. The earlier single-PCB design is shelved; its interactive page is kept at <a href="pcb-v2.html">pcb-v2.html</a>.
+</footer>
+</div>
+
+<script>
+const N='https://nde3d.co.za/';
+const PARTS=[
+ {g:'On hand',s:'already owned'},
+ {id:'uno',name:'Arduino UNO R3 + 3.5" 480×320 TFT shield',qty:'1',role:'READOUT'},
+ {id:'s019',name:'ESP32-1732S019 (ESP32 + 1.9" screen)',qty:'1',role:'BLE-SCAN'},
+ {id:'c3',name:'ESP32-C3',qty:'2',role:'WIFI-NODE and STATUS'},
+ {id:'oled',name:'128×64 OLED',qty:'1',role:'STATUS screen'},
+ {id:'alert',name:'Buzzer, LEDs, 12 mm push button',qty:'1 set',role:'Alerts and mute'},
+ {id:'msw',name:'Master switch',qty:'1',role:'Main power',warn:'Confirm 5 A DC or more before the Pi phase'},
+ {g:'nde3d cart',s:'R1,390.39'},
+ {id:'s3',name:'ESP32-S3-DevKitC-1 N16R8',url:N+'esp-devices/3511-esp32-s3-n16r8-devkitc-development-board-with-wireless-53-16mb-flash-8mb-ram-type-c-usb.html',qty:'1',price:'R188.86',role:'HUB',buy:1},
+ {id:'cc',name:'CC1101 433 MHz, IPEX',url:N+'rf-modules/2959-433mhz-cc1101-wireless-rf-transceiver-module.html',qty:'1',price:'R114.00',role:'Sub-GHz receive',warn:'3V3 only; pin order varies by seller',buy:1},
+ {id:'gps',name:'GY-NEO-7M GPS',url:N+'rf-modules/3191-gy-neo-7m-gps-active-ceramic-antenna-module.html',qty:'1',price:'R136.48',role:'Position and time',buy:1},
+ {id:'sd',name:'Micro TF/SD shield for D1 Mini',url:N+'modules/779-micro-tfsd-card-shield-for-d1-mini.html',qty:'1',price:'R24.00',role:'Logging',buy:1},
+ {id:'ttl',name:'CH340E Type-C USB-TTL adapter',url:N+'interface-converters/971-ch340e-micro-usb-to-ttl-serial-converter-5v33v.html',qty:'1',price:'R42.00',role:'Bring-up tool',buy:1},
+ {id:'cell',name:'18650 2200 mAh Li-ion',url:N+'consumables/2977-37v-18650-1500mah-lithium-ion-battery.html',qty:'4',price:'R317.60',role:'2S2P pack',warn:'Capacity is probably below the label',buy:1},
+ {id:'hold',name:'18650 holder ×4 with wires',url:N+'battery-holders/2635-18650-battery-holder-x4-with-wires.html',qty:'1',price:'R16.00',role:'Pack',warn:'Check wiring; rewire to 2S2P',buy:1},
+ {id:'bms',name:'2S 20 A BMS',url:N+'interface-converters/2777-2s-20amp-battery-management-circuit-bms.html',qty:'1',price:'R75.00',role:'Protection and balancing',buy:1},
+ {id:'buck',name:'5 A 75 W step-down module',url:N+'power-supplies/2428-5a-75w-dc-dc-high-power-adjustable-step-down-stabilized-voltage-supply-module.html',qty:'1',price:'R118.00',role:'5 V rail, set to 5.1 V',buy:1},
+ {id:'xl',name:'XL4015 5 A CC/CV',url:N+'power-supplies/1258-5a-30v-adjustable-voltage-and-current-charger.html',qty:'1',price:'R66.00',role:'Charger, set to 8.4 V',buy:1},
+ {id:'dc',name:'5.5 × 2.1 mm bulkhead DC connector',url:N+'plugs-sockets-connectors/2096-3a-55-x-21mm-bulkhead-male-dc-power-connector.html',qty:'1',price:'R4.67',role:'Charge input',buy:1},
+ {id:'fh',name:'Fuse holder, 5×20 mm panel mount',url:N+'plugs-sockets-connectors/2499-fuse-holder-for-5x20mm-panel-mount.html',qty:'1',price:'R25.00',role:'Main fuse',buy:1},
+ {id:'fu',name:'5×20 mm glass fuse 8 A',url:N+'fuses/2853-5-x-20mm-glass-fuse-250v-8a.html',qty:'5',price:'R15.00',role:'Main fuse and spares',buy:1},
+ {id:'tog',name:'Miniature toggle SMTS-203 (DPDT)',url:N+'switches/2890-miniature-toggle-switch-on-off-on-smts-203-dpdt.html',qty:'6',price:'R84.00',role:'Section switches',buy:1},
+ {id:'ind',name:'Capacity indicator board, 2S',url:N+'electronics/2574-12v-lithium-battery-power-indicator-board.html',qty:'1',price:'R58.00',role:'Battery meter',buy:1},
+ {id:'slv',name:'Mesh nylon sleeve 10 mm × 1 m',url:N+'cable/3036-1-metre-flame-retardant-nylon-pet-mesh-telescopic-sleeve.html',qty:'1',price:'R7.00',role:'Hinge bundle',buy:1},
+ {id:'m3',name:'M3 nylon standoff kit, 180 pcs',url:N+'bolts-nuts/3354-sdafasdf.html',qty:'1',price:'R98.78',role:'Mounting',buy:1},
+ {g:'Still needed',s:'not at nde3d or not yet chosen'},
+ {id:'psu',name:'12 V DC adapter, 5.5 × 2.1 mm plug, 1 A or more',qty:'1',role:'Charging',buy:1},
+ {id:'plate',name:'3 mm acrylic or printed faceplate and deck plate',qty:'2',role:'Mounting',buy:1},
+ {id:'wire',name:'Hook-up wire (18–20 AWG for power), cable ties',qty:'—',role:'Wiring',buy:1}
+];
+const store={get(k){try{return JSON.parse(localStorage.getItem(k)||'{}')}catch(e){return {}}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
+const KEY='clamshell-v1-ticks';
+let ticks=store.get(KEY);
+const bomBody=document.getElementById('bom-body');
+function esc(s){return String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))}
+function items(){return PARTS.filter(p=>!p.g)}
+function progress(){const all=items(),d=all.filter(p=>ticks[p.id]).length;
+ document.getElementById('p-done').textContent=d;document.getElementById('p-total').textContent=all.length;
+ document.getElementById('p-bar').style.width=(all.length?Math.round(d/all.length*100):0)+'%'}
+function renderBom(){
+ bomBody.innerHTML='';
+ PARTS.forEach(p=>{
+  const tr=document.createElement('tr');
+  if(p.g){tr.className='grp';tr.innerHTML='<td colspan="5">'+esc(p.g)+(p.s?'<span>'+esc(p.s)+'</span>':'')+'</td>';bomBody.appendChild(tr);return}
+  if(ticks[p.id])tr.classList.add('done');
+  const nm=p.url?'<a href="'+esc(p.url)+'" rel="noopener">'+esc(p.name)+'</a>':esc(p.name);
+  tr.innerHTML='<td class="ck"><input type="checkbox" aria-label="Have '+esc(p.name)+'"'+(ticks[p.id]?' checked':'')+'></td>'+
+   '<td><div class="pname">'+nm+'</div>'+(p.warn?'<span class="warn">'+esc(p.warn)+'</span>':'')+'</td>'+
+   '<td class="qty">'+esc(p.qty)+'</td><td class="price">'+esc(p.price||'')+'</td><td>'+esc(p.role)+'</td>';
+  tr.querySelector('input').addEventListener('change',e=>{if(e.target.checked)ticks[p.id]=true;else delete ticks[p.id];store.set(KEY,ticks);tr.classList.toggle('done',e.target.checked);progress()});
+  bomBody.appendChild(tr);
+ });progress()}
+function fallback(t,cb){const a=document.createElement('textarea');a.value=t;a.style.position='absolute';a.style.left='-9999px';document.body.appendChild(a);a.select();try{document.execCommand('copy')}catch(e){}a.remove();cb()}
+document.getElementById('copy-list').addEventListener('click',e=>{
+ const need=items().filter(p=>p.buy&&!ticks[p.id]);
+ const txt=need.length?need.map(p=>p.qty+' × '+p.name+(p.price?' ('+p.price+')':'')).join('\n'):'Everything is ticked off.';
+ const b=e.currentTarget,done=()=>{b.textContent='Copied '+need.length+' items';setTimeout(()=>b.textContent='Copy shopping list',1800)};
+ if(navigator.clipboard&&window.isSecureContext){navigator.clipboard.writeText(txt).then(done,()=>fallback(txt,done))}else fallback(txt,done)});
+document.getElementById('reset-ticks').addEventListener('click',()=>{ticks={};store.set(KEY,ticks);renderBom()});
+renderBom();
+</script>
+</body>
+</html>

@@ -4,6 +4,8 @@ on:
   push:
     branches: [main]
     paths:
+      - "docs/build-page.html"
+      - "docs/hardware-layout.svg"
       - "docs/esp32-hub-board.html"
       - ".github/workflows/pages.yml"
   workflow_dispatch:
@@ -29,7 +31,9 @@ jobs:
       - name: Assemble site
         run: |
           mkdir -p _site
-          cp docs/esp32-hub-board.html _site/index.html
+          cp docs/build-page.html _site/index.html
+          cp docs/hardware-layout.svg _site/hardware-layout.svg
+          cp docs/esp32-hub-board.html _site/pcb-v2.html
           touch _site/.nojekyll
 
       - uses: actions/configure-pages@v5
