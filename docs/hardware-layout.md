@@ -17,6 +17,20 @@ The build is in two phases:
 
 ---
 
+## Board names
+
+Every board has one fixed name. Use it in docs, firmware comments and on a label stuck to the board itself.
+
+| Name | Board | Job | Reference |
+|---|---|---|---|
+| `HUB` | ESP32-S3-DevKitC-1 N16R8 | Brain: collects node reports, logs to SD, runs CC1101 and GPS, drives alerts | Pins: [`PCB-BOM-AND-NETLIST.md`](PCB-BOM-AND-NETLIST.md) section 3.1 |
+| `READOUT` | Arduino UNO R3 + 3.5" TFT shield | Hub display (dumb terminal for the `HUB`) | [`proto-readout-wiring.html`](proto-readout-wiring.html) |
+| `BLE-SCAN` | ESP32-1732S019 (classic ESP32 + built-in 1.9" screen) | Scan 2: BLE trackers | [`BOARD-BLE-SCAN-ESP32-1732S019.md`](BOARD-BLE-SCAN-ESP32-1732S019.md) |
+| `WIFI-NODE` | ESP32-C3 (first one) | Headless WiFi promiscuous scanner | `v2/proto_readout_c3` |
+| `STATUS` | ESP32-C3 (second one) + 128×64 OLED | Scan 3: status and counters | — |
+
+---
+
 ## 1. Case
 
 | Property | Value |

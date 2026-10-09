@@ -7,6 +7,8 @@ Start here. This covers what the deck does, the hardware decisions and why they 
 | Need | Go to |
 |---|---|
 | **Current build: layout, power, wiring, parts list** | [`hardware-layout.md`](hardware-layout.md) |
+| Board names (`HUB`, `READOUT`, `BLE-SCAN`, `WIFI-NODE`, `STATUS`) | [`hardware-layout.md`](hardware-layout.md#board-names) |
+| `BLE-SCAN` board spec (ESP32-1732S019: pins, display config, build settings) | [`BOARD-BLE-SCAN-ESP32-1732S019.md`](BOARD-BLE-SCAN-ESP32-1732S019.md) |
 | S3 hub pin assignments (and the shelved PCB BOM) | [`PCB-BOM-AND-NETLIST.md`](PCB-BOM-AND-NETLIST.md) |
 | Interactive build page: BOM checklist, board layout, searchable pin tables | [`esp32-hub-board.html`](esp32-hub-board.html) (also deployed to GitHub Pages) |
 | KiCad project | [`../KiCad Design/`](../KiCad%20Design/) |
