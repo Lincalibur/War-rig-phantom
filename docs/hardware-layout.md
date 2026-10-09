@@ -11,7 +11,7 @@ The build is in two phases:
 
 ![Cyberdeck layout: lid, base and side section](./hardware-layout.svg)
 
-> The drawing shows the later Pi phase. In budget v1 the 5" slot in the lid and the Pi / USB hub bays under the deck stay empty.
+> The drawing shows budget v1. In the Pi phase the blank plate becomes the 5" hub screen, and the two bays under the deck hold the Pi 5 and the USB hub + SDR.
 >
 > All dimensions are approximate planning figures. Measure the case interior and check every part against its datasheet before cutting anything.
 
@@ -85,8 +85,8 @@ Every board has one fixed name. Use it in docs, firmware comments and on a label
 |---|---|---|
 | Under power zone | 2S2P 18650 pack in a 4-cell holder, 2S BMS, 5 V buck, XL4015 charger | Same, plus a second buck for the lid rail |
 | Under switch panel | Wiring only; keep ~15 mm clear for switch bodies | Same |
-| Rear-left | ESP32-S3 hub + CC1101 | Raspberry Pi 5 (85 × 56 mm), low-profile cooling |
-| Rear-right | ESP32-C3 WiFi node (headless) | Powered USB hub + SDR dongle |
+| Front-left bay | `HUB`: ESP32-S3 + CC1101 | Raspberry Pi 5 (85 × 56 mm), low-profile cooling |
+| Front-right bay | `WIFI-NODE`: ESP32-C3 (headless) | Powered USB hub + SDR dongle |
 
 Keep the CC1101 and the WiFi node away from the buck converter and the charger.
 
