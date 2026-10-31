@@ -6,6 +6,9 @@ build/
 *.hex
 *.bin
 
+# Private lab notes — keep out of the public repo
+docs/DstvWifiConnector.md
+
 # KiCad: lock files, local history, backups, caches, per-user settings
 *.lck
 .history/
