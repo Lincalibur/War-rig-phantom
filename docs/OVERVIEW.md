@@ -2,6 +2,8 @@
 
 Start here. This covers what the deck does, the hardware decisions and why they were made, and where everything else lives.
 
+> **Update 2026-10-31: the build now uses a Raspberry Pi 5 4GB hub and a 7" panel, in a case measured at 25 mm per half. Anything below that says otherwise is out of date; see [`hardware-layout.md`](hardware-layout.md).**
+>
 > **Current plan (2026-10-09): clamshell build, no custom PCB.** The deck is now a 22 × 22 cm clamshell case with one screen per scan module, hand-wired from modules. Budget v1 uses the ESP32-S3 as hub; a Raspberry Pi 5 replaces it later. The physical layout, power system, data links and parts list are in [`hardware-layout.md`](hardware-layout.md), which wins where it differs from this page. The single-PCB design described under "Board" below is shelved; its S3 pin assignments are still used.
 
 | Need | Go to |
