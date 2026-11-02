@@ -124,7 +124,7 @@ def lid_top_cuts():
 
 def lid_cuts():
     return shared_cuts(PANEL_Z - 3) + [
-        # Behind the panel: driver board left; buck, boost and both radios right
+        # Behind the panel: driver board left; buck, boost, WIFI-NODE and RTL-SDR right
         box(23, 97, 22, 112),
         box(109, 181, 22, 112),
         # Antenna pigtails run from the right bay to holes drilled in the case wall
@@ -256,7 +256,7 @@ def plot_slices(parts, name, z_levels):
 
 # (x0, x1, y0, y1, label, colour key)
 LID_ZONES = [
-    (19, 185, 14, 116, '7" PANEL  (screen side up)\nBehind it, left: RTD2660 driver board\nBehind it, right: lid 5 V buck, 12 V boost,\nWIFI-NODE, CC1101 (antennas out the side wall)', "screen"),
+    (19, 185, 14, 116, '7" PANEL  (screen side up)\nBehind it, left: RTD2660 driver board\nBehind it, right: lid 5 V buck, 12 V boost,\nWIFI-NODE, RTL-SDR (antennas out the side wall)', "screen"),
     (7, 42, 124, 160, "STATUS\nC3 + OLED", "node"),
     (44, 99, 122, 160, "BLE-SCAN\nESP32 + 1.9\"", "node"),
     (146, 192, 126, 154, "GPS\nNEO-7M\npatch faces lid shell", "rf"),
@@ -322,7 +322,7 @@ def draw_wiring():
         "WIFI": (100, 42, 26, 10, "WIFI-NODE\nESP32-C3", "node"),
         "BLE": (100, 26, 26, 10, "BLE-SCAN\nESP32 + 1.9\"", "node"),
         "GPS": (100, 10, 26, 10, "GPS NEO-7M", "rf"),
-        "CC": (4, 8, 24, 10, "CC1101 433 MHz", "rf"),
+        "SDR": (4, 8, 24, 10, "RTL-SDR V4, in the lid\nrtl_433, 433 MHz", "rf"),
         "ALERTS": (40, 6, 46, 10, "Piezo, LED, mute button", "ui"),
         "STATUS": (104, 53.5, 22, 5, "STATUS  C3 + OLED", "node"),
     }
@@ -334,7 +334,7 @@ def draw_wiring():
         if label:
             ax.text(x + w / 2, y + h / 2, label, ha="center", va="center", fontsize=10)
     ax.text(63, 44.5, "RASPBERRY PI 5  (HUB, in the base)", ha="center", va="center", fontsize=11, weight="bold")
-    ax.text(63, 33, "GPIO header, 3.3 V logic\nuart0 GPS   uart2 WIFI-NODE   uart4 BLE-SCAN\nSPI0 CC1101   GPIO alerts\nmicroSD holds the logs",
+    ax.text(63, 33, "GPIO header, 3.3 V logic\nuart0 GPS   uart2 WIFI-NODE   uart4 BLE-SCAN\nUSB: RTL-SDR   GPIO alerts\nmicroSD holds the logs",
             ha="center", va="center", fontsize=9.5)
 
     def wire(pts, colour, label=None, at=None, width=1.8):
@@ -364,7 +364,7 @@ def draw_wiring():
     wire([(100, 15), (93, 15), (93, 22), (84, 22), (84, 24)], green, "GPIO15 RX", (92, 18.5), 1.6)
     wire([(112, 20), (112, 26)], green, "GPS TX", (116.5, 23), 1.6)
     wire([(126, 15), (128, 15), (128, 47), (126, 47)], green, None, None, 1.6)
-    wire([(40, 28), (22, 28), (22, 18)], blue, "SPI0 + GDO", (30, 25.5), 1.6)
+    wire([(40, 28), (22, 28), (22, 18)], blue, "USB across the hinge", (30, 25.5), 1.6)
     wire([(63, 24), (63, 16)], violet, "GPIO 18, 22, 23", (70, 20), 1.6)
     fig.tight_layout()
     fig.savefig(DOCS / "wiring.svg")
