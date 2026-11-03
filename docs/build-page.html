@@ -212,49 +212,53 @@ footer{padding:28px 0 60px;color:var(--muted);font-size:13px}
 </section>
 
 <section id="wiring">
-  <h2>Wiring</h2>
-  <p class="sec-intro">All links are wired 3.3 V logic and the radios only receive. These are planned connections: nothing here has been wired or tested on a Pi 5 yet.</p>
-  <div class="figure"><img src="wiring.svg" alt="Wiring diagram. Charger, pack, BMS, fuse and master switch feed the 5 A buck for the Pi, a lid buck for the nodes and a 12 V boost for the driver board. The Pi drives the panel over micro-HDMI, reads WIFI-NODE, BLE-SCAN and GPS over UART, the RTL-SDR over USB, and drives the alerts."></div>
+  <h2>Wiring <span class="phase">ESP32-DIV v1</span></h2>
+  <p class="sec-intro"><b>Update 2026-11-02:</b> the Pi 5 hub is dropped. The HUB is now an ESP32-WROOM-32U (U.FL antenna) running cifertech's ESP32-DIV v1 firmware, in passive use only. Pins come from the firmware's <span class="mono">shared.h</span> and <span class="mono">User_Setup v1.h</span>. Nothing here has been wired or tested yet. The rest of this page still describes the Pi 5 build until it is rewritten.</p>
+  <div class="figure"><img src="wiring.svg" alt="Wiring diagram for the ESP32-DIV v1 hub. Three 18650 cells in parallel go through the master switch to a 5 V 2 A charge/boost module, charged from a USB-C breakout. The 5 V rail feeds ESP32 VIN, the TFT and the GPS. The 2.4 inch ILI9341 TFT uses GPIO 15, 0, 2, 13, 14, 32 and 12; touch and SD share GPIO 18, 23 and 19, with chip selects on 33 and 5. The PCF8574 runs on 3V3 with SDA 21 and SCL 22, and five buttons on P3 to P7. The NEO-7M GPS TX goes to GPIO 3 and RX to GPIO 1. A router antenna connects to the U.FL socket."></div>
   <div class="grid" style="margin-top:18px">
     <div class="card">
-      <h3>HUB (Raspberry Pi 5)</h3>
+      <h3>HUB (ESP32-WROOM-32U)</h3>
       <table>
-        <thead><tr><th>Pin</th><th>GPIO</th><th>Goes to</th></tr></thead>
+        <thead><tr><th>GPIO</th><th>Goes to</th></tr></thead>
         <tbody>
-          <tr><td class="mono">2, 4</td><td>5 V</td><td>Switch 1, from the 5 A buck</td></tr>
-          <tr><td class="mono">6</td><td>GND</td><td>Common ground</td></tr>
-          <tr><td class="mono">1</td><td>3.3 V</td><td>GPS VCC</td></tr>
-          <tr><td class="mono">7</td><td>GPIO4, uart2 TX</td><td>WIFI-NODE GPIO6 RX</td></tr>
-          <tr><td class="mono">29</td><td>GPIO5, uart2 RX</td><td>WIFI-NODE GPIO7 TX</td></tr>
-          <tr><td class="mono">32</td><td>GPIO12, uart4 TX</td><td>BLE-SCAN GPIO16 RX</td></tr>
-          <tr><td class="mono">33</td><td>GPIO13, uart4 RX</td><td>BLE-SCAN GPIO17 TX</td></tr>
-          <tr><td class="mono">10</td><td>GPIO15, uart0 RX</td><td>GPS TX</td></tr>
-          <tr><td class="mono">12</td><td>GPIO18</td><td>Piezo driver</td></tr>
-          <tr><td class="mono">16</td><td>GPIO23</td><td>Alert LED + resistor</td></tr>
-          <tr><td class="mono">15</td><td>GPIO22</td><td>Mute button to GND</td></tr>
+          <tr><td class="mono">15</td><td>TFT CS</td></tr>
+          <tr><td class="mono">0</td><td>TFT RESET</td></tr>
+          <tr><td class="mono">2</td><td>TFT DC</td></tr>
+          <tr><td class="mono">13</td><td>TFT SDI (MOSI)</td></tr>
+          <tr><td class="mono">14</td><td>TFT SCK</td></tr>
+          <tr><td class="mono">12</td><td>TFT SDO (MISO)</td></tr>
+          <tr><td class="mono">32</td><td>TFT LED (backlight, PWM)</td></tr>
+          <tr><td class="mono">33</td><td>Touch T_CS</td></tr>
+          <tr><td class="mono">5</td><td>SD_CS</td></tr>
+          <tr><td class="mono">18</td><td>T_CLK and SD_SCK</td></tr>
+          <tr><td class="mono">23</td><td>T_DIN and SD_MOSI</td></tr>
+          <tr><td class="mono">19</td><td>T_DO and SD_MISO</td></tr>
+          <tr><td class="mono">21 / 22</td><td>PCF8574 SDA / SCL</td></tr>
+          <tr><td class="mono">3 (RX)</td><td>GPS TX</td></tr>
+          <tr><td class="mono">1 (TX)</td><td>GPS RX</td></tr>
+          <tr><td class="mono">VIN</td><td>5 V rail from the boost module</td></tr>
+          <tr><td class="mono">3V3</td><td>PCF8574 VCC</td></tr>
         </tbody>
       </table>
     </div>
     <div class="card">
       <h3>Rules</h3>
       <ul>
-        <li>Enable the UARTs in config.txt: <span class="mono">dtoverlay=uart0-pi5</span>, <span class="mono">uart2-pi5</span>, <span class="mono">uart4-pi5</span>. SPI is no longer used.</li>
-        <li>The GPS TX line fans out to the Pi and both nodes, so each node stamps its own sightings.</li>
-        <li>Put about 1 kΩ in series on each UART line between separately switched boards.</li>
-        <li>The Pi GPIO is 3.3 V only.</li>
-        <li>Drive the piezo through a transistor; a GPIO pin should not power it directly.</li>
-        <li>Common ground between every board.</li>
+        <li>Unplug the GPS to flash. GPIO 1 and 3 are also the USB serial pins.</li>
+        <li>Power the PCF8574 from 3V3, never the 5 V rail. Its address is auto-detected (0x20-0x27).</li>
+        <li>Buttons: P6 UP, P3 DOWN, P4 LEFT, P5 RIGHT, P7 SELECT. Wire the other leg of each to GND.</li>
+        <li>SDA 21 / SCL 22 are the ESP32 defaults. The firmware calls <span class="mono">Wire.begin()</span> with no pins, so check this first if the buttons do nothing.</li>
+        <li>Common ground between every part.</li>
+        <li>No battery gauge: <span class="mono">BATTERY_ADC_PIN</span> is -1.</li>
       </ul>
-      <h3 style="margin-top:16px">Across the hinge</h3>
+      <h3 style="margin-top:16px">Bring-up order</h3>
       <ul>
-        <li>Battery feed and ground for the lid converters</li>
-        <li>Switched feeds for the display and lid nodes</li>
-        <li>Micro-HDMI cable to the driver board</li>
-        <li>UART to WIFI-NODE and BLE-SCAN, GPS TX and power</li>
-        <li>USB to the RTL-SDR, right-angle plug at the Pi end</li>
-        <li>Alert LED, piezo and mute lines</li>
+        <li>Flash the bare board: <span class="mono">ESP32-DIV-v1-v1.7.0-merged.bin</span> at 0x0</li>
+        <li>TFT, then touch (run Touch Calibrate), then SD</li>
+        <li>PCF8574 and buttons</li>
+        <li>GPS, then the antenna</li>
+        <li>Battery, switch and boost module last, all on USB until then</li>
       </ul>
-      <p class="note">That is a thick bundle. Dry-fit it in the 24 × 10 mm hinge notch with the lid opening and closing, and leave a slack loop.</p>
     </div>
   </div>
 </section>

@@ -6,9 +6,11 @@ The [build page](build-page.html) has the checked shopping list, pin table and b
 
 ![What goes where](./case-layout.svg)
 
-![Wiring](./wiring.svg)
+> **Update 2026-11-02:** the Pi 5 hub is dropped. The HUB is now an ESP32-WROOM-32U running ESP32-DIV v1 firmware (passive use only). The wiring drawing below shows that build. The case layout above and the rest of this page still describe the Pi 5 build.
 
-> Both drawings and the print files come from [`cad/case_filler/generate_filler.py`](../cad/case_filler/generate_filler.py). Part sizes are nominal; measure before ordering prints.
+![Wiring: ESP32-DIV v1 hub](./wiring.svg)
+
+> The case drawing and print files come from [`cad/case_filler/generate_filler.py`](../cad/case_filler/generate_filler.py); part sizes are nominal, so measure before ordering prints. The wiring drawing comes from [`cad/wiring/generate_wiring.py`](../cad/wiring/generate_wiring.py).
 
 ---
 
