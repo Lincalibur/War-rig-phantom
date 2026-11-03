@@ -2,6 +2,8 @@
 
 Start here. This covers what the deck does, the hardware decisions and why they were made, and where everything else lives.
 
+> **Update 2026-11-02: the CC1101 is dropped. An RTL-SDR on the Pi's USB covers 433 MHz through `rtl_433`. The hub software plan (six stages, Kismet-based) is on the [build page](build-page.html#software).**
+>
 > **Update 2026-10-31: the build now uses a Raspberry Pi 5 4GB hub and a 7" panel, in a case measured at 25 mm per half. Anything below that says otherwise is out of date; see [`hardware-layout.md`](hardware-layout.md).**
 >
 > **Current plan (2026-10-09): clamshell build, no custom PCB.** The deck is now a 22 × 22 cm clamshell case with one screen per scan module, hand-wired from modules. Budget v1 uses the ESP32-S3 as hub; a Raspberry Pi 5 replaces it later. The physical layout, power system, data links and parts list are in [`hardware-layout.md`](hardware-layout.md), which wins where it differs from this page. The single-PCB design described under "Board" below is shelved; its S3 pin assignments are still used.
@@ -21,7 +23,7 @@ Start here. This covers what the deck does, the hardware decisions and why they 
 The v1 ESP-NOW build (C3 nodes, ESP32-1732S019 hub) was removed from the tree. It is kept in git under the tag `v1-espnow-archive`.
 
 ## Goal
-A portable counter-surveillance deck that scans and logs the radio environment around you and flags devices that keep following you: WiFi networks and devices, BLE devices and trackers, and sub-GHz signals. Every sighting is GPS-tagged. The case is a **22 × 22 × 7 cm clamshell**.
+A portable counter-surveillance deck that scans and logs the radio environment around you and flags devices that keep following you: WiFi networks and devices, BLE devices and trackers, and 433 MHz signals including car tyre-pressure sensors. Every sighting is GPS-tagged. The case is a **22 × 22 × 7 cm clamshell**.
 
 **Everything here is passive listening.** Don't add deauth, injection or jamming features.
 
@@ -76,6 +78,10 @@ The key idea is that **nodes never transmit**. They are receive-only scanners th
 | 2026-10-09 | ESP32-S3 stays the hub for budget v1; Raspberry Pi 5 later | The Pi 5, 5" display, USB hub and SDR are too expensive for now and nde3d stocks none of them |
 | 2026-10-09 | 2S2P 18650 + BMS + 5 V buck replaces the IP5310 single-cell stage | Sized so a Pi 5 can be added without rebuilding the power system. Charging is via a DC jack and an XL4015 at 8.4 V, because nde3d has no 2S USB-C charger |
 | 2026-10-09 | No 2.8" ILI9341; the hub draws on the UNO + 3.5" shield | Saves R468 and reuses the working row-stream readout |
+| 2026-10-31 | Raspberry Pi 5 4GB hub and 7" panel | See `hardware-layout.md` |
+| 2026-11-02 | Stay on the Pi 5 4GB; Radxa Cubie A7A rejected | More CPU and RAM for less money, but weak software support (vendor Debian 11 image, no Pi-compatible tooling) |
+| 2026-11-02 | Drop the CC1101; RTL-SDR V4 on USB instead | `rtl_433` decodes far more 433 MHz devices, including tyre-pressure sensors for spotting repeat cars. Frees the SPI pins |
+| 2026-11-02 | `STATUS` becomes a removable watch | It already logs GPS and WiFi scans to a phone; the hub merges its CSV when docked |
 
 **nde3d substitutions (2026-09-25).** Full detail is in section 1.4 of `PCB-BOM-AND-NETLIST.md`.
 - WiFi node: ESP32-C3 PRO Mini replaces the XIAO C5. That means **no 5 GHz**; most dual-band APs still beacon on 2.4 GHz.
@@ -87,8 +93,8 @@ The key idea is that **nodes never transmit**. They are receive-only scanners th
 ## What the radios can and can't do
 - **WiFi (C3):** promiscuous mode captures management frames and data-frame headers. That covers APs (SSID, BSSID, channel, encryption, vendor, hidden SSIDs, RSSI), clients (MAC, probed SSIDs, random-MAC detection) and client-to-AP links. It listens on one channel at a time and hops. It's 2.4 GHz only.
 - **BLE (H2):** advertisement scanning gives MAC, RSSI, name, manufacturer ID and tracker detection (AirTag / Find My / Tile). It can't do Classic Bluetooth. 802.15.4 (Zigbee/Thread) is possible later.
-- **Sub-GHz (CC1101, 433 MHz):** OOK/ASK/FSK reception. Not implemented in firmware yet.
-- **Not possible here:** true wideband spectrum analysis, LoRa decoding, ADS-B or cellular. Those need an RTL-SDR, which sits outside this board.
+- **433 MHz (RTL-SDR + `rtl_433`):** decodes key fobs, weather and door sensors, and tyre-pressure sensors. The SDR also opens up ADS-B and wider spectrum views later.
+- **Not possible here:** cellular, including fake-tower (IMSI catcher) detection. That needs dedicated hardware.
 
 ## Board (shelved)
 The single-PCB design below is kept for reference. The current build is hand-wired in the clamshell case.

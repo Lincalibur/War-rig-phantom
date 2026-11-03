@@ -18,7 +18,7 @@
 
 ## Overview
 
-**War-rig-phantom** is a portable counter-surveillance deck built into a 22 × 22 cm clamshell case. Two receive-only ESP32 nodes (WiFi and BLE) and a CC1101 sub-GHz radio feed a Raspberry Pi 5 hub, which logs WiGLE-format CSV to microSD and flags devices that keep following you. A 7" panel fills the lid, and printed filler blocks hold every part. A GPS module feeds both nodes, so every sighting carries its own position and time. It runs from a 2S2P 18650 pack.
+**War-rig-phantom** is a portable counter-surveillance deck built into a 22 × 22 cm clamshell case. Two receive-only ESP32 nodes (WiFi and BLE) and an RTL-SDR for 433 MHz feed a Raspberry Pi 5 hub. It logs WiGLE-format CSV to microSD, flags devices that keep following you, and shows sightings on an offline map. A 7" panel fills the lid, and printed filler blocks hold every part. A GPS module feeds both nodes, so every sighting carries its own position and time. It runs from a 2S2P 18650 pack.
 
 > **Scope & Ethics**
 > Everything in this project is **passive listening and logging.**
@@ -35,7 +35,8 @@ flowchart TD
     GPS["GPS · NEO-7M<br/>time + position"]
     WIFI["WIFI-NODE<br/>ESP32-C3 (RX only)"]
     BLE["BLE-SCAN<br/>ESP32 + 1.9 in screen"]
-    HUB["HUB · Raspberry Pi 5<br/>microSD · CC1101 433 MHz<br/>LED + piezo alerts"]
+    HUB["HUB · Raspberry Pi 5<br/>microSD · LED + piezo alerts"]
+    SDR["RTL-SDR V4<br/>433 MHz (rtl_433)"]
     DISPLAY["DISPLAY<br/>7 in panel + RTD2660 board"]
     STATUS["STATUS · ESP32-C3 + OLED<br/>standalone counters"]
     SD[("microSD<br/>WiGLE-format CSV")]
@@ -44,6 +45,7 @@ flowchart TD
     GPS -->|TX| BLE
     WIFI -->|UART| HUB
     BLE -->|UART| HUB
+    SDR -->|USB| HUB
     HUB -->|HDMI| DISPLAY
     HUB --> SD
 
@@ -59,7 +61,7 @@ flowchart TD
   GPS (NEO-7M) TX --+--> WIFI-NODE  ESP32-C3 ---------------------UART--+
                     +--> BLE-SCAN   ESP32 + built-in 1.9" screen --UART--+
                                                                          v
-                         HUB  Raspberry Pi 5: microSD, CC1101 433 MHz, LED + piezo alerts
+                         HUB  Raspberry Pi 5: microSD, RTL-SDR on USB, LED + piezo alerts
                                                                          |  HDMI
                                                                          v
                          DISPLAY  7" panel + RTD2660 driver board
@@ -93,7 +95,7 @@ The v1 build (ESP-NOW C3 nodes and an ESP32-1732S019 hub) was removed from the t
 | Bench prototypes | ✅ WiFi readout working (C3 scanner to UNO + 3.5" TFT) |
 | Power system | ⬜ parts to order; bench test first |
 | Node firmware | 🟨 written for the old PCB; needs retargeting, then a first compile |
-| Raspberry Pi 5 hub | ⬜ hardware planned, software not written |
+| Raspberry Pi 5 hub | ⬜ hardware planned; software planned in 6 stages (see the [build page](https://lincalibur.github.io/War-rig-phantom/#software)), not written |
 
 ## License
 

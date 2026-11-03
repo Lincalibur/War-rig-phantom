@@ -10,7 +10,7 @@ dovetails. Output:
     preview/*.png                      slices through each half
     preview/all_blocks_VIEW_ONLY.stl   all blocks laid out as the open case
     ../../docs/case-layout.svg         the placement drawing on the build page
-    ../../docs/wiring.svg              the wiring drawing on the build page
+    (the wiring drawing now comes from ../wiring/generate_wiring.py)
 
 Coordinates, in mm, seen looking down into an open half:
     x = 0 at the left wall, y = 0 at the hinge, z = 0 on the case floor.
@@ -124,7 +124,7 @@ def lid_top_cuts():
 
 def lid_cuts():
     return shared_cuts(PANEL_Z - 3) + [
-        # Behind the panel: driver board left; buck, boost and both radios right
+        # Behind the panel: driver board left; buck, boost, WIFI-NODE and RTL-SDR right
         box(23, 97, 22, 112),
         box(109, 181, 22, 112),
         # Antenna pigtails run from the right bay to holes drilled in the case wall
@@ -256,7 +256,7 @@ def plot_slices(parts, name, z_levels):
 
 # (x0, x1, y0, y1, label, colour key)
 LID_ZONES = [
-    (19, 185, 14, 116, '7" PANEL  (screen side up)\nBehind it, left: RTD2660 driver board\nBehind it, right: lid 5 V buck, 12 V boost,\nWIFI-NODE, CC1101 (antennas out the side wall)', "screen"),
+    (19, 185, 14, 116, '7" PANEL  (screen side up)\nBehind it, left: RTD2660 driver board\nBehind it, right: lid 5 V buck, 12 V boost,\nWIFI-NODE, RTL-SDR (antennas out the side wall)', "screen"),
     (7, 42, 124, 160, "STATUS\nC3 + OLED", "node"),
     (44, 99, 122, 160, "BLE-SCAN\nESP32 + 1.9\"", "node"),
     (146, 192, 126, 154, "GPS\nNEO-7M\npatch faces lid shell", "rf"),
@@ -303,75 +303,6 @@ def draw_layout():
     plt.close(fig)
 
 
-def draw_wiring():
-    fig, ax = plt.subplots(figsize=(13, 8.6))
-    ax.set_xlim(0, 130); ax.set_ylim(0, 86); ax.axis("off")
-    NODES = {
-        "ADAPTER": (2, 76, 17, 7, "12 V adapter", "power"),
-        "XL": (24, 76, 17, 7, "XL4015\nset 8.4 V, 1 A", "power"),
-        "PACK": (46, 76, 17, 7, "18650 2S2P pack", "power"),
-        "BMS": (68, 76, 15, 7, "2S BMS", "power"),
-        "FUSE": (88, 76, 13, 7, "8 A fuse", "power"),
-        "MASTER": (106, 76, 20, 7, "Master switch", "ui"),
-        "BUCKA": (72, 60, 20, 8, "5 A buck, base\nset 5.1 V", "power"),
-        "BUCKB": (106, 60, 20, 8, "XL4005 buck, lid\nset 5.1 V", "power"),
-        "BOOST": (46, 60, 20, 8, "Boost, lid\nset 12 V", "power"),
-        "PI": (40, 24, 46, 24, "", "compute"),
-        "DRIVER": (4, 42, 24, 11, "RTD2660 driver board", "screen"),
-        "PANEL": (4, 26, 24, 10, '7" panel', "screen"),
-        "WIFI": (100, 42, 26, 10, "WIFI-NODE\nESP32-C3", "node"),
-        "BLE": (100, 26, 26, 10, "BLE-SCAN\nESP32 + 1.9\"", "node"),
-        "GPS": (100, 10, 26, 10, "GPS NEO-7M", "rf"),
-        "CC": (4, 8, 24, 10, "CC1101 433 MHz", "rf"),
-        "ALERTS": (40, 6, 46, 10, "Piezo, LED, mute button", "ui"),
-        "STATUS": (104, 53.5, 22, 5, "STATUS  C3 + OLED", "node"),
-    }
-    for name, (x, y, w, h, label, key) in NODES.items():
-        if not w:
-            continue
-        ax.add_patch(FancyBboxPatch((x, y), w, h, boxstyle="round,pad=0,rounding_size=.8",
-                                    fc=ZONE_COLOURS[key], ec="#333333", lw=1))
-        if label:
-            ax.text(x + w / 2, y + h / 2, label, ha="center", va="center", fontsize=10)
-    ax.text(63, 44.5, "RASPBERRY PI 5  (HUB, in the base)", ha="center", va="center", fontsize=11, weight="bold")
-    ax.text(63, 33, "GPIO header, 3.3 V logic\nuart0 GPS   uart2 WIFI-NODE   uart4 BLE-SCAN\nSPI0 CC1101   GPIO alerts\nmicroSD holds the logs",
-            ha="center", va="center", fontsize=9.5)
-
-    def wire(pts, colour, label=None, at=None, width=1.8):
-        p = np.array(pts)
-        ax.plot(p[:, 0], p[:, 1], color=colour, lw=width, solid_capstyle="round")
-        ax.annotate("", xy=p[-1], xytext=p[-2], arrowprops=dict(arrowstyle="-|>", color=colour, lw=width))
-        if label:
-            ax.text(*at, label, fontsize=8.5, color=colour, ha="center", va="center",
-                    bbox=dict(fc="white", ec="none", pad=.6))
-
-    red, amber, green, blue, violet = "#C8392B", "#B07A0E", "#1C8A6B", "#2B6CB0", "#6A4FC4"
-    wire([(19, 79.5), (24, 79.5)], red)
-    wire([(41, 79.5), (46, 79.5)], red)
-    wire([(63, 79.5), (68, 79.5)], red)
-    wire([(83, 79.5), (88, 79.5)], red)
-    wire([(101, 79.5), (106, 79.5)], red)
-    wire([(116, 76), (116, 68)], red, "7.4 V", (119.5, 72))
-    wire([(116, 73), (82, 73), (82, 68)], red)
-    wire([(116, 73), (56, 73), (56, 68)], red)
-    wire([(82, 60), (82, 48)], red, "Pi 5 V: pins 2, 4", (73, 54))
-    wire([(116, 60), (116, 58.5)], red, "switches 3-5: 5 V to all three nodes", (94, 58))
-    wire([(56, 60), (56, 58), (16, 58), (16, 53)], amber, "12 V", (34, 58))
-    wire([(11, 42), (11, 36)], violet, "50-pin FPC", (11, 39.2))
-    wire([(40, 42), (28, 42)], violet, "micro-HDMI across the hinge", (34, 45.5))
-    wire([(100, 44), (86, 44)], green, "GPIO5 RX / GPIO4 TX", (93, 40.5), 1.6)
-    wire([(100, 31), (86, 31)], green, "GPIO13 RX / GPIO12 TX", (93, 28.2), 1.6)
-    wire([(100, 15), (93, 15), (93, 22), (84, 22), (84, 24)], green, "GPIO15 RX", (92, 18.5), 1.6)
-    wire([(112, 20), (112, 26)], green, "GPS TX", (116.5, 23), 1.6)
-    wire([(126, 15), (128, 15), (128, 47), (126, 47)], green, None, None, 1.6)
-    wire([(40, 28), (22, 28), (22, 18)], blue, "SPI0 + GDO", (30, 25.5), 1.6)
-    wire([(63, 24), (63, 16)], violet, "GPIO 18, 22, 23", (70, 20), 1.6)
-    fig.tight_layout()
-    fig.savefig(DOCS / "wiring.svg")
-    fig.savefig(HERE / "preview" / "wiring.png", dpi=90)
-    plt.close(fig)
-
-
 def view_position(mesh, half, key, spread=4.0):
     """Place a block as in the open case: lid above the hinge, base below it."""
     v = mesh.vertices.copy()
@@ -404,7 +335,6 @@ def main():
         plot_slices(parts, half, (22, 8))
     trimesh.util.concatenate(view_parts).export(HERE / "preview" / "all_blocks_VIEW_ONLY.stl")
     draw_layout()
-    draw_wiring()
     print(f"Solid-equivalent volume of all 8 blocks: {total:.0f} cm3")
     if not ok:
         raise SystemExit("A block is not a single watertight body")
