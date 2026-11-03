@@ -1,5 +1,7 @@
 # BLE-SCAN board: ESP32-1732S019
 
+> **Not in the current build (2026-11-02).** The ESP32-DIV `HUB` covers BLE scanning, so this board is a spare. The spec below still holds.
+
 **Deck name: `BLE-SCAN`.** This is the classic ESP32 board with the built-in 1.9" colour screen, bought from nde3d. In the deck it is the Scan 2 module: BLE tracker detection on its own screen, reporting to the `HUB` over UART. All board names are listed in [`hardware-layout.md`](hardware-layout.md#board-names).
 
 Earlier notes also call this board "the ESP-32S with the attached screen" and "the prototype hub". It is the same board. It is **not** the hub any more; the hub is the ESP32-S3.

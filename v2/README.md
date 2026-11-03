@@ -1,20 +1,20 @@
 # CyberDeck v2 firmware
 
-Firmware for the clamshell build (plan and wiring in [`../docs/hardware-layout.md`](../docs/hardware-layout.md)). Wired-UART architecture: two receive-only nodes report to an ESP32-S3 hub, and the hub draws on a UNO + 3.5" TFT.
+Firmware for the CyberDeck modules. The plan and wiring are in [`../docs/hardware-layout.md`](../docs/hardware-layout.md).
 
-> **Retarget pending.** `hub`, `node_wifi` and `node_ble` were written for the shelved single-PCB design (XIAO C5/C6 nodes, 2.8" ILI9341 on the hub) and have never been compiled. The table below says what each one has to become for budget v1.
+> **Current build (2026-11-02).** The `HUB` is now an ESP32-DIV v1-style handheld. It runs cifertech's prebuilt ESP32-DIV firmware, not code from this folder (flashing steps are on the [build page](https://lincalibur.github.io/War-rig-phantom/#build)). From this folder, the build uses only the working `proto_readout_c3` + `proto_readout_uno` pair. `hub/`, `node_wifi/`, `node_ble/` and `shared/` were written for the shelved wired-UART hub design. They have never been compiled and are kept for reference.
 
 ## Boards and sketches
 
 Board names are defined in [`../docs/hardware-layout.md`](../docs/hardware-layout.md#board-names).
 
-| Board | Hardware | Sketch today | Work needed for budget v1 |
+| Board | Hardware | Firmware | State |
 |---|---|---|---|
-| `HUB` | ESP32-S3-DevKitC-1 N16R8 | `hub/` | Replace the ILI9341 UI with a row-stream sender for `READOUT`; add LED + piezo alerts; add CC1101 receive |
-| `READOUT` | Arduino UNO R3 + 3.5" TFT shield | `proto_readout_uno/` (working) | None for display. Logging belongs on the `HUB` |
-| `WIFI-NODE` | ESP32-C3 | `node_wifi/`; capture code proven in `proto_readout_c3/` | Retarget `node_wifi` to the C3: remove the C5-only band call, set the pins |
-| `BLE-SCAN` | ESP32-1732S019 (built-in 1.9" ST7789) | `node_ble/`; detection logic in `proto_tracker_tripwire/` | Port to classic ESP32, add the ST7789 screen (LovyanGFX), prefer NimBLE. Spec: [`../docs/BOARD-BLE-SCAN-ESP32-1732S019.md`](../docs/BOARD-BLE-SCAN-ESP32-1732S019.md) |
-| `STATUS` | ESP32-C3 + 128×64 OLED | none yet | New standalone sketch: counters on the OLED |
+| `HUB` | ESP32-WROOM-32U + 2.4" ILI9341 touch/SD + PCF8574 + NEO-7M | ESP32-DIV v1.7.0, v1 target (external) | Ready to flash when the parts arrive |
+| `WIFI-NODE` | ESP32-C3 | `proto_readout_c3/` | Working |
+| `READOUT` | Arduino UNO R3 + 3.5" TFT shield | `proto_readout_uno/` | Working |
+| `STATUS` | ESP32-C3 + 128×64 OLED | On the watch, not in this repo | Working |
+| `BLE-SCAN` | ESP32-1732S019 | `node_ble/`, `proto_tracker_tripwire/` | Not in this build |
 
 ```
 v2/
