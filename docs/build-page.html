@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>War-rig-phantom: Pi 5 clamshell build</title>
+<title>War-rig-phantom: ESP32-DIV build</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
@@ -80,93 +80,68 @@ footer{padding:28px 0 60px;color:var(--muted);font-size:13px}
 <body>
 <div class="wrap">
 <header>
-  <h1>War-rig-phantom: clamshell build <span class="phase">Pi 5 build</span></h1>
-  <p class="lede">A portable, passive counter-surveillance deck in a 22 × 22 cm clamshell case. It listens to WiFi, BLE and 433 MHz (through an RTL-SDR), tags sightings with GPS, and flags devices that keep following you. A Raspberry Pi 5 4GB in the base is the hub, and a 7" panel fills the lid. Printed filler blocks hold every part.</p>
+  <h1>War-rig-phantom: ESP32-DIV build <span class="phase">Parts ordered</span></h1>
+  <p class="lede">A portable, passive counter-surveillance kit. The HUB is an ESP32-DIV v1-style handheld: an ESP32 with a router antenna, a 2.4" touch screen, buttons and GPS. It scans WiFi and BLE, spots deauth floods and logs GPS-tagged sightings to SD. A C3 WiFi sniffer with a 3.5" readout and a removable watch run beside it. One 18650 pack powers them all.</p>
   <ul class="facts">
-    <li>Case <b>220 × 220 mm</b>, each half <b>25 mm</b> deep</li>
-    <li>Hub <b>Raspberry Pi 5 4GB</b>, wired UART links</li>
-    <li>Display <b>7" 800×480</b> over HDMI</li>
-    <li>Power <b>2S2P 18650</b>, about 2 hours (estimate)</li>
+    <li>Hub <b>ESP32-WROOM-32U</b>, ESP32-DIV v1 firmware</li>
+    <li>Display <b>2.4" 240×320</b> touch, SD slot</li>
+    <li>Power <b>3x 18650 in parallel</b>, about 6 hours (estimate)</li>
+    <li>Parts <b>R898.15</b> at nde3d</li>
     <li><b>Receive only</b>: no deauth, injection or jamming</li>
   </ul>
-  <nav><a href="#software">Software</a><a href="#boards">Boards</a><a href="#layout">Layout</a><a href="#parts">Parts</a><a href="#power">Power</a><a href="#wiring">Wiring</a><a href="#build">Build order</a><a href="#later">Optional</a></nav>
+  <nav><a href="#boards">Boards</a><a href="#firmware">Firmware</a><a href="#parts">Parts</a><a href="#power">Power</a><a href="#wiring">Wiring</a><a href="#build">Build order</a><a href="#case">Case</a><a href="#later">Later</a></nav>
 </header>
-
-<section id="software">
-  <h2>Hub software <span class="phase">Plan</span></h2>
-  <p class="sec-intro">The Pi runs everything below. Each stage works on its own, so the deck is useful from stage 1. All of it is receive-only. None of it is written yet; the firmware in <span class="mono">v2/</span> targets the old ESP32-S3 hub.</p>
-  <div class="tablewrap">
-  <table>
-    <thead><tr><th>Stage</th><th>What it does</th><th>Built on</th><th>Needs</th></tr></thead>
-    <tbody>
-      <tr><td class="mono">1</td><td>One sightings database: node reports over UART, GPS time and position on every row, WiGLE CSV export</td><td>Kismet, plus a small adapter so it reads the ESP nodes</td><td>Current parts</td></tr>
-      <tr><td class="mono">2</td><td>"Is this following me?" scoring: flags devices seen at several places or times on one trip, with LED and piezo alerts</td><td>Chasing Your Tail, adapted to this database</td><td>Current parts</td></tr>
-      <tr><td class="mono">3</td><td>Threat alerts: AirTag, SmartTag and Tile trackers; rogue and evil-twin APs; deauth floods; drone Remote ID</td><td>Kismet alerts plus BLE-SCAN and WIFI-NODE data. The Pi's own Bluetooth adds a second BLE receiver</td><td>Current parts</td></tr>
-      <tr><td class="mono">4</td><td>Screens: offline map of the track and sightings on the 7" panel, and the same dashboard on a phone through the Pi's own WiFi access point</td><td>Pre-downloaded OpenStreetMap tiles, Chromium in kiosk mode</td><td>Current parts</td></tr>
-      <tr><td class="mono">5</td><td>Watch sync: when the STATUS watch is docked, its GPS and WiFi CSV merges into the database, so walks done with only the watch count too</td><td>USB serial from the watch</td><td>Current parts</td></tr>
-      <tr><td class="mono">6</td><td>433 MHz: decodes key fobs, sensors and car tyre-pressure sensors. Tyre sensors send fixed IDs, so the same car turning up again gets flagged</td><td>rtl_433</td><td>RTL-SDR</td></tr>
-    </tbody>
-  </table>
-  </div>
-  <p class="note" style="margin-top:12px">Rough memory use, estimated and not measured: Kismet and the scoring about 300 to 500 MB, Chromium about 0.5 to 1 GB, rtl_433 about 50 MB. That is why the hub is a 4 GB Pi 5; a 2 GB board would be tight with the map open.</p>
-</section>
 
 <section id="boards">
   <h2>Boards</h2>
-  <p class="sec-intro">Every board has one fixed name. It is used in the docs and firmware, and should be on a label stuck to the board.</p>
+  <p class="sec-intro">Every board has one fixed name. It is used in the docs and firmware, and should be on a label stuck to the board. Each module works on its own. The only cable between modules runs from the WIFI-NODE to its READOUT.</p>
   <div class="tablewrap">
   <table>
-    <thead><tr><th>Name</th><th>Board</th><th>Job</th><th>Where</th></tr></thead>
+    <thead><tr><th>Name</th><th>Board</th><th>Job</th><th>State</th></tr></thead>
     <tbody>
-      <tr><td><span class="tag">HUB</span></td><td>Raspberry Pi 5 4GB + Active Cooler</td><td>Runs the hub software: collects node and SDR reports, logs to microSD, drives the screen and alerts</td><td>Base, left, hanging under the deck</td></tr>
-      <tr><td><span class="tag">DISPLAY</span></td><td>7" SAT070AT50 panel + RTD2660 driver board</td><td>Main screen, fed by HDMI from the HUB</td><td>Lid; driver board behind the panel, left</td></tr>
-      <tr><td><span class="tag">BLE-SCAN</span></td><td>ESP32-1732S019 (ESP32 + built-in 1.9" screen)</td><td>BLE tracker detection on its own screen</td><td>Lid, above the panel, middle</td></tr>
-      <tr><td><span class="tag">WIFI-NODE</span></td><td>ESP32-C3 (first) + 2.4 GHz antenna</td><td>Headless WiFi promiscuous scanner</td><td>Lid, behind the panel, right</td></tr>
-      <tr><td><span class="tag">STATUS</span></td><td>ESP32-C3 (second) + 128×64 OLED</td><td>Status and counters. Standalone</td><td>Lid, above the panel, left</td></tr>
+      <tr><td><span class="tag">HUB</span></td><td>ESP32-WROOM-32U dev board + 2.4" ILI9341 touch/SD + PCF8574 buttons + NEO-7M GPS</td><td>Handheld scanner: WiFi and BLE scans, deauth detector, packet monitor, GPS wardriving to SD</td><td>Parts ordered</td></tr>
+      <tr><td><span class="tag">WIFI-NODE</span></td><td>ESP32-C3 (first)</td><td>WiFi promiscuous capture, sorted by how long each device has been around. Streams rows to the READOUT</td><td>Working</td></tr>
+      <tr><td><span class="tag">READOUT</span></td><td>Arduino UNO R3 + 3.5" TFT shield</td><td>Big screen for the WIFI-NODE</td><td>Working</td></tr>
+      <tr><td><span class="tag">STATUS</span></td><td>ESP32-C3 (second) + 128×64 OLED</td><td>Removable watch: logs GPS and WiFi scans and sends a CSV to a phone. Docks to the kit now and then</td><td>Working</td></tr>
+      <tr><td><span class="tag">BLE-SCAN</span></td><td>ESP32-1732S019 (ESP32 + 1.9" screen)</td><td>On hand, not in this build: the HUB covers BLE</td><td>Spare</td></tr>
     </tbody>
   </table>
   </div>
-  <p class="note" style="margin-top:12px">Retired from this build: the UNO + 3.5" READOUT, the ESP32-S3 and the microSD shield. The panel replaces the READOUT, and the Pi replaces the S3 and its SD card.</p>
+  <p class="note" style="margin-top:12px">Retired on 2026-11-02: the Raspberry Pi 5 hub, the 7" display and its driver board, the RTL-SDR and the ESP32-S3. The Pi was overkill for this kit.</p>
 </section>
 
-<section id="layout">
-  <h2>What goes where</h2>
-  <p class="sec-intro">Lid and base seen from inside the open case. The drawing comes from the same script as the print files, so the two match. Sizes are nominal until each part is measured.</p>
-  <div class="figure"><img src="case-layout.svg" alt="Top-down layout of both case halves. Lid: 7 inch panel with the driver board, lid buck, boost, WIFI-NODE and RTL-SDR behind it; STATUS, BLE-SCAN and GPS above it; piezo, LEDs and mute button beside the handle. Base: Raspberry Pi 5, BMS, 18650 holder, fuse, DC input, section switches, 5 A buck, XL4015 charger and battery meter."></div>
-  <div class="tablewrap" style="margin-top:18px">
-  <table>
-    <thead><tr><th>Block</th><th>Lid</th><th>Base</th></tr></thead>
-    <tbody>
-      <tr><td class="mono">hinge_left</td><td>Left half of the panel recess; RTD2660 driver board behind it</td><td>Pi 5, hung on four M2.5 standoffs with the cooler under the vent holes; BMS beside it</td></tr>
-      <tr><td class="mono">hinge_right</td><td>Right half of the panel recess; lid buck, boost, WIFI-NODE, RTL-SDR; two antenna channels to the side wall</td><td>18650 holder; fuse holder flat in a top groove; DC charge socket</td></tr>
-      <tr><td class="mono">front_left</td><td>STATUS and BLE-SCAN, fitted from behind; piezo</td><td>5 A buck; XL4015 charger in the flank by the handle</td></tr>
-      <tr><td class="mono">front_right</td><td>GPS, patch facing the lid shell; LEDs and mute button; recess for the base toggles</td><td>Sunken panel with 6 section toggles and the master; battery meter</td></tr>
-    </tbody>
-  </table>
-  </div>
-  <div class="grid" style="margin-top:18px">
+<section id="firmware">
+  <h2>HUB firmware</h2>
+  <p class="sec-intro">The HUB runs cifertech's <a href="https://github.com/cifertech/ESP32-DIV" rel="noopener">ESP32-DIV</a> v1.7.0, built for the v1 board (classic ESP32). Only its passive tools are used.</p>
+  <div class="grid">
     <div class="card">
-      <h3>Depth rule</h3>
-      <p>Each half is 25 mm deep. Toggles sit on a panel sunk 5 mm into the base and rise into a 7 mm recess in the lid. Check the toggle height against those numbers before printing.</p>
+      <h3>Used</h3>
+      <ul>
+        <li><b>Wi-Fi Scanner</b>: nearby networks with details</li>
+        <li><b>Packet Monitor</b>: waterfall over channels 1-14, optional PCAP to SD</li>
+        <li><b>Deauth Detector</b>: flags deauth floods nearby</li>
+        <li><b>BLE Scanner</b> and <b>BLE Sniffer</b>: MAC, RSSI, packet count, last seen</li>
+        <li><b>Wardriver</b>: WiFi and BLE with GPS position, to SD as WiGLE CSV</li>
+        <li><b>Satellite Scanner</b>: GPS fix check</li>
+        <li><b>Touch Calibrate</b>, <b>SD File Manager</b>, <b>Settings</b></li>
+      </ul>
     </div>
     <div class="card">
-      <h3>Blocks</h3>
-      <p>Eight printed blocks, four per half, slide together on vertical dovetails. An M3 screw at the centre boss clamps them down. Files are in <span class="mono">cad/case_filler/stl</span>.</p>
-    </div>
-    <div class="card">
-      <h3>Pi ports</h3>
-      <p>The USB-A and Ethernet end faces a wall with about 12 mm clear, so use right-angle plugs there. The only USB device is the RTL-SDR, on a right-angle cable across the hinge. Everything else connects through the GPIO header and micro-HDMI.</p>
-    </div>
-    <div class="card">
-      <h3>Antennas</h3>
-      <p>The panel's metal back blocks radio, so WIFI-NODE and the RTL-SDR feed pigtails along two channels to holes drilled in the right wall. Fit them so they clear the open lid. Keep the SDR away from the 12 V boost, because its switching noise can swamp weak 433 MHz signals.</p>
+      <h3>Not used</h3>
+      <p>Deauth attack, beacon spam, probe flood, captive portal, BLE spoofing, Sour Apple, BLE jammer and BLE Rubber Ducky. They transmit, and this project is receive-only. The NRF24, CC1101, IR and NFC tools need hardware this build doesn't have.</p>
+      <h3 style="margin-top:16px">Flashing</h3>
+      <p>Use the prebuilt <span class="mono">ESP32-DIV-v1-v1.7.0-merged.bin</span> at offset 0x0 with esptool, or the web flasher at <a href="https://cifertech.github.io/ESP32-DIV/" rel="noopener">cifertech.github.io/ESP32-DIV</a> (choose v1). Unplug the GPS first.</p>
     </div>
   </div>
 </section>
+
+
+
+
 
 <section id="parts">
   <h2>Shopping list</h2>
-  <p class="sec-intro">Tick parts off as you collect them; ticks are saved in this browser. Prices and stock were read from the shop pages on 2026-10-31 and exclude shipping. Each link is the cheapest suitable listing that could be checked; DIYElectronics, Communica and Micro Robotics could not be read, so compare them yourself, especially over Black Friday.</p>
+  <p class="sec-intro">Tick parts off as you collect them; ticks are saved in this browser. The nde3d order was placed on 2026-11-02 (collect at Strand, pay on collection). Prices are from that order and exclude shipping.</p>
   <div class="toolbar">
     <span class="progress"><b id="p-done">0</b> of <b id="p-total">0</b> items ticked. Priced items left to buy: <b id="p-cost">R0</b></span>
     <button id="copy-list" type="button">Copy shopping list</button>
@@ -183,37 +158,22 @@ footer{padding:28px 0 60px;color:var(--muted);font-size:13px}
 
 <section id="power">
   <h2>Power</h2>
-  <p class="sec-intro">One 2S2P pack feeds three converters: a 5 A buck for the Pi, a smaller buck for the nodes, and a 12 V boost for the display. Estimated load is about 16.5 W (Pi 6 W, display 6 W, nodes 3 W, RTL-SDR 1.5 W). The pack holds about 32 Wh, so expect a little under 2 hours. Measure it; the cells are probably below their label.</p>
-  <div class="callout"><b>Before connecting anything:</b> check the 4-cell holder with a multimeter and set it to 2S2P, not 4S (about 15 V). Set the XL4015 to 8.4 V and about 1 A with the battery disconnected and a load on its output; nde3d warns against running it with an open output. Set both bucks to about 5.1 V and the boost to 12 V, and confirm each with a meter before connecting a board. Never connect a single-cell USB charge/boost board to this pack.</div>
-<pre>12 V adapter -> DC socket -> XL4015 CC/CV (8.4 V, ~1 A) -+
-                                                         v
-18650 2S2P pack &lt;-> 2S 20 A BMS -> fuse 8 A -> master switch --+-> 5 A buck (5.1 V)  -> sw 1 -> Pi 5 pins 2, 4
-        |                                                      +-> XL4005 (5.1 V)    -> sw 3, 4, 5 -> nodes
-        +-> capacity indicator (2S)                            +-> sw 2 -> boost (12 V) -> RTD2660 + panel</pre>
-  <div class="tablewrap">
-  <table>
-    <thead><tr><th>Switch</th><th>Powers</th></tr></thead>
-    <tbody>
-      <tr><td>Master</td><td>Everything, after the fuse</td></tr>
-      <tr><td class="mono">1</td><td>HUB: Pi 5, plus the GPS from its 3.3 V pin and the RTL-SDR from its USB. Wire both poles in parallel</td></tr>
-      <tr><td class="mono">2</td><td>DISPLAY: boost, driver board, panel</td></tr>
-      <tr><td class="mono">3</td><td>BLE-SCAN</td></tr>
-      <tr><td class="mono">4</td><td>STATUS: C3 + OLED</td></tr>
-      <tr><td class="mono">5</td><td>WIFI-NODE</td></tr>
-      <tr><td class="mono">6</td><td>Aux (spare)</td></tr>
-    </tbody>
-  </table>
-  </div>
+  <p class="sec-intro">Three 18650 cells in parallel feed one single-cell 5V 2A charge/boost module, and its 5 V output powers every module. Estimated load for the whole kit is about 600 to 850 mA typical and 1.4 A peak at 5 V. The pack holds about 24 Wh, so expect about 6 hours. Measure it; the cells are probably below their label.</p>
+  <div class="callout"><b>Before connecting anything:</b> charge all three cells to the same voltage before wiring them in parallel; cells at different voltages dump current into each other. Check whether the module cuts out on a low cell, and if not, use protected cells or add a 1S protection board. Measure the module's 5 V output with a meter before any board goes on it. Never put the cells in series on this module.</div>
+<pre>3x 18650 in parallel -> master switch -> 5V 2A charge/boost module -> 5 V rail
+                                                ^                      |-> HUB: ESP32 VIN, TFT VCC, GPS VCC
+               USB-C breakout (charge pads) ----+                      |-> READOUT: UNO 5V and WIFI-NODE 5V
+                                                                       +-> STATUS dock</pre>
   <div class="grid" style="margin-top:18px">
-    <div class="card"><h3>Pi power</h3><p>Feeding 5 V through the GPIO pins skips USB-C power negotiation, so add <span class="mono">usb_max_current_enable=1</span> to config.txt. Solder a shutdown button to the J2 pads, and shut down before turning off switch 1; cutting power can corrupt the SD card.</p></div>
-    <div class="card"><h3>Low battery</h3><p>The 5 A buck needs its input at least 1.5 V above its output, so the 5 V rail starts to sag near 6.6 V, before the BMS cuts out. Stop when the battery meter is on its last bar.</p></div>
-    <div class="card"><h3>Display current</h3><p>Measure the 12 V draw on the bench. Listings size the supply at up to 4 A, and the MT3608 is rated for 1 A continuous. If the draw is above about 0.8 A, use a larger boost.</p></div>
+    <div class="card"><h3>Charging</h3><p>The module has no USB port. Solder a USB-C breakout, or a cut USB cable, to its charge input pads. Charge with the master switch off until you know it handles charge-while-running.</p></div>
+    <div class="card"><h3>3.3 V parts</h3><p>The PCF8574 runs from the ESP32's 3V3 pin, not the 5 V rail. The TFT and GPS take 5 V on VCC and have their own regulators; their signal lines are 3.3 V.</p></div>
+    <div class="card"><h3>Battery level</h3><p>There is no battery gauge on the HUB (<span class="mono">BATTERY_ADC_PIN</span> is -1). Check the cells with a meter until a gauge is added.</p></div>
   </div>
 </section>
 
 <section id="wiring">
   <h2>Wiring <span class="phase">ESP32-DIV v1</span></h2>
-  <p class="sec-intro"><b>Update 2026-11-02:</b> the Pi 5 hub is dropped. The HUB is now an ESP32-WROOM-32U (U.FL antenna) running cifertech's ESP32-DIV v1 firmware, in passive use only. Pins come from the firmware's <span class="mono">shared.h</span> and <span class="mono">User_Setup v1.h</span>. Nothing here has been wired or tested yet. The rest of this page still describes the Pi 5 build until it is rewritten.</p>
+  <p class="sec-intro">HUB wiring. Pins come from the firmware's <span class="mono">shared.h</span> and <span class="mono">User_Setup v1.h</span>. Nothing here has been wired or tested yet. The WIFI-NODE to READOUT wiring is on <a href="proto-readout-wiring.html">its own page</a>.</p>
   <div class="figure"><img src="wiring.svg" alt="Wiring diagram for the ESP32-DIV v1 hub. Three 18650 cells in parallel go through the master switch to a 5 V 2 A charge/boost module, charged from a USB-C breakout. The 5 V rail feeds ESP32 VIN, the TFT and the GPS. The 2.4 inch ILI9341 TFT uses GPIO 15, 0, 2, 13, 14, 32 and 12; touch and SD share GPIO 18, 23 and 19, with chip selects on 33 and 5. The PCF8574 runs on 3V3 with SDA 21 and SCL 22, and five buttons on P3 to P7. The NEO-7M GPS TX goes to GPIO 3 and RX to GPIO 1. A router antenna connects to the U.FL socket."></div>
   <div class="grid" style="margin-top:18px">
     <div class="card">
@@ -266,79 +226,68 @@ footer{padding:28px 0 60px;color:var(--muted);font-size:13px}
 <section id="build">
   <h2>Build order</h2>
   <ol class="steps">
-    <li>Finish the JP2 multimeter tests on the panel, and only then order the driver board.</li>
-    <li>Measure the inside width of the case and every part with a pocket, then update the numbers in <span class="mono">generate_filler.py</span>.</li>
-    <li>Order two test blocks and check the fit before ordering the rest.</li>
-    <li>Build the power system on the bench: holder wiring, BMS, fuse, charger at 8.4 V, bucks at 5.1 V, boost at 12 V, switches.</li>
-    <li>Bring up the Pi with the panel on the bench, then the GPS, one node at a time, and the RTL-SDR.</li>
-    <li>Fit the blocks, drill the antenna, DC and meter wall holes if needed, and mount the parts.</li>
-    <li>Route the hinge bundle in mesh sleeve with a slack loop.</li>
-    <li>Close test: confirm nothing touches when the lid shuts.</li>
+    <li>Collect the nde3d order. Check that the ESP32 is a full dev board with USB and headers, and find its COM port.</li>
+    <li>Flash the bare board with nothing attached: <span class="mono">esptool --chip esp32 -p COMx erase-flash</span>, then <span class="mono">write-flash 0x0 ESP32-DIV-v1-v1.7.0-merged.bin</span> at 921600 baud (115200 if that fails).</li>
+    <li>Wire the TFT and check the menu shows.</li>
+    <li>Wire touch, run Touch Calibrate, then add the SD card.</li>
+    <li>Wire the PCF8574 on 3V3 and the five buttons; check the menu moves.</li>
+    <li>Wire the GPS and check satellites in Satellite Scanner. Unplug it whenever you flash.</li>
+    <li>Fit the router antenna on the U.FL socket. Test the WiFi scan, BLE scan and a short Wardriver log.</li>
+    <li>Bench-test the power system: matched cells, module output, then the HUB and READOUT on battery.</li>
+    <li>Measure every part and lay out the case.</li>
     <li>Walk test, log check and a runtime measurement.</li>
   </ol>
 </section>
 
+<section id="case">
+  <h2>Case <span class="phase">To redo</span></h2>
+  <p class="sec-intro">The 22 × 22 cm clamshell layout and its printed filler blocks were designed for the Pi 5 and 7" display, so they don't fit these parts. The layout will be redrawn once the parts are in hand and measured. The measured case numbers (25 mm per half, 165 mm hinge to handle) and the Pi 5 filler files are kept in the repository for reference.</p>
+</section>
+
 <section id="later">
-  <h2>Optional <span class="phase">Later</span></h2>
+  <h2>Later</h2>
   <p class="sec-intro">None of this is needed for the build above.</p>
   <div class="grid">
-    <div class="card"><h3>Cellular</h3><p>Spotting fake cell towers (IMSI catchers) needs dedicated hardware. It is out of scope for this build.</p></div>
+    <div class="card"><h3>Laptop analysis</h3><p>Collect the HUB's SD logs (WiGLE CSV, PCAP) and the STATUS watch CSVs on a laptop. Merge them, look for devices seen in several places, and learn from what turns up.</p></div>
+    <div class="card"><h3>2.4 GHz spectrum</h3><p>The firmware's 2.4 GHz scanner needs an NRF24 module. nde3d doesn't stock one, so it's deferred. Only the receive-side scanner would be used.</p></div>
+    <div class="card"><h3>Battery gauge</h3><p>A voltage divider on a spare ADC pin, with <span class="mono">BATTERY_ADC_PIN</span> set in a source build, would show the battery level on screen.</p></div>
+    <div class="card"><h3>Cellular</h3><p>Spotting fake cell towers (IMSI catchers) needs dedicated hardware. It is out of scope.</p></div>
   </div>
 </section>
 
 <footer>
-  Full detail is in the repository: <a href="https://github.com/Lincalibur/War-rig-phantom/blob/main/docs/hardware-layout.md">hardware-layout.md</a> and <a href="https://github.com/Lincalibur/War-rig-phantom/tree/main/cad/case_filler">the printed filler</a>. The earlier single-PCB design is shelved; its interactive page is kept at <a href="pcb-v2.html">pcb-v2.html</a>.
+  Full detail is in the repository: <a href="https://github.com/Lincalibur/War-rig-phantom/blob/main/docs/hardware-layout.md">hardware-layout.md</a> and <a href="https://github.com/Lincalibur/War-rig-phantom/blob/main/docs/OVERVIEW.md">OVERVIEW.md</a>. The shelved single-PCB design is kept at <a href="pcb-v2.html">pcb-v2.html</a>.
 </footer>
 </div>
 
 <script>
-const N='https://nde3d.co.za/product/',P='https://www.pishop.co.za/store/';
+const N='https://nde3d.co.za/product/';
 const PARTS=[
+ {g:'nde3d order',s:'placed 2026-11-02, collect at Strand'},
+ {id:'esp',name:'ESP32-WROOM with external antenna (U.FL)',url:N+'esp32-wroom-with-4mb-flash-and-external-antenna/',qty:'1',price:'R156.78',role:'HUB',warn:'Check it is a full dev board with USB',buy:1},
+ {id:'tft',name:'2.4" TFT 240×320 with SD and touch (ILI9341)',url:N+'24-tft-240x320-with-sd-and-touch-interface/',qty:'1',price:'R299.00',role:'HUB screen, touch and SD',buy:1},
+ {id:'pcf',name:'PCF8574T I2C expansion board',url:N+'pcf8574t-io-i2c-expansion-board/',qty:'1',price:'R19.69',role:'HUB buttons',buy:1},
+ {id:'gps',name:'GY-NEO-7M GPS',url:N+'gy-neo-7m-gps-active-ceramic-antenna-module/',qty:'1',price:'R136.48',role:'Position and time',buy:1},
+ {id:'mod',name:'5V 2A charge and boost module (single cell)',url:N+'5v-2a-charge-and-discharge-boost-module-37v42v/',qty:'1',price:'R27.00',role:'Charging and 5 V rail',buy:1},
+ {id:'cell',name:'18650 2200 mAh Li-ion',url:N+'37v-18650-1500mah-lithium-ion-battery/',qty:'3',price:'R238.20',role:'Pack, in parallel',warn:'Capacity is probably below the label',buy:1},
+ {id:'hold',name:'Single 18650 holder with wires',url:N+'18650-battery-holder-with-wires/',qty:'3',price:'R21.00',role:'Pack',buy:1},
  {g:'On hand',s:'already owned'},
- {id:'panel',name:'7" SAT070AT50 panel (from the intercom)',qty:'1',role:'DISPLAY',warn:'JP2 tests still pending'},
- {id:'s019',name:'ESP32-1732S019 (ESP32 + 1.9" screen)',qty:'1',role:'BLE-SCAN'},
+ {id:'ant',name:'2.4 GHz router antennas, RP-SMA + U.FL pigtails',qty:'2',role:'HUB antenna (one spare)'},
+ {id:'btn',name:'Push buttons',qty:'5',role:'UP, DOWN, LEFT, RIGHT, SELECT'},
+ {id:'msw',name:'Master switch',qty:'1',role:'Main power',warn:'Rated 2 A or more'},
  {id:'c3',name:'ESP32-C3',qty:'2',role:'WIFI-NODE and STATUS'},
+ {id:'uno',name:'Arduino UNO R3 + 3.5" TFT shield',qty:'1',role:'READOUT'},
  {id:'oled',name:'128×64 OLED',qty:'1',role:'STATUS screen'},
- {id:'ant',name:'2.4 GHz RP-SMA antennas + U.FL pigtails',qty:'2',role:'WIFI-NODE'},
- {id:'alert',name:'Buzzer, LEDs, 12 mm push button',qty:'1 set',role:'Alerts and mute'},
- {id:'msw',name:'Master switch',qty:'1',role:'Main power',warn:'Confirm 5 A DC or more'},
- {g:'PiShop',s:'order together to save on shipping'},
- {id:'pi',name:'Raspberry Pi 5 4GB',url:P+'raspberry-pi-5-model-b-4gb',qty:'1',price:'R2,099.90',role:'HUB',note:'18 in stock. Bought separately, the Pi, cooler and 32 GB card cost R2,479.70, against R2,779.90 for the cheapest 4GB kit.',buy:1},
- {id:'cool',name:'Raspberry Pi 5 Active Cooler',url:P+'raspberry-pi-5-active-cooler',qty:'1',price:'R99.90',role:'Cooling',note:'482 in stock.',buy:1},
- {id:'hdmi',name:'Micro-HDMI to HDMI cable, 1 m',url:P+'hdmi-to-micro-hdmi-1m-cable-for-pi4',qty:'1',price:'R39.91',role:'Pi to driver board',note:'Stock not confirmed. The official cable is R99.90 with stock.',buy:1},
- {id:'sdc',name:'Kioxia Exceria 32 GB microSD',url:P+'sd-cards_0/kioxia-exceria-32gb-microsdhc-uhs-i-memory-card',qty:'1',price:'R279.90',role:'OS and logs',warn:'Stock and A2 rating not confirmed',buy:1},
- {g:'nde3d',s:'new shop, all links checked 2026-10-31'},
- {id:'gps',name:'GY-NEO-7M GPS',url:N+'gy-neo-7m-gps-active-ceramic-antenna-module/',qty:'1',price:'R136.48',role:'Position and time',note:'3 in stock.',buy:1},
- {id:'cell',name:'18650 2200 mAh Li-ion',url:N+'37v-18650-1500mah-lithium-ion-battery/',qty:'4',price:'R317.60',role:'2S2P pack',warn:'Capacity is probably below the label',note:'14 in stock.',buy:1},
- {id:'hold',name:'18650 holder ×4 with wires',url:N+'18650-battery-holder-x4-with-wires/',qty:'1',price:'R16.00',role:'Pack',warn:'Check wiring and size; no dimensions listed',note:'11 in stock.',buy:1},
- {id:'bms',name:'2S 20 A BMS',url:N+'2s-20amp-battery-management-circuit-bms/',qty:'1',price:'R75.00',role:'Protection and balancing',note:'16 in stock.',buy:1},
- {id:'buck',name:'5 A 75 W step-down module',url:N+'5a-75w-dc-dc-high-power-adjustable-step-down-stabilized-voltage-supply-module/',qty:'1',price:'R118.00',role:'Pi 5 V rail',note:'7 in stock.',buy:1},
- {id:'buck2',name:'XL4005 5 A step-down',url:N+'5a-dc-dc-step-down-buck-xl4005-adjustable-power-supply-module/',qty:'1',price:'R31.51',role:'Node 5 V rail',note:'3 in stock.',buy:1},
- {id:'xl',name:'XL4015 5 A CC/CV',url:N+'5a-30v-adjustable-voltage-and-current-charger/',qty:'1',price:'R66.00',role:'Charger, set to 8.4 V',note:'18 in stock.',buy:1},
- {id:'dc',name:'5.5 × 2.1 mm bulkhead DC socket',url:N+'3a-55-x-21mm-bulkhead-male-dc-power-connector/',qty:'1',price:'R4.67',role:'Charge input',note:'9 in stock.',buy:1},
- {id:'fh',name:'Fuse holder, 5×20 mm panel mount',url:N+'fuse-holder-for-5x20mm-panel-mount/',qty:'1',price:'R25.00',role:'Main fuse',note:'31 in stock.',buy:1},
- {id:'fu',name:'5×20 mm glass fuse 8 A',url:N+'5-x-20mm-glass-fuse-250v-8a/',qty:'5',price:'R15.00',role:'Main fuse and spares',note:'86 in stock.',buy:1},
- {id:'tog',name:'Miniature toggle SMTS-203 (DPDT)',url:N+'miniature-toggle-switch-on-off-on-smts-203-dpdt/',qty:'6',price:'R84.00',role:'Section switches',note:'9 in stock.',buy:1},
- {id:'ind',name:'Capacity indicator board, 2S',url:N+'12v-lithium-battery-power-indicator-board-1/',qty:'1',price:'R58.00',role:'Battery meter',note:'4 in stock.',buy:1},
- {id:'slv',name:'Mesh nylon sleeve 10 mm × 1 m',url:N+'1-metre-flame-retardant-nylon-pet-mesh-telescopic-sleeve-2/',qty:'1',price:'R7.00',role:'Hinge bundle',note:'14 in stock.',buy:1},
- {id:'m3',name:'M3 nylon standoff kit, 180 pcs',url:N+'sdafasdf/',qty:'1',price:'R98.78',role:'Mounting',note:'9 in stock.',buy:1},
- {g:'Wait for the panel tests',s:'not counted in the total'},
- {id:'rtd',name:'RTD2660 HDMI VGA 2AV 50-pin TTL driver board',url:'https://www.ebay.com/itm/157965765122',qty:'1',role:'Drives the panel',warn:'Confirm it suits 7" 800×480 and drives the backlight',note:'About US$18.64 + US$6 shipping in a search snapshot. The page could not be opened, so check the price and delivery to South Africa.',buy:1},
- {g:'No checked deal yet',s:'not counted in the total'},
- {id:'boost',name:'MT3608 boost module, set to 12 V',url:N+'mt3608-power-booster-module/',qty:'1',role:'12 V for the driver board',warn:'Out of stock at nde3d, R13.35',note:'1 A continuous. No in-stock alternative was found.',buy:1},
- {id:'sdr',name:'RTL-SDR Blog V4 dongle',url:'https://www.rtl-sdr.com/buy-rtl-sdr-dvb-t-dongles/',qty:'1',role:'433 MHz receive (rtl_433)',warn:'Buy the genuine Blog V4; clones vary',note:'No South African stock confirmed. The official store lists it at US$39.95. Can be added last: software stages 1 to 5 work without it.',buy:1},
- {id:'usbra',name:'Right-angle USB-A extension, about 30 cm',qty:'1',role:'Pi to RTL-SDR across the hinge',buy:1},
- {id:'sdrant',name:'SMA bulkhead pigtail + 433 MHz antenna',qty:'1',role:'RTL-SDR antenna through the right wall',buy:1},
- {id:'psu',name:'12 V DC adapter, 5.5 × 2.1 mm plug, 1 A or more',qty:'1',role:'Charging',buy:1},
- {id:'m25',name:'M2.5 standoffs about 18 mm, with screws',qty:'4',role:'Hanging the Pi',note:'The M3 kit does not fit the Pi mounting holes. Length depends on the cooler; measure first.',buy:1},
- {id:'print',name:'Printed filler blocks',qty:'8',role:'Holds everything',note:'Get a quote after the test blocks fit.',buy:1},
- {id:'wire',name:'Hook-up wire (18–20 AWG for power), cable ties',qty:'—',role:'Wiring',buy:1},
+ {id:'sdcard',name:'microSD card',qty:'1',role:'HUB logs',warn:'Confirm you have one; FAT32'},
+ {g:'Still to get',s:'not counted in the total'},
+ {id:'usbc',name:'USB-C breakout board, or a cut USB cable',qty:'1',role:'Charge input for the module',buy:1},
+ {id:'wire',name:'Dupont jumpers and hook-up wire',qty:'—',role:'Wiring',buy:1},
  {g:'Optional',s:'not counted in the total'},
- {id:'pipsu',name:'Official 27 W USB-C power supply',qty:'1',role:'Bench use before the power system works',note:'Not needed in the case. Price not confirmed.'},
- {id:'ttl',name:'CH340G USB to serial cable',url:N+'ch340g-usb-to-serial-cable-5v/',qty:'1',price:'R43.00',role:'Bring-up tool',warn:'5 V cable: use a level shifter on 3.3 V boards',note:'8 in stock. Listed price, not in the total.',opt:1}
+ {id:'prot',name:'1S 18650 protection board',qty:'1',role:'Low-cell cut-out',note:'Only if the module has no cut-out of its own.'},
+ {id:'ttl',name:'CH340G USB to serial cable',url:N+'ch340g-usb-to-serial-cable-5v/',qty:'1',price:'R43.00',role:'Bring-up tool',warn:'5 V cable: use a level shifter on 3.3 V boards',opt:1}
 ];
 const store={get(k){try{return JSON.parse(localStorage.getItem(k)||'{}')}catch(e){return {}}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
-const KEY='clamshell-v1-ticks';
+const KEY='esp32div-v1-ticks';
 let ticks=store.get(KEY);
 const bomBody=document.getElementById('bom-body');
 function esc(s){return String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))}

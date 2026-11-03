@@ -1,61 +1,103 @@
 # Hardware layout
 
-Physical layout for the cyberdeck: a portable, passive counter-surveillance station in a 22 × 22 cm clamshell case. A Raspberry Pi 5 4GB is the hub, a 7" panel fills the lid, and printed filler blocks hold everything.
+The current build, as of 2026-11-02. The cyberdeck is a kit of separate passive modules. Each module has its own screen and job:
 
-The [build page](build-page.html) has the checked shopping list, pin table and build order. This page records the layout and the reasons behind it.
+- The `HUB` is an ESP32-DIV v1-style handheld.
+- The `WIFI-NODE` and `READOUT` pair forms a big-screen WiFi readout.
+- The `STATUS` unit is a removable watch.
 
-![What goes where](./case-layout.svg)
+One single-cell 18650 pack and a 5 V boost module power them all. Later, the logs go to a laptop for analysis.
 
-> **Update 2026-11-02:** the Pi 5 hub is dropped. The HUB is now an ESP32-WROOM-32U running ESP32-DIV v1 firmware (passive use only). The wiring drawing below shows that build. The case layout above and the rest of this page still describe the Pi 5 build.
+The [build page](build-page.html) has the shopping list, wiring and build order. This page records the parts, power and reasons.
 
 ![Wiring: ESP32-DIV v1 hub](./wiring.svg)
 
-> The case drawing and print files come from [`cad/case_filler/generate_filler.py`](../cad/case_filler/generate_filler.py); part sizes are nominal, so measure before ordering prints. The wiring drawing comes from [`cad/wiring/generate_wiring.py`](../cad/wiring/generate_wiring.py).
+> The wiring drawing comes from [`cad/wiring/generate_wiring.py`](../cad/wiring/generate_wiring.py). Pins are taken from cifertech's ESP32-DIV firmware, v1 target (`shared.h` and `Libraries/User_Setup v1.h`). Nothing has been wired or tested yet.
+
+**Everything is passive.** The ESP32-DIV firmware also has attack tools (deauth, beacon spam, BLE spoofing, jammers, captive portal). They are not part of this project, and the build has no NRF24 or CC1101 radios to use them with.
 
 ---
 
 ## Board names
 
-| Name | Board | Job |
-|---|---|---|
-| `HUB` | Raspberry Pi 5 4GB + Active Cooler | Runs the hub software: collects node and SDR reports, logs to microSD, drives screen and alerts |
-| `DISPLAY` | 7" SAT070AT50 panel + RTD2660 driver board | Main screen over HDMI |
-| `BLE-SCAN` | ESP32-1732S019 | BLE trackers, own 1.9" screen. Spec: [`BOARD-BLE-SCAN-ESP32-1732S019.md`](BOARD-BLE-SCAN-ESP32-1732S019.md) |
-| `WIFI-NODE` | ESP32-C3 + 2.4 GHz antenna | Headless WiFi promiscuous scanner |
-| `STATUS` | ESP32-C3 + 128×64 OLED | Removable watch. Logs GPS and WiFi scans on its own and syncs to the hub when docked |
-| (no name) | RTL-SDR Blog V4 | 433 MHz receive for `rtl_433`, on USB. Replaces the CC1101 (dropped 2026-11-02) |
+| Name | Board | Job | Firmware |
+|---|---|---|---|
+| `HUB` | ESP32-WROOM-32U dev board (U.FL antenna) + 2.4" ILI9341 touch/SD TFT + PCF8574 buttons + NEO-7M GPS | Handheld scanner: WiFi and BLE scanning, deauth detection, packet monitor, and GPS wardriving logged to SD as WiGLE CSV | ESP32-DIV v1.7.0, v1 target |
+| `WIFI-NODE` | ESP32-C3 (first) | WiFi promiscuous capture: APs, clients, deauths, "following me" persistence. Streams rows to `READOUT` | `v2/proto_readout_c3` (working) |
+| `READOUT` | Arduino UNO R3 + 3.5" TFT shield | Big-screen display for `WIFI-NODE` | `v2/proto_readout_uno` (working) |
+| `STATUS` | ESP32-C3 (second) + 128×64 OLED | Removable watch. Logs GPS and WiFi scans and sends a CSV to an Android phone. It docks to the kit now and then | Working, on the watch |
+| `BLE-SCAN` | ESP32-1732S019 (ESP32 + 1.9" screen) | On hand, **not in this build**. The `HUB` does BLE scanning. Spec: [`BOARD-BLE-SCAN-ESP32-1732S019.md`](BOARD-BLE-SCAN-ESP32-1732S019.md) | — |
 
-The UNO + 3.5" `READOUT`, the ESP32-S3 and the microSD shield are retired from this build.
+Retired: the Raspberry Pi 5 hub, the 7" panel and its RTD2660 driver, the RTL-SDR, and the ESP32-S3 hub. The modules no longer report to a central hub over UART. Each one works on its own.
+
+---
+
+## HUB pins
+
+| Part | Part pin | ESP32 GPIO |
+|---|---|---|
+| ILI9341 TFT | CS, RESET, DC | 15, 0, 2 |
+| | SDI (MOSI), SCK, SDO (MISO) | 13, 14, 12 |
+| | LED (backlight, PWM) | 32 |
+| XPT2046 touch | T_CS | 33 |
+| SD card | SD_CS | 5 |
+| Touch + SD, shared bus | T_CLK + SD_SCK, T_DIN + SD_MOSI, T_DO + SD_MISO | 18, 23, 19 |
+| PCF8574 | SDA, SCL | 21, 22 |
+| NEO-7M GPS | TX, RX | 3 (ESP32 RX), 1 (ESP32 TX) |
+| Buttons on PCF8574 | UP, DOWN, LEFT, RIGHT, SELECT | P6, P3, P4, P5, P7, each to GND |
+
+- **GPS on the USB serial pins.** GPIO 1 and 3 are also used by the board's USB serial chip. Unplug the GPS while flashing.
+- **PCF8574 on 3V3, not 5 V.** Its address is auto-detected (0x20-0x27).
+- **I2C pins.** SDA 21 / SCL 22 are the ESP32 defaults. The firmware calls `Wire.begin()` with no pins, so check this first if the buttons do nothing.
+- **No battery gauge.** `BATTERY_ADC_PIN` is -1.
+- **Antenna.** A router antenna (RP-SMA) and pigtail go on the board's U.FL socket.
+
+The `WIFI-NODE` → `READOUT` link is a one-way 19200-baud UART. Its wiring is in [`proto-readout-wiring.html`](proto-readout-wiring.html).
+
+---
+
+## Power
+
+```
+3x 18650 in parallel (1S3P) -> master switch -> 5V 2A charge/boost module -> 5 V rail
+                                                       ^                         |-> HUB: ESP32 VIN, TFT VCC, GPS VCC
+                                 USB-C breakout -------+                         |-> READOUT: UNO 5V, WIFI-NODE 5V
+                                 (charge input pads)                             +-> STATUS dock (when docked)
+```
+
+| Item | Value |
+|---|---|
+| Cells | 3x 18650 2200 mAh in single holders, wired in parallel |
+| Module | 5V 2A charge/boost module for a single Li-ion cell. It has no USB port, so charge it through a USB-C breakout on its input pads |
+| Load, estimated | About 600-850 mA at 5 V typical and about 1.4 A peak, for the whole kit with the watch docked |
+| Runtime, estimated | About 6 hours. The pack holds about 24 Wh if the cells meet their label |
+
+**Before connecting anything:**
+- Charge all three cells to the same voltage before wiring them in parallel. Cells at different voltages dump current into each other when connected.
+- Check whether the module cuts out on a low cell. If it doesn't, use protected cells or add a 1S protection board.
+- Measure the module's 5 V output with a meter before any board goes on it.
+- Wire the battery last. Bring up each part on USB power first.
 
 ---
 
 ## Case
 
+The 22 × 22 cm clamshell case and its printed filler blocks (`cad/case_filler/`) were designed for the Pi 5 and 7" panel. They don't fit these parts. The layout will be redrawn once the parts are in hand and measured. The Pi 5 filler files stay in the repo for reference, and the measured case numbers still hold:
+
 | Property | Value |
 |---|---|
 | Outer width | 220 mm |
 | Inner width at rim | 205 mm assumed, **not measured** |
-| Depth per half | 25 mm, measured (the earlier 35 mm figure was wrong) |
+| Depth per half | 25 mm, measured |
 | Hinge wall to handle cut-out | 165 mm, measured |
 | Hinge wall to front wall | 190 mm at the side walls, 210 mm beside the handle |
 
-## Why the parts sit where they do
-
-- **Pi in the base, panel in the lid.** The panel and a Pi with its cooler do not stack in 25 mm, so micro-HDMI crosses the hinge.
-- **Pi under the deck.** It hangs from the deck with the cooler under a vent grille, on standoffs through four holes.
-- **Radios in the lid.** The base has no spare bay. Behind the panel they are blocked, so pigtails run to the right wall. The RTL-SDR takes the bay the CC1101 had, and its USB cable crosses the hinge in place of the CC1101's SPI wires.
-- **RTL-SDR away from the boost.** The 12 V boost shares the right bay, and its switching noise can swamp weak 433 MHz signals.
-- **GPS patch facing the lid shell.** It is above the panel, facing outward when the lid is open.
-- **Toggles sunk 5 mm.** They rise into a 7 mm recess in the lid, beside the panel rather than over it.
-- **Fuse holder flat.** It is too long to stand in 25 mm, so it lies in a groove with the cap reachable.
+---
 
 ## Open questions
 
-- Inside width of the case, handle box and boss position
-- JP2 readings, which decide whether the RTD2660 board can drive the panel
-- Panel thickness (`PANEL_RECESS`) and its FPC position
-- Holder, toggle, XL4015 and driver-board sizes
-- Display draw at 12 V, against the MT3608's 1 A continuous rating
-- Whether the hinge bundle fits the notch and flexes freely
-- Pi hub software: planned in six stages on the [build page](build-page.html#software), not written yet
-- Whether the RTL-SDR, buck, boost and WIFI-NODE all fit the right lid bay together
+- Is the ESP32 board a full dev board (USB and headers)? This is checked when the parts are collected.
+- Does the 5V 2A module cut out on a low cell, and how much current can it really give?
+- How should the kit sit in the case? Measure the parts first.
+- How do logs get to the laptop? The `HUB` writes WiGLE CSV and PCAP to SD, and `STATUS` sends CSV to the phone. Collecting both on a laptop for analysis is planned but not designed yet.
+- NRF24 2.4 GHz spectrum scanning would need an NRF24 module, which nde3d doesn't stock. It's deferred.

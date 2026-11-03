@@ -1,130 +1,78 @@
-# CyberDeck v2 — overview
+# CyberDeck — overview
 
-Start here. This covers what the deck does, the hardware decisions and why they were made, and where everything else lives.
+Start here. This page covers what the deck does, the hardware decisions and the reasons for them, and where everything else lives.
 
-> **Update 2026-11-02: the CC1101 is dropped. An RTL-SDR on the Pi's USB covers 433 MHz through `rtl_433`. The hub software plan (six stages, Kismet-based) is on the [build page](build-page.html#software).**
->
-> **Update 2026-10-31: the build now uses a Raspberry Pi 5 4GB hub and a 7" panel, in a case measured at 25 mm per half. Anything below that says otherwise is out of date; see [`hardware-layout.md`](hardware-layout.md).**
->
-> **Current plan (2026-10-09): clamshell build, no custom PCB.** The deck is now a 22 × 22 cm clamshell case with one screen per scan module, hand-wired from modules. Budget v1 uses the ESP32-S3 as hub; a Raspberry Pi 5 replaces it later. The physical layout, power system, data links and parts list are in [`hardware-layout.md`](hardware-layout.md), which wins where it differs from this page. The single-PCB design described under "Board" below is shelved; its S3 pin assignments are still used.
+> **Current build (2026-11-02): ESP32-DIV v1 handheld.** The Pi 5 hub was dropped as overkill. The kit is now separate passive modules, each with its own screen, on one 18650 pack. The parts are listed under Architecture. The parts were ordered from nde3d on 2026-11-02.
 
 | Need | Go to |
 |---|---|
-| **Current build: layout, power, wiring, parts list** | [`hardware-layout.md`](hardware-layout.md) |
-| Board names (`HUB`, `READOUT`, `BLE-SCAN`, `WIFI-NODE`, `STATUS`) | [`hardware-layout.md`](hardware-layout.md#board-names) |
-| `BLE-SCAN` board spec (ESP32-1732S019: pins, display config, build settings) | [`BOARD-BLE-SCAN-ESP32-1732S019.md`](BOARD-BLE-SCAN-ESP32-1732S019.md) |
-| S3 hub pin assignments (and the shelved PCB BOM) | [`PCB-BOM-AND-NETLIST.md`](PCB-BOM-AND-NETLIST.md) |
-| Build page on GitHub Pages: boards, layout, parts checklist, wiring | [`build-page.html`](build-page.html), deployed to <https://lincalibur.github.io/War-rig-phantom/> |
-| Shelved single-PCB interactive page | [`esp32-hub-board.html`](esp32-hub-board.html) (deployed as `pcb-v2.html`) |
-| KiCad project | [`../KiCad Design/`](../KiCad%20Design/) |
-| Firmware, build settings, bring-up order | [`../v2/README.md`](../v2/README.md) |
-| Remote flashing station | [`debian-esp32-server-guide.md`](debian-esp32-server-guide.md) |
+| **Current build: boards, HUB pins, power, case** | [`hardware-layout.md`](hardware-layout.md) |
+| Build page: shopping list, wiring diagram, build order | [`build-page.html`](build-page.html), deployed to <https://lincalibur.github.io/War-rig-phantom/> |
+| Board names (`HUB`, `WIFI-NODE`, `READOUT`, `STATUS`, `BLE-SCAN`) | [`hardware-layout.md`](hardware-layout.md#board-names) |
+| `WIFI-NODE` → `READOUT` wiring | [`proto-readout-wiring.html`](proto-readout-wiring.html) |
+| Firmware for the C3 and UNO boards | [`../v2/README.md`](../v2/README.md) |
+| `BLE-SCAN` board spec (on hand, not in this build) | [`BOARD-BLE-SCAN-ESP32-1732S019.md`](BOARD-BLE-SCAN-ESP32-1732S019.md) |
+| Shelved designs: single PCB, S3 hub, Pi 5 clamshell | [`PCB-BOM-AND-NETLIST.md`](PCB-BOM-AND-NETLIST.md), [`esp32-hub-board.html`](esp32-hub-board.html), [`../cad/case_filler/`](../cad/case_filler/), git history |
 
-The v1 ESP-NOW build (C3 nodes, ESP32-1732S019 hub) was removed from the tree. It is kept in git under the tag `v1-espnow-archive`.
+The v1 ESP-NOW build (C3 nodes, ESP32-1732S019 hub) is kept in git under the tag `v1-espnow-archive`.
 
 ## Goal
-A portable counter-surveillance deck that scans and logs the radio environment around you and flags devices that keep following you: WiFi networks and devices, BLE devices and trackers, and 433 MHz signals including car tyre-pressure sensors. Every sighting is GPS-tagged. The case is a **22 × 22 × 7 cm clamshell**.
+A portable counter-surveillance kit that scans and logs the radio environment around you and flags devices that keep following you. It covers WiFi networks and devices, and BLE devices and trackers, with GPS-tagged logs. Later the logs go to a laptop, to analyse and learn from what was found.
 
-**Everything here is passive listening.** Don't add deauth, injection or jamming features.
+**Everything here is passive listening.** Don't add deauth, injection or jamming features. The ESP32-DIV firmware ships with some of those. They are not used, and the build has no NRF24 or CC1101 radios for them.
 
-## Architecture (budget v1)
-
-```
-  NEO-7M GPS TX --+--> WIFI-NODE (ESP32-C3) ----------UART--+
-                  +--> BLE-SCAN (ESP32-1732S019, 1.9") -UART--+--> HUB (ESP32-S3) --row stream--> READOUT (UNO + 3.5" TFT)
-  STATUS (ESP32-C3 + OLED, standalone)                              |  SPI: microSD, CC1101 433 MHz
-                                                                    |  LED + piezo alerts
-  2S2P 18650 -> BMS -> fuse -> master switch -> 5 V buck -> section switch per module
-```
-
-The GPS still fans out to both nodes, and the hub's display is the UNO + 3.5" shield already on hand. Details are in [`hardware-layout.md`](hardware-layout.md).
-
-## Architecture (original single-PCB design, shelved)
+## Architecture
 
 ```
-                 GPS TX (NEO-7M) ------+----------------+
-                                       |                |
-                            +----------v-----+  +-------v--------+
-                            | ESP32-C3 PRO   |  | ESP32-H2       |
-                            | Mini: WiFi     |  | SuperMini: BLE |
-                            | 2.4 GHz        |  | (+802.15.4)    |
-                            +-------+--------+  +-------+--------+
-                                    | UART              | UART   (wired, 3.3 V)
-                            +-------v-------------------v--------+
-                            |  ESP32-S3-DevKitC-1 N16R8 (hub)    |
-                            |  SPI: 2.8" ILI9341, microSD,       |
-                            |       CC1101 433 MHz               |
-                            |  5-way nav, VBAT sense on GPIO6    |
-                            +------------------------------------+
-  18650 -> IP5310 board -> SW_PWR -> 5V_RAIL -> each module (via its own Schottky)
+  HUB  ESP32-WROOM-32U + router antenna (U.FL)          ESP32-DIV v1 firmware
+       2.4" ILI9341 touch + SD, PCF8574 buttons, NEO-7M GPS
+       WiFi scan, BLE scan, deauth detector, packet monitor, GPS wardriving -> SD (WiGLE CSV)
+
+  WIFI-NODE  ESP32-C3, WiFi promiscuous --19200 baud UART--> READOUT  UNO + 3.5" TFT
+
+  STATUS  ESP32-C3 + OLED watch: GPS + WiFi CSV to an Android phone; docks to the kit now and then
+
+  3x 18650 (1S3P) -> master switch -> 5V 2A charge/boost module -> 5 V to every module
 ```
 
-The key idea is that **nodes never transmit**. They are receive-only scanners that report over wired UART. That removes the ESP-NOW timing problems and the near-field desense that broke v1. Each node reads the GPS directly, so it tags its own sightings with position and time.
+Each module works on its own. None of them transmit on the scanned bands.
 
 ## Decisions
 
 | Date | Decision | Why |
 |---|---|---|
-| 2026-09-20 | Fresh start as one KiCad PCB | The ESP-NOW build never worked reliably with both nodes active |
-| 2026-09-20 | Wired UART instead of ESP-NOW | Nodes stay receive-only, so there's no timing or near-field interference |
-| 2026-09-20 | ESP32-S3 hub with a separate 2.8" SPI TFT | More GPIO and RAM than the ESP32-1732S019, plus a bigger screen |
-| 2026-09-20 | GPS fanned out to both nodes | Every sighting carries its own location |
-| 2026-09-20 | CC1101 on the hub SPI bus | Replaces the faulty RXB6 sub-GHz receiver |
-| 2026-09-20 | Ready-made power module, no custom charge/boost stage | Power is the part most likely to cause random resets |
-| 2026-09-20 | WiGLE-format CSV on microSD | Uploadable to wigle.net |
-| 2026-09-25 | Source everything from nde3d.co.za | One South African supplier. This forced the substitutions below |
-| 2026-10-05 | Reposition as a counter-surveillance tool | "Am I being followed" scoring on top of the same passive radios; LED + piezo alerts |
-| 2026-10-09 | 22 × 22 cm clamshell, one screen per scan module, no custom PCB | Bigger case on hand; modules and screens already owned; hand-wiring avoids a PCB order |
-| 2026-10-09 | ESP32-S3 stays the hub for budget v1; Raspberry Pi 5 later | The Pi 5, 5" display, USB hub and SDR are too expensive for now and nde3d stocks none of them |
-| 2026-10-09 | 2S2P 18650 + BMS + 5 V buck replaces the IP5310 single-cell stage | Sized so a Pi 5 can be added without rebuilding the power system. Charging is via a DC jack and an XL4015 at 8.4 V, because nde3d has no 2S USB-C charger |
-| 2026-10-09 | No 2.8" ILI9341; the hub draws on the UNO + 3.5" shield | Saves R468 and reuses the working row-stream readout |
-| 2026-10-31 | Raspberry Pi 5 4GB hub and 7" panel | See `hardware-layout.md` |
-| 2026-11-02 | Stay on the Pi 5 4GB; Radxa Cubie A7A rejected | More CPU and RAM for less money, but weak software support (vendor Debian 11 image, no Pi-compatible tooling) |
-| 2026-11-02 | Drop the CC1101; RTL-SDR V4 on USB instead | `rtl_433` decodes far more 433 MHz devices, including tyre-pressure sensors for spotting repeat cars. Frees the SPI pins |
-| 2026-11-02 | `STATUS` becomes a removable watch | It already logs GPS and WiFi scans to a phone; the hub merges its CSV when docked |
-
-**nde3d substitutions (2026-09-25).** Full detail is in section 1.4 of `PCB-BOM-AND-NETLIST.md`.
-- WiFi node: ESP32-C3 PRO Mini replaces the XIAO C5. That means **no 5 GHz**; most dual-band APs still beacon on 2.4 GHz.
-- BLE node: ESP32-H2 SuperMini replaces the XIAO C6. If H2 BLE misbehaves in Arduino, fall back to a C3 SuperMini.
-- Power: an IP5310 power-bank board plus an 18650 replaces the PowerBoost 1000C and LiPo. The IP5310 has no EN or LBO pin, so the power switch sits on the 5 V output and low battery comes from a VBAT divider on GPIO6.
-- Buttons: a 5-way nav module replaces five tactile switches.
-- GPS: NEO-7M. CC1101: 433 MHz for South Africa.
+| 2026-09-20 | Wired, receive-only nodes instead of ESP-NOW | The ESP-NOW build never worked reliably with both nodes active, because of timing and near-field interference |
+| 2026-09-20 | WiGLE-format CSV logs | Uploadable to wigle.net |
+| 2026-09-25 | Source everything from nde3d.co.za | Nearest shop, one supplier |
+| 2026-10-05 | Reposition as a counter-surveillance tool | "Am I being followed" detection on top of the same passive radios |
+| 2026-10-09 | 22 × 22 cm clamshell, one screen per module, no custom PCB | Bigger case on hand. Modules and screens already owned |
+| 2026-10-31 | Raspberry Pi 5 4GB hub and 7" panel | Superseded on 2026-11-02 |
+| 2026-11-02 | Drop the CC1101 for an RTL-SDR | Superseded the same day when the Pi was dropped |
+| 2026-11-02 | `STATUS` becomes a removable watch | It already logs GPS and WiFi scans to a phone |
+| 2026-11-02 | **Drop the Pi 5. The HUB is an ESP32-DIV v1-style handheld on an ESP32-WROOM-32U** | The Pi was overkill. The ESP32-DIV gives a working scanner and wardriver UI for about R900, at low power, with external-antenna range. Losing Kismet, the RTL-SDR and the 7" panel is accepted |
+| 2026-11-02 | v1 target (classic ESP32), not v2 (S3) | nde3d has no WROOM-1U S3 board. S3 boards with octal PSRAM lose GPIO 35-37, which v2 uses for the TFT |
+| 2026-11-02 | Not the CYD (ESP32-2432S028R) | Its pins are shared, so the GPS and buttons can't be added cleanly |
+| 2026-11-02 | 2.4" ILI9341 instead of the 2.8" | R299 against R468, and the firmware runs on both |
+| 2026-11-02 | 3x 18650 in parallel on a single-cell 5V 2A module | One pack powers the whole kit for about 6 hours. A 1S pack avoids the 2S charger problem |
+| 2026-11-02 | `WIFI-NODE` + `READOUT` and `STATUS` stay as standalone modules | They already work. Each module has its own job and screen |
 
 ## What the radios can and can't do
-- **WiFi (C3):** promiscuous mode captures management frames and data-frame headers. That covers APs (SSID, BSSID, channel, encryption, vendor, hidden SSIDs, RSSI), clients (MAC, probed SSIDs, random-MAC detection) and client-to-AP links. It listens on one channel at a time and hops. It's 2.4 GHz only.
-- **BLE (H2):** advertisement scanning gives MAC, RSSI, name, manufacturer ID and tracker detection (AirTag / Find My / Tile). It can't do Classic Bluetooth. 802.15.4 (Zigbee/Thread) is possible later.
-- **433 MHz (RTL-SDR + `rtl_433`):** decodes key fobs, weather and door sensors, and tyre-pressure sensors. The SDR also opens up ADS-B and wider spectrum views later.
+- **HUB (ESP32 + external antenna):** WiFi network scanning, a packet monitor across channels 1-14 with optional PCAP to SD, deauth detection, BLE scanning and sniffing (MAC, RSSI, packet count, last seen), and GPS wardriving that logs WiFi and BLE with position to SD as WiGLE CSV. It's 2.4 GHz only.
+- **WIFI-NODE (C3, promiscuous):** APs, clients, probed SSIDs and deauth counts while channel hopping 1-13. Clients are sorted by persistence, so the device that has been shadowing longest is the "following me" candidate.
+- **Not covered now:** 433 MHz and sub-GHz (no CC1101 or SDR), 5 GHz WiFi, Classic Bluetooth, and NRF24 2.4 GHz spectrum scanning (nde3d has no NRF24).
 - **Not possible here:** cellular, including fake-tower (IMSI catcher) detection. That needs dedicated hardware.
 
-## Board (shelved)
-The single-PCB design below is kept for reference. The current build is hand-wired in the clamshell case.
-
-- **2 layers with a solid ground plane** on the bottom, never split. Everything is socketed: every module plugs into female headers so it can be swapped and reflashed.
-- **Placement:** the hub and display go on the top face. The nodes, CC1101, IP5310 and battery go on the bottom face.
-- **RF placement:** the GPS goes on the top edge with no copper under its patch. The WiFi and BLE nodes go at opposite short edges, with antenna keep-outs running to the board edge. The CC1101 antenna goes at an edge away from the nodes.
-- **Power traces:** 5V_RAIL at least 1 mm wide, and at least 1.5 mm from the IP5310 to C1. Place each bulk cap right at the pin it feeds.
-- **USB-C access:** every module's USB-C port must be reachable from the case edge for flashing.
-- **Board size is not settled yet.** `PCB-BOM-AND-NETLIST.md` says 100 x 150 mm (portrait). The layout concept in `esp32-hub-board.html` is drawn at 170 x 100 mm. Pick one before routing.
-
-## Power budget
-These figures are for the shelved IP5310 design. The current power system is in [`hardware-layout.md`](hardware-layout.md) section 5; the 3.3 V note below still applies to the S3 hub.
-
-- **5 V:** about 900 mA to 1 A peak (WiFi node ~250–300 mA, BLE node ~150 mA, S3 plus its 3V3 loads ~300–350 mA, display ~100 mA). The IP5310 board is rated 3.1 A. **The mini slide switch is the weak point:** many are rated only 0.3–0.5 A, so buy one rated 1 A or more.
-- **3.3 V:** the S3 devkit's onboard LDO (~800 mA) feeds the display, GPS, CC1101 and SD, which puts it close to the limit at peak. If the hub browns out, give the display and SD their own 3.3 V regulator.
-- Bench-test the IP5310 for charge-while-running (a possible brief dropout) and for idle auto-shutdown.
-
-## Status (2026-10-09)
-- **Hardware:** clamshell layout planned in `hardware-layout.md`; the nde3d cart for budget v1 (about R1,390) is listed there. The PCB and KiCad work are shelved.
-- **Working on the bench:** the WiFi readout (`proto_readout_c3` + `proto_readout_uno`: C3 promiscuous scanner streaming rows to the UNO + 3.5" TFT).
-- **Firmware** (`../v2/`): `hub`, `node_wifi` and `node_ble` are written but **never compiled or flashed**, and still carry XIAO C5/C6 pin labels. Needed for budget v1:
-  - `hub.ino`: replace the ILI9341 UI with the row-stream sender for the UNO display; LED + piezo alerts.
-  - `node_wifi`: retarget to the ESP32-C3 (remove the C5-only band call, remap pins).
-  - BLE node: port to the ESP32-1732S019 with its ST7789 screen (start from `proto_tracker_tripwire`).
-  - Not implemented yet: CC1101 reception, pack voltage sensing.
+## Status (2026-11-03)
+- **Parts:** nde3d order placed on 2026-11-02 (R898.15), waiting to be collected at Strand.
+- **HUB:** wiring drawn from the firmware pins. The prebuilt v1.7.0 firmware is downloaded and ready to flash. Nothing is wired yet.
+- **WIFI-NODE + READOUT:** working on the bench.
+- **STATUS:** working as a watch.
+- **Case:** the Pi 5 layout and filler no longer fit. The layout will be redrawn once the parts are measured.
 
 ## Next steps
-1. Order the cart; measure the case interior and make cardboard templates.
-2. Bench-build and test the power system before it goes near the electronics (see `hardware-layout.md` section 5).
-3. Get the hub compiling on the S3, then bring up SD, GPS, one node at a time, then the UNO display link.
-4. Cut the faceplate and deck, mount everything, and do the close test.
-5. Walk test and a WiGLE upload. Add the Raspberry Pi 5 phase when budget allows.
+1. Collect the parts. Check that the ESP32 is a full dev board with USB and headers.
+2. Flash the bare board with the ESP32-DIV v1.7.0 merged binary.
+3. Wire the HUB one part at a time on USB power: TFT, touch, SD, PCF8574 and buttons, GPS, antenna. Run Touch Calibrate, then test the WiFi scan, BLE scan and GPS.
+4. Bench-test the power system: matched cells, module output, runtime.
+5. Measure the parts and lay out the case.
+6. Plan the laptop side: collect the HUB SD logs and the STATUS CSVs for analysis.
