@@ -59,7 +59,7 @@ flowchart TD
     end
 ```
 
-Pin-level wiring for the `HUB` is in [`docs/wiring.svg`](docs/wiring.svg) and on the build page. Board names are defined in [`docs/hardware-layout.md`](docs/hardware-layout.md#board-names).
+Wiring for the `HUB` is on the build page and in three drawings: [`docs/wiring-overview.svg`](docs/wiring-overview.svg) (the ESP32 + touchscreen assembly and the protoboard, joined by the 6-wire J1 cable), [`docs/wiring.svg`](docs/wiring.svg) (ESP32 + touchscreen) and [`docs/wiring-protoboard.svg`](docs/wiring-protoboard.svg) (GPS, PCF8574 and buttons). Board names are defined in [`docs/hardware-layout.md`](docs/hardware-layout.md#board-names).
 
 ## Repository
 
@@ -67,7 +67,7 @@ Pin-level wiring for the `HUB` is in [`docs/wiring.svg`](docs/wiring.svg) and on
 |---|---|
 | [`docs/OVERVIEW.md`](docs/OVERVIEW.md) | **Start here.** Goals, decisions, capabilities, status and next steps |
 | [`docs/hardware-layout.md`](docs/hardware-layout.md) | The current build: board names, HUB pins, power, case |
-| [`cad/wiring/`](cad/wiring/) | Script that draws the HUB wiring diagram |
+| [`cad/wiring/`](cad/wiring/) | Script that draws the HUB wiring diagrams |
 | [`docs/build-page.html`](docs/build-page.html) | Source of the build page (deployed by `.github/workflows/pages.yml`) |
 | [`v2/`](v2/README.md) | Firmware: the working `WIFI-NODE` + `READOUT` sketches, plus shelved hub and node code |
 | [`docs/proto-readout-wiring.html`](docs/proto-readout-wiring.html) | `WIFI-NODE` → `READOUT` wiring |

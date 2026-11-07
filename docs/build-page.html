@@ -173,8 +173,13 @@ footer{padding:28px 0 60px;color:var(--muted);font-size:13px}
 
 <section id="wiring">
   <h2>Wiring <span class="phase">ESP32-DIV v1</span></h2>
-  <p class="sec-intro">HUB wiring. Pins come from the firmware's <span class="mono">shared.h</span> and <span class="mono">User_Setup v1.h</span>. Nothing here has been wired or tested yet. The WIFI-NODE to READOUT wiring is on <a href="proto-readout-wiring.html">its own page</a>.</p>
-  <div class="figure"><img src="wiring.svg" alt="Wiring diagram for the ESP32-DIV v1 hub. Three 18650 cells in parallel go through the master switch to a 5 V 2 A charge/boost module, charged from a USB-C breakout. The 5 V rail feeds ESP32 VIN, the TFT and the GPS. The 2.4 inch ILI9341 TFT uses GPIO 15, 0, 2, 13, 14, 32 and 12; touch and SD share GPIO 18, 23 and 19, with chip selects on 33 and 5. The PCF8574 runs on 3V3 with SDA 21 and SCL 22, and five buttons on P3 to P7. The NEO-7M GPS TX goes to GPIO 3 and RX to GPIO 1. A router antenna connects to the U.FL socket."></div>
+  <p class="sec-intro">The HUB is built as two parts joined by one 6-wire cable (J1): the <b>ESP32 + touchscreen</b> assembly, and a <b>protoboard</b> (an UNO proto shield used on its own) carrying the GPS, the PCF8574 button expander and the five buttons. Pins come from the firmware's <span class="mono">shared.h</span> and <span class="mono">User_Setup v1.h</span>. Nothing here has been wired or tested yet. The WIFI-NODE to READOUT wiring is on <a href="proto-readout-wiring.html">its own page</a>.</p>
+  <h3>1. Overview: the two parts and the J1 cable</h3>
+  <div class="figure"><img src="wiring-overview.svg" alt="Overview of the hub. The battery, switch and 5 V boost module feed the ESP32 plus touchscreen assembly. A 6-wire cable J1 runs to the protoboard: pin 1 3V3, 2 GND, 3 SDA from GPIO 21 and 4 SCL from GPIO 22 to the PCF8574, 5 GPS TX into GPIO 3 and 6 GPS RX from GPIO 1, both through the JP1 flash jumpers. The PCF8574 drives five buttons. A router antenna goes on the ESP32's U.FL socket."></div>
+  <h3 style="margin-top:18px">2. ESP32 + touchscreen</h3>
+  <div class="figure"><img src="wiring.svg" alt="Wiring for the ESP32 plus touchscreen assembly. Three 18650 cells in parallel go through the master switch to a 5 V 2 A charge/boost module, charged from a USB-C breakout. The 5 V rail feeds ESP32 VIN and the TFT. The 2.4 inch ILI9341 TFT uses GPIO 15, 0, 2, 13, 14, 32 and 12; touch and SD share GPIO 18, 23 and 19, with chip selects on 33 and 5. On the right, the J1 cable: 3V3, GND, GPIO 21, GPIO 22, GPIO 3 and GPIO 1."></div>
+  <h3 style="margin-top:18px">3. Protoboard</h3>
+  <div class="figure"><img src="wiring-protoboard.svg" alt="Protoboard layout. J1 pin 1 feeds the 3V3 rail (printed 5V on the shield) and pin 2 the GND rail. Pins 3 and 4 go to the PCF8574 SDA and SCL. The PCF8574 VCC and GND go to the rails; P3 DOWN, P4 LEFT, P5 RIGHT, P6 UP and P7 SELECT each go to a push button whose other leg goes to GND. P0 to P2 are unused. J1 pins 5 and 6 go through the two JP1 jumpers to the GPS TXD and RXD. The GPS VCC goes to the 3V3 rail and GND to ground; PPS is not connected. An inset shows the buttons as a D-pad with SELECT in the centre."></div>
   <div class="grid" style="margin-top:18px">
     <div class="card">
       <h3>HUB (ESP32-WROOM-32U)</h3>
@@ -193,19 +198,20 @@ footer{padding:28px 0 60px;color:var(--muted);font-size:13px}
           <tr><td class="mono">18</td><td>T_CLK and SD_SCK</td></tr>
           <tr><td class="mono">23</td><td>T_DIN and SD_MOSI</td></tr>
           <tr><td class="mono">19</td><td>T_DO and SD_MISO</td></tr>
-          <tr><td class="mono">21 / 22</td><td>PCF8574 SDA / SCL</td></tr>
-          <tr><td class="mono">3 (RX)</td><td>GPS TX</td></tr>
-          <tr><td class="mono">1 (TX)</td><td>GPS RX</td></tr>
+          <tr><td class="mono">21 / 22</td><td>J1 pins 3 / 4: PCF8574 SDA / SCL</td></tr>
+          <tr><td class="mono">3 (RX)</td><td>J1 pin 5: GPS TX</td></tr>
+          <tr><td class="mono">1 (TX)</td><td>J1 pin 6: GPS RX (optional)</td></tr>
+          <tr><td class="mono">3V3 / GND</td><td>J1 pins 1 / 2: protoboard rails</td></tr>
           <tr><td class="mono">VIN</td><td>5 V rail from the boost module</td></tr>
-          <tr><td class="mono">3V3</td><td>PCF8574 VCC</td></tr>
         </tbody>
       </table>
     </div>
     <div class="card">
       <h3>Rules</h3>
       <ul>
-        <li>Unplug the GPS to flash. GPIO 1 and 3 are also the USB serial pins.</li>
-        <li>Power the PCF8574 from 3V3, never the 5 V rail. Its address is auto-detected (0x20-0x27).</li>
+        <li>Pull both JP1 jumper caps on the protoboard to flash. GPIO 1 and 3 are also the USB serial pins.</li>
+        <li>J1 pin 1 is 3V3, never the 5 V rail. The shield's rail is printed "5V": relabel it 3V3. The PCF8574 address is auto-detected (0x20-0x27).</li>
+        <li>The GPS runs from the 3V3 rail. If it never gets a fix, feed its VCC from 5 V with a 7th wire.</li>
         <li>Buttons: P6 UP, P3 DOWN, P4 LEFT, P5 RIGHT, P7 SELECT. Wire the other leg of each to GND.</li>
         <li>SDA 21 / SCL 22 are the ESP32 defaults. The firmware calls <span class="mono">Wire.begin()</span> with no pins, so check this first if the buttons do nothing.</li>
         <li>Common ground between every part.</li>
@@ -231,7 +237,7 @@ footer{padding:28px 0 60px;color:var(--muted);font-size:13px}
     <li>Wire the TFT and check the menu shows.</li>
     <li>Wire touch, run Touch Calibrate, then add the SD card.</li>
     <li>Wire the PCF8574 on 3V3 and the five buttons; check the menu moves.</li>
-    <li>Wire the GPS and check satellites in Satellite Scanner. Unplug it whenever you flash.</li>
+    <li>Build the protoboard (GPS, PCF8574, buttons, JP1, J1) and connect it with the 6-wire cable. Check the menu moves and satellites show in Satellite Scanner. Pull the JP1 caps whenever you flash.</li>
     <li>Fit the router antenna on the U.FL socket. Test the WiFi scan, BLE scan and a short Wardriver log.</li>
     <li>Bench-test the power system: matched cells, module output, then the HUB and READOUT on battery.</li>
     <li>Measure every part and lay out the case.</li>

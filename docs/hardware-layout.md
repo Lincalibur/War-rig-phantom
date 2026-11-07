@@ -10,9 +10,13 @@ One single-cell 18650 pack and a 5 V boost module power them all. Later, the log
 
 The [build page](build-page.html) has the shopping list, wiring and build order. This page records the parts, power and reasons.
 
-![Wiring: ESP32-DIV v1 hub](./wiring.svg)
+![Wiring overview: ESP32 + touchscreen and the protoboard](./wiring-overview.svg)
 
-> The wiring drawing comes from [`cad/wiring/generate_wiring.py`](../cad/wiring/generate_wiring.py). Pins are taken from cifertech's ESP32-DIV firmware, v1 target (`shared.h` and `Libraries/User_Setup v1.h`). Nothing has been wired or tested yet.
+![Wiring: ESP32 + touchscreen](./wiring.svg)
+
+![Wiring: protoboard (GPS, PCF8574, buttons)](./wiring-protoboard.svg)
+
+> The wiring drawings come from [`cad/wiring/generate_wiring.py`](../cad/wiring/generate_wiring.py). Pins are taken from cifertech's ESP32-DIV firmware, v1 target (`shared.h` and `Libraries/User_Setup v1.h`). Nothing has been wired or tested yet.
 
 **Everything is passive.** The ESP32-DIV firmware also has attack tools (deauth, beacon spam, BLE spoofing, jammers, captive portal). They are not part of this project, and the build has no NRF24 or CC1101 radios to use them with.
 
