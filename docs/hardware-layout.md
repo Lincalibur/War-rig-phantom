@@ -1,6 +1,6 @@
 # Hardware layout
 
-The current build, as of 2026-11-02. The cyberdeck is a kit of separate passive modules. Each module has its own screen and job:
+The current build, as of 2026-11-10. The cyberdeck is a kit of separate modules. Each module has its own screen and job:
 
 - The `HUB` is an ESP32-DIV v1-style handheld.
 - The `WIFI-NODE` and `READOUT` pair forms a big-screen WiFi readout.
@@ -18,7 +18,9 @@ The [build page](build-page.html) has the shopping list, wiring and build order.
 
 > The wiring drawings come from [`cad/wiring/generate_wiring.py`](../cad/wiring/generate_wiring.py). Pins are taken from cifertech's ESP32-DIV firmware, v1 target (`shared.h` and `Libraries/User_Setup v1.h`). Nothing has been wired or tested yet.
 
-**Everything is passive.** The ESP32-DIV firmware also has attack tools (deauth, beacon spam, BLE spoofing, jammers, captive portal). They are not part of this project, and the build has no NRF24 or CC1101 radios to use them with.
+**Full ESP32-DIV capability (2026-11-10).** The HUB now targets the complete ESP32-DIV V1 feature set, including the active tools (WiFi deauth, beacon/probe flood, captive/evil portal, BLE spoof/spam and jammer), plus the NRF24 (2.4 GHz jam/spoof/ESB) and CC1101 (sub-GHz capture/replay/jam) radios.
+
+> **Authorized testing only.** The active tools transmit. Use them **only** against hardware you own and control — the project's own test laptop and spare router on an isolated bench. Do not transmit against networks, devices or people you don't own. Deauth/jamming is illegal in most jurisdictions when aimed at others.
 
 ---
 
@@ -26,7 +28,7 @@ The [build page](build-page.html) has the shopping list, wiring and build order.
 
 | Name | Board | Job | Firmware |
 |---|---|---|---|
-| `HUB` | ESP32-WROOM-32U dev board (U.FL antenna) + 2.4" ILI9341 touch/SD TFT + PCF8574 buttons + NEO-7M GPS | Handheld scanner: WiFi and BLE scanning, deauth detection, packet monitor, and GPS wardriving logged to SD as WiGLE CSV | ESP32-DIV v1.7.0, v1 target |
+| `HUB` | ESP32-WROOM-32U dev board (U.FL antenna) + 2.4" ILI9341 touch/SD TFT + PCF8574 buttons + NEO-7M GPS + ESP32-DIV radio shield (3× NRF24L01 + CC1101) | Full ESP32-DIV multi-tool: WiFi scan/deauth/evil-portal/packet-monitor, BLE scan/spoof/jam, 2.4 GHz (NRF24) jam/spoof/ESB, sub-GHz (CC1101) capture/replay/jam, and GPS wardriving logged to SD as WiGLE CSV | ESP32-DIV v1.7.2, v1 target (stock `ESP32-DIV-v1-v1.7.2.bin`) |
 | `WIFI-NODE` | ESP32-C3 (first) | WiFi promiscuous capture: APs, clients, deauths, "following me" persistence. Streams rows to `READOUT` | `v2/proto_readout_c3` (working) |
 | `READOUT` | Arduino UNO R3 + 3.5" TFT shield | Big-screen display for `WIFI-NODE` | `v2/proto_readout_uno` (working) |
 | `STATUS` | ESP32-C3 (second) + 128×64 OLED | Removable watch. Logs GPS and WiFi scans and sends a CSV to an Android phone. It docks to the kit now and then | Working, on the watch |
@@ -49,6 +51,11 @@ Retired: the Raspberry Pi 5 hub, the 7" panel and its RTD2660 driver, the RTL-SD
 | PCF8574 | SDA, SCL | 21, 22 |
 | NEO-7M GPS | TX, RX | 3 (ESP32 RX), 1 (ESP32 TX) |
 | Buttons on PCF8574 | UP, DOWN, LEFT, RIGHT, SELECT | P6, P3, P4, P5, P7, each to GND |
+| NRF24 #1 (primary) | CE, CSN | 4, 5 |
+| NRF24 #2 | CE, CSN | 26, 27 |
+| NRF24 #3 (scanner/ESB/MouseJack) | CE, CSN | 16, 17 |
+| CC1101 (sub-GHz) | CS, GDO0, GDO2 | 27, 26, 16 |
+| Radios shared SPI | SCK, MOSI, MISO | 18, 23, 19 (shared with SD + touch) |
 
 - **GPS on the USB serial pins.** GPIO 1 and 3 are also used by the board's USB serial chip. Unplug the GPS while flashing.
 - **PCF8574 on 3V3, not 5 V.** Its address is auto-detected (0x20-0x27).
@@ -57,6 +64,18 @@ Retired: the Raspberry Pi 5 hub, the 7" panel and its RTD2660 driver, the RTL-SD
 - **Antenna.** A router antenna (RP-SMA) and pigtail go on the board's U.FL socket.
 
 The `WIFI-NODE` → `READOUT` link is a one-way 19200-baud UART. Its wiring is in [`proto-readout-wiring.html`](proto-readout-wiring.html).
+
+---
+
+## Radio shield (NRF24 + CC1101)
+
+The radios come from cifertech's ESP32-DIV V1 shield: **3× NRF24L01+** (2.4 GHz jam/spoof/ESB/MouseJack) and **1× CC1101** (sub-GHz). Pins are fixed by the stock firmware's `shared.h`, so wire to the GPIOs above and flash the unmodified V1 binary — no source changes.
+
+- **One shared SPI bus, time-shared.** The SD card, touch, all three NRF24 and the CC1101 sit on SCK 18 / MOSI 23 / MISO 19. They are not all active at once: the firmware reclaims the bus and re-mounts the SD card after a radio tool runs. By design, **GPIO 5 is both `SD_CS` and NRF24 #1 `CSN`** (SD or NRF24 #1, not both at the same instant), and **GPIO 26/27/16 are reused** between NRF24 #2/#3 and the CC1101, so 2.4 GHz-NRF tools and sub-GHz tools run one mode at a time. This is cifertech's own multiplexing, not a wiring error.
+- **NRF24 is 3V3 only.** Power each module from 3V3, not 5 V. Put a **10 µF** (plus a 100 nF) cap right across each NRF24's VCC/GND — they brown out and misbehave without it, and three radios on one rail is demanding. NRF24L01+PA+LNA modules give more range but draw more; budget the power accordingly (see the power table — radios were not in the original load estimate).
+- **CC1101 band.** Pick the module for the band you'll test: **433 MHz** is the common SA ISM band for remotes/sensors; 868/915 MHz is the other. Decoupling as above.
+- **Antennas.** Each NRF24 and the CC1101 wants its own antenna. Keep them physically separated — the earlier build hit near-field interference between close 2.4 GHz radios.
+- **Not yet verified against the schematic.** The pin table is taken from the firmware source (`shared.h`, v1 branch). Cifertech's `Schematic/v1/ESP32DIV-SHIELD.jpg` + `ESP32DIV-SHIELD-BOM.pdf` are the physical reference; cross-check them before soldering the shield.
 
 ---
 
@@ -104,4 +123,6 @@ The 22 × 22 cm clamshell case and its printed filler blocks (`cad/case_filler/`
 - Does the 5V 2A module cut out on a low cell, and how much current can it really give?
 - How should the kit sit in the case? Measure the parts first.
 - How do logs get to the laptop? The `HUB` writes WiGLE CSV and PCAP to SD, and `STATUS` sends CSV to the phone. Collecting both on a laptop for analysis is planned but not designed yet.
-- NRF24 2.4 GHz spectrum scanning would need an NRF24 module, which nde3d doesn't stock. It's deferred.
+- Source the radio shield: 3× NRF24L01 (nde3d doesn't stock them — check another supplier), 1× CC1101 at 433 MHz, antennas, and the decoupling caps. Or buy cifertech's assembled V1 shield.
+- Cross-check the radio pin table against cifertech's `Schematic/v1` JPGs before soldering.
+- Power: fold the three NRF24 + CC1101 into the 5 V/3V3 load estimate and re-check runtime.
