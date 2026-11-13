@@ -27,7 +27,7 @@ A portable wireless multi-tool and recon kit that scans and logs the radio envir
 
 ```
   HUB  ESP32-WROOM-32U + router antenna (U.FL)          ESP32-DIV v1 firmware
-       2.4" ILI9341 touch + SD, PCF8574 buttons, NEO-7M GPS
+       2.4" ILI9341 touch + SD, NEO-7M GPS (phone-app control, no buttons)
        WiFi scan, BLE scan, deauth detector, packet monitor, GPS wardriving -> SD (WiGLE CSV)
 
   WIFI-NODE  ESP32-C3, WiFi promiscuous --19200 baud UART--> READOUT  UNO + 3.5" TFT
@@ -53,7 +53,8 @@ Each module works on its own. None of them transmit on the scanned bands.
 | 2026-11-02 | `STATUS` becomes a removable watch | It already logs GPS and WiFi scans to a phone |
 | 2026-11-02 | **Drop the Pi 5. The HUB is an ESP32-DIV v1-style handheld on an ESP32-WROOM-32U** | The Pi was overkill. The ESP32-DIV gives a working scanner and wardriver UI for about R900, at low power, with external-antenna range. Losing Kismet, the RTL-SDR and the 7" panel is accepted |
 | 2026-11-02 | v1 target (classic ESP32), not v2 (S3) | nde3d has no WROOM-1U S3 board. S3 boards with octal PSRAM lose GPIO 35-37, which v2 uses for the TFT |
-| 2026-11-02 | Not the CYD (ESP32-2432S028R) | Its pins are shared, so the GPS and buttons can't be added cleanly |
+| 2026-11-02 | Not the CYD (ESP32-2432S028R) | Its pins are shared, so the GPS and other peripherals can't be added cleanly |
+| 2026-11-13 | Drop the PCF8574 button matrix; drive the HUB from the CONSOLE phone app (BLE) and the touchscreen | Fewer parts and wires, no I2C expander, and the app is the main control surface anyway. GPIO 21/22 freed. The GPS wires straight to the ESP32, so the protoboard goes too |
 | 2026-11-02 | 2.4" ILI9341 instead of the 2.8" | R299 against R468, and the firmware runs on both |
 | 2026-11-02 | 3x 18650 in parallel on a single-cell 5V 2A module | One pack powers the whole kit for about 6 hours. A 1S pack avoids the 2S charger problem |
 | 2026-11-02 | `WIFI-NODE` + `READOUT` and `STATUS` stay as standalone modules | They already work. Each module has its own job and screen |
@@ -77,7 +78,7 @@ Each module works on its own. None of them transmit on the scanned bands.
 ## Next steps
 1. Collect the parts. Check that the ESP32 is a full dev board with USB and headers.
 2. Flash the bare board with the stock `ESP32-DIV-v1-v1.7.2.bin` (classic-ESP32 V1 build — not the V2/CYD binary). Confirm the menu and TFT come up before wiring anything.
-3. Wire the HUB one part at a time on USB power: TFT, touch, SD, PCF8574 and buttons, GPS, antenna. Run Touch Calibrate, then test the WiFi scan, BLE scan and GPS.
+3. Wire the HUB one part at a time on USB power: TFT, touch, SD, GPS (straight to the ESP32), antenna. Run Touch Calibrate, then test the WiFi scan, BLE scan and GPS. Unplug the GPS while flashing (it shares GPIO 1/3).
 4. Source and add the radio shield: 3× NRF24L01 + CC1101 (433 MHz), antennas, decoupling caps. Cross-check the pins against cifertech's `Schematic/v1` before soldering. Add one radio at a time and test.
 5. Set up the authorized test bench: the spare router and test laptop on an isolated network, nothing else nearby. Verify deauth detection, then (carefully) the active WiFi/BLE/NRF24/CC1101 tools against only that gear.
 6. Bench-test the power system with the radios included: matched cells, module output, runtime under radio load.

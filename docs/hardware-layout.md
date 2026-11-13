@@ -11,13 +11,9 @@ One single-cell 18650 pack and a 5 V boost module power them all. Later, the log
 
 The [build page](build-page.html) has the shopping list, wiring and build order. This page records the parts, power and reasons.
 
-![Wiring overview: ESP32 + touchscreen and the protoboard](./wiring-overview.svg)
+![Wiring: ESP32 + touchscreen + GPS](./wiring.svg)
 
-![Wiring: ESP32 + touchscreen](./wiring.svg)
-
-![Wiring: protoboard (GPS, PCF8574, buttons)](./wiring-protoboard.svg)
-
-> The wiring drawings come from [`cad/wiring/generate_wiring.py`](../cad/wiring/generate_wiring.py). Pins are taken from cifertech's ESP32-DIV firmware, v1 target (`shared.h` and `Libraries/User_Setup v1.h`). Nothing has been wired or tested yet.
+> The wiring drawing comes from [`cad/wiring/generate_wiring.py`](../cad/wiring/generate_wiring.py). Pins are taken from cifertech's ESP32-DIV firmware, v1 target (`shared.h` and `Libraries/User_Setup v1.h`). The GPS wires straight to the ESP32 — there is no protoboard and no button matrix; the handheld is driven from the CONSOLE phone app over BLE (and the touchscreen). Nothing has been wired or tested yet.
 
 **Full ESP32-DIV capability (2026-11-10).** The HUB now targets the complete ESP32-DIV V1 feature set, including the active tools (WiFi deauth, beacon/probe flood, captive/evil portal, BLE spoof/spam and jammer), plus the NRF24 (2.4 GHz jam/spoof/ESB) and CC1101 (sub-GHz capture/replay/jam) radios.
 
@@ -33,7 +29,7 @@ aliases so older docs still make sense.)
 
 | Name | Was | Board | Role now | Firmware |
 |---|---|---|---|---|
-| **SPECTRE** | `HUB` | ESP32-WROOM-32U dev board (U.FL antenna) + 2.4" ILI9341 touch/SD TFT + PCF8574 buttons + NEO-7M GPS + ESP32-DIV radio shield (3× NRF24L01 + CC1101) | **Active, phone-driven power tool.** Full ESP32-DIV multi-tool: WiFi scan/deauth/evil-portal/packet-monitor, BLE scan/spoof/jam, 2.4 GHz (NRF24) jam/spoof/ESB, sub-GHz (CC1101) capture/replay/jam, GPS wardriving to SD. The orchestrator is being ported here ([`hub-migration-plan.md`](hub-migration-plan.md)) | stock ESP32-DIV v1.7.2 today → ported orchestrator |
+| **SPECTRE** | `HUB` | ESP32-WROOM-32U dev board (U.FL antenna) + 2.4" ILI9341 touch/SD TFT + NEO-7M GPS (phone-app control, no button matrix) + ESP32-DIV radio shield (3× NRF24L01 + CC1101) | **Active, phone-driven power tool.** Full ESP32-DIV multi-tool: WiFi scan/deauth/evil-portal/packet-monitor, BLE scan/spoof/jam, 2.4 GHz (NRF24) jam/spoof/ESB, sub-GHz (CC1101) capture/replay/jam, GPS wardriving to SD. The orchestrator is being ported here ([`hub-migration-plan.md`](hub-migration-plan.md)) | stock ESP32-DIV v1.7.2 today → ported orchestrator |
 | **SENTINEL** | `WIFI-NODE` + `READOUT` | ESP32-C3 + Arduino UNO R3 / 3.5" TFT (soldered pair, one-way 19200 UART) | **Passive, always-on watcher** (never transmits): TRACKERS (following BLE tags), TAILS (persistent WiFi clients), ATTACKS (deauth floods, evil-twin APs). Alerts on screen + red LED. SENTINEL-C3 = brain, SENTINEL-TFT = screen | `sentinel/v1/{c3,uno}` (compile-verified 2026-11-13) |
 | **BEACON** | `STATUS` | ESP32-C3 + 128×64 OLED | Removable logging watch. Logs GPS + WiFi scans and sends CSV to an Android phone; docks to the kit now and then | Working, on the watch |
 | **CONSOLE** | — | Android phone app (Flutter) | Controls SPECTRE over BLE. `app/` | Built: `CyberDeck.apk` |
@@ -53,18 +49,16 @@ Retired: the Raspberry Pi 5 hub, the 7" panel and its RTD2660 driver, the RTL-SD
 | XPT2046 touch | T_CS | 33 |
 | SD card | SD_CS | 5 |
 | Touch + SD, shared bus | T_CLK + SD_SCK, T_DIN + SD_MOSI, T_DO + SD_MISO | 18, 23, 19 |
-| PCF8574 | SDA, SCL | 21, 22 |
 | NEO-7M GPS | TX, RX | 3 (ESP32 RX), 1 (ESP32 TX) |
-| Buttons on PCF8574 | UP, DOWN, LEFT, RIGHT, SELECT | P6, P3, P4, P5, P7, each to GND |
 | NRF24 #1 (primary) | CE, CSN | 4, 5 |
 | NRF24 #2 | CE, CSN | 26, 27 |
 | NRF24 #3 (scanner/ESB/MouseJack) | CE, CSN | 16, 17 |
 | CC1101 (sub-GHz) | CS, GDO0, GDO2 | 27, 26, 16 |
 | Radios shared SPI | SCK, MOSI, MISO | 18, 23, 19 (shared with SD + touch) |
 
-- **GPS on the USB serial pins.** GPIO 1 and 3 are also used by the board's USB serial chip. Unplug the GPS while flashing.
-- **PCF8574 on 3V3, not 5 V.** Its address is auto-detected (0x20-0x27).
-- **I2C pins.** SDA 21 / SCL 22 are the ESP32 defaults. The firmware calls `Wire.begin()` with no pins, so check this first if the buttons do nothing.
+- **GPS wired straight to the ESP32.** VCC to 3V3, GND to GND, TXD to GPIO 3, RXD (optional) to GPIO 1, PPS unconnected. No protoboard. Feed VCC from 5 V only if it won't get a fix.
+- **GPS on the USB serial pins.** GPIO 1 and 3 are also used by the board's USB serial chip. Unplug the GPS (or pull its TXD lead off GPIO 3) while flashing.
+- **No button matrix.** The PCF8574 and the five buttons were dropped; the handheld is driven from the CONSOLE phone app over BLE and the touchscreen. GPIO 21/22 are free.
 - **No battery gauge.** `BATTERY_ADC_PIN` is -1.
 - **Antenna.** A router antenna (RP-SMA) and pigtail go on the board's U.FL socket.
 
@@ -110,7 +104,11 @@ The radios come from cifertech's ESP32-DIV V1 shield: **3× NRF24L01+** (2.4 GHz
 
 ## Case
 
-The 22 × 22 cm clamshell case and its printed filler blocks (`cad/case_filler/`) were designed for the Pi 5 and 7" panel. They don't fit these parts. The layout will be redrawn once the parts are in hand and measured. The Pi 5 filler files stay in the repo for reference, and the measured case numbers still hold:
+The 22 × 22 cm clamshell case and its printed filler blocks (`cad/case_filler/`) were designed for the Pi 5 and 7" panel. They don't fit these parts. The module layout below is the current plan — schematic, not to scale; the foam compartments get cut once the parts are measured. The Pi 5 filler files stay in the repo for reference, and the measured case numbers still hold.
+
+The whole **bottom section** holds power: the powerbank, the three 18650 cells and the charging station. **Two power lines** run up the right-hand side into the **top section**, where a **USB hub** sits across the middle with its ports facing up. Each module above the hub (SPECTRE, SENTINEL, BEACON) plugs in with its own power cable — SENTINEL uses two (C3 + UNO). The phone (CONSOLE) is carried by the operator, not stored in the case.
+
+![Module layout in the storage case](./case-layout.svg)
 
 | Property | Value |
 |---|---|
