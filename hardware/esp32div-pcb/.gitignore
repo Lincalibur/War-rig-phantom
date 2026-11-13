@@ -1,0 +1,6 @@
+# KiCad lock / autosave / backup files
+*.lck
+~*.lck
+_autosave-*
+*-backups/
+fp-info-cache

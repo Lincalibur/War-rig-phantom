@@ -81,12 +81,12 @@ footer{padding:28px 0 60px;color:var(--muted);font-size:13px}
 <div class="wrap">
 <header>
   <h1>War-rig-phantom: ESP32-DIV build <span class="phase">Parts ordered</span></h1>
-  <p class="lede">A portable, passive counter-surveillance kit. The HUB is an ESP32-DIV v1-style handheld: an ESP32 with a router antenna, a 2.4" touch screen, buttons and GPS. It scans WiFi and BLE, spots deauth floods and logs GPS-tagged sightings to SD. A C3 WiFi sniffer with a 3.5" readout and a removable watch run beside it. One 18650 pack powers them all.</p>
+  <p class="lede">A portable, passive counter-surveillance kit. The HUB is an ESP32-DIV v1-style handheld: an ESP32 with a router antenna, a 2.4" touch screen and GPS, driven from a phone app over BLE (no button matrix). It scans WiFi and BLE, spots deauth floods and logs GPS-tagged sightings to SD. A C3 WiFi sniffer with a 3.5" readout and a removable watch run beside it. One 18650 pack powers them all.</p>
   <ul class="facts">
     <li>Hub <b>ESP32-WROOM-32U</b>, ESP32-DIV v1 firmware</li>
     <li>Display <b>2.4" 240×320</b> touch, SD slot</li>
     <li>Power <b>3x 18650 in parallel</b>, about 6 hours (estimate)</li>
-    <li>Parts <b>R898.15</b> at nde3d</li>
+    <li>Parts <b>R878.46</b> at nde3d</li>
     <li><b>Receive only</b>: no deauth, injection or jamming</li>
   </ul>
   <nav><a href="#boards">Boards</a><a href="#firmware">Firmware</a><a href="#parts">Parts</a><a href="#power">Power</a><a href="#wiring">Wiring</a><a href="#build">Build order</a><a href="#case">Case</a><a href="#later">Later</a></nav>
@@ -99,7 +99,7 @@ footer{padding:28px 0 60px;color:var(--muted);font-size:13px}
   <table>
     <thead><tr><th>Name</th><th>Board</th><th>Job</th><th>State</th></tr></thead>
     <tbody>
-      <tr><td><span class="tag">HUB</span></td><td>ESP32-WROOM-32U dev board + 2.4" ILI9341 touch/SD + PCF8574 buttons + NEO-7M GPS</td><td>Handheld scanner: WiFi and BLE scans, deauth detector, packet monitor, GPS wardriving to SD</td><td>Parts ordered</td></tr>
+      <tr><td><span class="tag">HUB</span></td><td>ESP32-WROOM-32U dev board + 2.4" ILI9341 touch/SD + NEO-7M GPS (phone-app control, no buttons)</td><td>Handheld scanner: WiFi and BLE scans, deauth detector, packet monitor, GPS wardriving to SD</td><td>Parts ordered</td></tr>
       <tr><td><span class="tag">WIFI-NODE</span></td><td>ESP32-C3 (first)</td><td>WiFi promiscuous capture, sorted by how long each device has been around. Streams rows to the READOUT</td><td>Working</td></tr>
       <tr><td><span class="tag">READOUT</span></td><td>Arduino UNO R3 + 3.5" TFT shield</td><td>Big screen for the WIFI-NODE</td><td>Working</td></tr>
       <tr><td><span class="tag">STATUS</span></td><td>ESP32-C3 (second) + 128×64 OLED</td><td>Removable watch: logs GPS and WiFi scans and sends a CSV to a phone. Docks to the kit now and then</td><td>Working</td></tr>
@@ -166,20 +166,15 @@ footer{padding:28px 0 60px;color:var(--muted);font-size:13px}
                                                                        +-> STATUS dock</pre>
   <div class="grid" style="margin-top:18px">
     <div class="card"><h3>Charging</h3><p>The module has no USB port. Solder a USB-C breakout, or a cut USB cable, to its charge input pads. Charge with the master switch off until you know it handles charge-while-running.</p></div>
-    <div class="card"><h3>3.3 V parts</h3><p>The PCF8574 runs from the ESP32's 3V3 pin, not the 5 V rail. The TFT and GPS take 5 V on VCC and have their own regulators; their signal lines are 3.3 V.</p></div>
+    <div class="card"><h3>3.3 V parts</h3><p>The GPS runs from the ESP32's 3V3 pin (feed it 5 V only if it won't get a fix). The TFT takes 5 V on VCC and has its own regulator; all signal lines are 3.3 V.</p></div>
     <div class="card"><h3>Battery level</h3><p>There is no battery gauge on the HUB (<span class="mono">BATTERY_ADC_PIN</span> is -1). Check the cells with a meter until a gauge is added.</p></div>
   </div>
 </section>
 
 <section id="wiring">
   <h2>Wiring <span class="phase">ESP32-DIV v1</span></h2>
-  <p class="sec-intro">The HUB is built as two parts joined by one 6-wire cable (J1): the <b>ESP32 + touchscreen</b> assembly, and a <b>protoboard</b> (an UNO proto shield used on its own) carrying the GPS, the PCF8574 button expander and the five buttons. Pins come from the firmware's <span class="mono">shared.h</span> and <span class="mono">User_Setup v1.h</span>. Nothing here has been wired or tested yet. The WIFI-NODE to READOUT wiring is on <a href="proto-readout-wiring.html">its own page</a>.</p>
-  <h3>1. Overview: the two parts and the J1 cable</h3>
-  <div class="figure"><img src="wiring-overview.svg" alt="Overview of the hub. The battery, switch and 5 V boost module feed the ESP32 plus touchscreen assembly. A 6-wire cable J1 runs to the protoboard: pin 1 3V3, 2 GND, 3 SDA from GPIO 21 and 4 SCL from GPIO 22 to the PCF8574, 5 GPS TX into GPIO 3 and 6 GPS RX from GPIO 1, both through the JP1 flash jumpers. The PCF8574 drives five buttons. A router antenna goes on the ESP32's U.FL socket."></div>
-  <h3 style="margin-top:18px">2. ESP32 + touchscreen</h3>
-  <div class="figure"><img src="wiring.svg" alt="Wiring for the ESP32 plus touchscreen assembly. Three 18650 cells in parallel go through the master switch to a 5 V 2 A charge/boost module, charged from a USB-C breakout. The 5 V rail feeds ESP32 VIN and the TFT. The 2.4 inch ILI9341 TFT uses GPIO 15, 0, 2, 13, 14, 32 and 12; touch and SD share GPIO 18, 23 and 19, with chip selects on 33 and 5. On the right, the J1 cable: 3V3, GND, GPIO 21, GPIO 22, GPIO 3 and GPIO 1."></div>
-  <h3 style="margin-top:18px">3. Protoboard</h3>
-  <div class="figure"><img src="wiring-protoboard.svg" alt="Protoboard layout. J1 pin 1 feeds the 3V3 rail (printed 5V on the shield) and pin 2 the GND rail. Pins 3 and 4 go to the PCF8574 SDA and SCL. The PCF8574 VCC and GND go to the rails; P3 DOWN, P4 LEFT, P5 RIGHT, P6 UP and P7 SELECT each go to a push button whose other leg goes to GND. P0 to P2 are unused. J1 pins 5 and 6 go through the two JP1 jumpers to the GPS TXD and RXD. The GPS VCC goes to the 3V3 rail and GND to ground; PPS is not connected. An inset shows the buttons as a D-pad with SELECT in the centre."></div>
+  <p class="sec-intro">The HUB is one assembly: the ESP32, the 2.4" touch/SD TFT and the GPS wired straight to the board — no protoboard and no button matrix (the handheld is driven from the CONSOLE phone app over BLE and the touchscreen). Pins come from the firmware's <span class="mono">shared.h</span> and <span class="mono">User_Setup v1.h</span>. Nothing here has been wired or tested yet. The WIFI-NODE to READOUT wiring is on <a href="proto-readout-wiring.html">its own page</a>.</p>
+  <div class="figure"><img src="wiring.svg" alt="Wiring for the ESP32, touchscreen and GPS. Three 18650 cells in parallel go through the master switch to a 5 V 2 A charge/boost module, charged from a USB-C breakout. The 5 V rail feeds ESP32 VIN and the TFT. The 2.4 inch ILI9341 TFT uses GPIO 15, 0, 2, 13, 14, 32 and 12; touch and SD share GPIO 18, 23 and 19, with chip selects on 33 and 5. On the right, the GY-NEO-7M GPS wires straight to the ESP32: VCC to 3V3, GND to GND, TXD to GPIO 3 and RXD (optional) to GPIO 1. PPS is left unconnected. A router antenna goes on the ESP32's U.FL socket."></div>
   <div class="grid" style="margin-top:18px">
     <div class="card">
       <h3>HUB (ESP32-WROOM-32U)</h3>
@@ -198,10 +193,9 @@ footer{padding:28px 0 60px;color:var(--muted);font-size:13px}
           <tr><td class="mono">18</td><td>T_CLK and SD_SCK</td></tr>
           <tr><td class="mono">23</td><td>T_DIN and SD_MOSI</td></tr>
           <tr><td class="mono">19</td><td>T_DO and SD_MISO</td></tr>
-          <tr><td class="mono">21 / 22</td><td>J1 pins 3 / 4: PCF8574 SDA / SCL</td></tr>
-          <tr><td class="mono">3 (RX)</td><td>J1 pin 5: GPS TX</td></tr>
-          <tr><td class="mono">1 (TX)</td><td>J1 pin 6: GPS RX (optional)</td></tr>
-          <tr><td class="mono">3V3 / GND</td><td>J1 pins 1 / 2: protoboard rails</td></tr>
+          <tr><td class="mono">3 (RX)</td><td>GPS TXD</td></tr>
+          <tr><td class="mono">1 (TX)</td><td>GPS RXD (optional)</td></tr>
+          <tr><td class="mono">3V3 / GND</td><td>GPS VCC / GND</td></tr>
           <tr><td class="mono">VIN</td><td>5 V rail from the boost module</td></tr>
         </tbody>
       </table>
@@ -209,11 +203,9 @@ footer{padding:28px 0 60px;color:var(--muted);font-size:13px}
     <div class="card">
       <h3>Rules</h3>
       <ul>
-        <li>Pull both JP1 jumper caps on the protoboard to flash. GPIO 1 and 3 are also the USB serial pins.</li>
-        <li>J1 pin 1 is 3V3, never the 5 V rail. The shield's rail is printed "5V": relabel it 3V3. The PCF8574 address is auto-detected (0x20-0x27).</li>
-        <li>The GPS runs from the 3V3 rail. If it never gets a fix, feed its VCC from 5 V with a 7th wire.</li>
-        <li>Buttons: P6 UP, P3 DOWN, P4 LEFT, P5 RIGHT, P7 SELECT. Wire the other leg of each to GND.</li>
-        <li>SDA 21 / SCL 22 are the ESP32 defaults. The firmware calls <span class="mono">Wire.begin()</span> with no pins, so check this first if the buttons do nothing.</li>
+        <li>Unplug the GPS (or pull its TXD lead off GPIO3) to flash. GPIO 1 and 3 are also the USB serial pins.</li>
+        <li>The GPS runs from 3V3. If it never gets a fix, feed its VCC from 5 V instead; GND stays common.</li>
+        <li>No button matrix: the menu is driven by the touchscreen and the CONSOLE phone app over BLE.</li>
         <li>Common ground between every part.</li>
         <li>No battery gauge: <span class="mono">BATTERY_ADC_PIN</span> is -1.</li>
       </ul>
@@ -221,7 +213,6 @@ footer{padding:28px 0 60px;color:var(--muted);font-size:13px}
       <ul>
         <li>Flash the bare board: <span class="mono">ESP32-DIV-v1-v1.7.0-merged.bin</span> at 0x0</li>
         <li>TFT, then touch (run Touch Calibrate), then SD</li>
-        <li>PCF8574 and buttons</li>
         <li>GPS, then the antenna</li>
         <li>Battery, switch and boost module last, all on USB until then</li>
       </ul>
@@ -236,8 +227,7 @@ footer{padding:28px 0 60px;color:var(--muted);font-size:13px}
     <li>Flash the bare board with nothing attached: <span class="mono">esptool --chip esp32 -p COMx erase-flash</span>, then <span class="mono">write-flash 0x0 ESP32-DIV-v1-v1.7.0-merged.bin</span> at 921600 baud (115200 if that fails).</li>
     <li>Wire the TFT and check the menu shows.</li>
     <li>Wire touch, run Touch Calibrate, then add the SD card.</li>
-    <li>Wire the PCF8574 on 3V3 and the five buttons; check the menu moves.</li>
-    <li>Build the protoboard (GPS, PCF8574, buttons, JP1, J1) and connect it with the 6-wire cable. Check the menu moves and satellites show in Satellite Scanner. Pull the JP1 caps whenever you flash.</li>
+    <li>Wire the GPS straight to the ESP32 (VCC 3V3, GND, TXD to GPIO3, RXD to GPIO1). Check satellites show in Satellite Scanner. Unplug the GPS, or pull its TXD lead off GPIO3, whenever you flash.</li>
     <li>Fit the router antenna on the U.FL socket. Test the WiFi scan, BLE scan and a short Wardriver log.</li>
     <li>Bench-test the power system: matched cells, module output, then the HUB and READOUT on battery.</li>
     <li>Measure every part and lay out the case.</li>
@@ -246,8 +236,9 @@ footer{padding:28px 0 60px;color:var(--muted);font-size:13px}
 </section>
 
 <section id="case">
-  <h2>Case <span class="phase">To redo</span></h2>
-  <p class="sec-intro">The 22 × 22 cm clamshell layout and its printed filler blocks were designed for the Pi 5 and 7" display, so they don't fit these parts. The layout will be redrawn once the parts are in hand and measured. The measured case numbers (25 mm per half, 165 mm hinge to handle) and the Pi 5 filler files are kept in the repository for reference.</p>
+  <h2>Case <span class="phase">Layout planned</span></h2>
+  <p class="sec-intro">The modules stack inside the 22 × 22 cm clamshell by their proper names. The whole <b>bottom</b> holds the power: the powerbank, the three 18650 cells and the charging station. Two power lines run up the right-hand side into the <b>top</b> section, where a <b>USB hub</b> sits across the middle with its ports facing up. Each module above the hub plugs in with its own power cable (SENTINEL uses two). The phone (CONSOLE) isn't stored in the case. Schematic, not to scale — the foam gets cut once the parts are measured.</p>
+  <div class="figure"><img src="case-layout.svg" alt="Top-down plan of the clamshell case interior, split into a top and a bottom section. The bottom section is filled with power: a powerbank, three 18650 cells in holders, and the charging station. Two power lines run up the right-hand side into the top section, where a USB hub sits across the middle with its ports facing up. Above the hub sit three modules, each dropping its own USB power cable to a hub port: SPECTRE (the ESP32-DIV handheld with 2.4 inch TFT, GPS and radio shield), SENTINEL (the ESP32-C3 plus UNO and 3.5 inch readout, using two cables), and BEACON (the removable logging watch). A hinge runs down the left edge. A side panel lists the module names and notes: CONSOLE is the phone and is not stored in the case, RELAY is a spare, and the inner width is about 205 mm and not yet measured."></div>
 </section>
 
 <section id="later">
@@ -272,14 +263,12 @@ const PARTS=[
  {g:'nde3d order',s:'placed 2026-11-02, collect at Strand'},
  {id:'esp',name:'ESP32-WROOM with external antenna (U.FL)',url:N+'esp32-wroom-with-4mb-flash-and-external-antenna/',qty:'1',price:'R156.78',role:'HUB',warn:'Check it is a full dev board with USB',buy:1},
  {id:'tft',name:'2.4" TFT 240×320 with SD and touch (ILI9341)',url:N+'24-tft-240x320-with-sd-and-touch-interface/',qty:'1',price:'R299.00',role:'HUB screen, touch and SD',buy:1},
- {id:'pcf',name:'PCF8574T I2C expansion board',url:N+'pcf8574t-io-i2c-expansion-board/',qty:'1',price:'R19.69',role:'HUB buttons',buy:1},
  {id:'gps',name:'GY-NEO-7M GPS',url:N+'gy-neo-7m-gps-active-ceramic-antenna-module/',qty:'1',price:'R136.48',role:'Position and time',buy:1},
  {id:'mod',name:'5V 2A charge and boost module (single cell)',url:N+'5v-2a-charge-and-discharge-boost-module-37v42v/',qty:'1',price:'R27.00',role:'Charging and 5 V rail',buy:1},
  {id:'cell',name:'18650 2200 mAh Li-ion',url:N+'37v-18650-1500mah-lithium-ion-battery/',qty:'3',price:'R238.20',role:'Pack, in parallel',warn:'Capacity is probably below the label',buy:1},
  {id:'hold',name:'Single 18650 holder with wires',url:N+'18650-battery-holder-with-wires/',qty:'3',price:'R21.00',role:'Pack',buy:1},
  {g:'On hand',s:'already owned'},
  {id:'ant',name:'2.4 GHz router antennas, RP-SMA + U.FL pigtails',qty:'2',role:'HUB antenna (one spare)'},
- {id:'btn',name:'Push buttons',qty:'5',role:'UP, DOWN, LEFT, RIGHT, SELECT'},
  {id:'msw',name:'Master switch',qty:'1',role:'Main power',warn:'Rated 2 A or more'},
  {id:'c3',name:'ESP32-C3',qty:'2',role:'WIFI-NODE and STATUS'},
  {id:'uno',name:'Arduino UNO R3 + 3.5" TFT shield',qty:'1',role:'READOUT'},
