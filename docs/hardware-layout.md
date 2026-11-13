@@ -1,10 +1,11 @@
 # Hardware layout
 
-The current build, as of 2026-11-10. The cyberdeck is a kit of separate modules. Each module has its own screen and job:
+The current build, as of 2026-11-13. The cyberdeck is a kit of separate modules. Each module has a
+**fixed proper name** (so references don't drift when a module's role changes) and its own screen and job:
 
-- The `HUB` is an ESP32-DIV v1-style handheld.
-- The `WIFI-NODE` and `READOUT` pair forms a big-screen WiFi readout.
-- The `STATUS` unit is a removable watch.
+- **SPECTRE** is the active, phone-driven ESP32-DIV handheld.
+- **SENTINEL** is the passive, always-on watcher (an ESP32-C3 + UNO pair). See [`watcher-plan.md`](watcher-plan.md).
+- **BEACON** is the removable logging watch.
 
 One single-cell 18650 pack and a 5 V boost module power them all. Later, the logs go to a laptop for analysis.
 
@@ -24,15 +25,19 @@ The [build page](build-page.html) has the shopping list, wiring and build order.
 
 ---
 
-## Board names
+## Module names
 
-| Name | Board | Job | Firmware |
-|---|---|---|---|
-| `HUB` | ESP32-WROOM-32U dev board (U.FL antenna) + 2.4" ILI9341 touch/SD TFT + PCF8574 buttons + NEO-7M GPS + ESP32-DIV radio shield (3× NRF24L01 + CC1101) | Full ESP32-DIV multi-tool: WiFi scan/deauth/evil-portal/packet-monitor, BLE scan/spoof/jam, 2.4 GHz (NRF24) jam/spoof/ESB, sub-GHz (CC1101) capture/replay/jam, and GPS wardriving logged to SD as WiGLE CSV | ESP32-DIV v1.7.2, v1 target (stock `ESP32-DIV-v1-v1.7.2.bin`) |
-| `WIFI-NODE` | ESP32-C3 (first) | WiFi promiscuous capture: APs, clients, deauths, "following me" persistence. Streams rows to `READOUT` | `v2/proto_readout_c3` (working) |
-| `READOUT` | Arduino UNO R3 + 3.5" TFT shield | Big-screen display for `WIFI-NODE` | `v2/proto_readout_uno` (working) |
-| `STATUS` | ESP32-C3 (second) + 128×64 OLED | Removable watch. Logs GPS and WiFi scans and sends a CSV to an Android phone. It docks to the kit now and then | Working, on the watch |
-| `BLE-SCAN` | ESP32-1732S019 (ESP32 + 1.9" screen) | On hand, **not in this build**. The `HUB` does BLE scanning. Spec: [`BOARD-BLE-SCAN-ESP32-1732S019.md`](BOARD-BLE-SCAN-ESP32-1732S019.md) | — |
+Each **name** is tied to the physical hardware and stays fixed; the **role** is what it currently does
+and may change. (The old role-based labels `HUB`/`WIFI-NODE`/`READOUT`/`STATUS`/`BLE-SCAN` are kept as
+aliases so older docs still make sense.)
+
+| Name | Was | Board | Role now | Firmware |
+|---|---|---|---|---|
+| **SPECTRE** | `HUB` | ESP32-WROOM-32U dev board (U.FL antenna) + 2.4" ILI9341 touch/SD TFT + PCF8574 buttons + NEO-7M GPS + ESP32-DIV radio shield (3× NRF24L01 + CC1101) | **Active, phone-driven power tool.** Full ESP32-DIV multi-tool: WiFi scan/deauth/evil-portal/packet-monitor, BLE scan/spoof/jam, 2.4 GHz (NRF24) jam/spoof/ESB, sub-GHz (CC1101) capture/replay/jam, GPS wardriving to SD. The orchestrator is being ported here ([`hub-migration-plan.md`](hub-migration-plan.md)) | stock ESP32-DIV v1.7.2 today → ported orchestrator |
+| **SENTINEL** | `WIFI-NODE` + `READOUT` | ESP32-C3 + Arduino UNO R3 / 3.5" TFT (soldered pair, one-way 19200 UART) | **Passive, always-on watcher** (never transmits): TRACKERS (following BLE tags), TAILS (persistent WiFi clients), ATTACKS (deauth floods, evil-twin APs). Alerts on screen + red LED. SENTINEL-C3 = brain, SENTINEL-TFT = screen | `sentinel/v1/{c3,uno}` (compile-verified 2026-11-13) |
+| **BEACON** | `STATUS` | ESP32-C3 + 128×64 OLED | Removable logging watch. Logs GPS + WiFi scans and sends CSV to an Android phone; docks to the kit now and then | Working, on the watch |
+| **CONSOLE** | — | Android phone app (Flutter) | Controls SPECTRE over BLE. `app/` | Built: `CyberDeck.apk` |
+| **RELAY** | `BLE-SCAN` | ESP32-1732S019 (ESP32 + 1.9" screen) | Spare / utility, **not in this build**. Spec: [`BOARD-BLE-SCAN-ESP32-1732S019.md`](BOARD-BLE-SCAN-ESP32-1732S019.md) | — |
 
 Retired: the Raspberry Pi 5 hub, the 7" panel and its RTD2660 driver, the RTL-SDR, and the ESP32-S3 hub. The modules no longer report to a central hub over UART. Each one works on its own.
 
