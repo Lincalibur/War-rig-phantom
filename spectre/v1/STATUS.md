@@ -41,31 +41,32 @@ becomes **SENTINEL** (passive counter-surveillance watcher) later.
   (`path_provider` added to pubspec). `flutter analyze` error-free. APK built on Windows at
   `C:\Users\liamo\Desktop\CyberDeck.apk` (48.3MB).
 
-## ⛔ The blocker and the fix
-**White screen saga root cause:** all edits/compiles happened on Windows, but the board is
-flashed from Kubuntu — the correct TFT config **never reached the board** (it kept booting the
-old 240x320 build). Hardware was fine the whole time.
+## ✅ DISPLAY SOLVED (2026-11-15)
+The whole white-screen saga is done. Final state, working on hardware:
+- Root cause 1 (stuck on old build): config never reached the board because editing/compiling is
+  on Windows but flashing is from Kubuntu. **Fix = prebuilt merged binary** flashed at `0x0`
+  (Kubuntu Arduino/TFT_eSPI setup irrelevant). `spectre/v1/prebuilt/*_MERGED.bin`.
+- Root cause 2 (tiny text): firmware was laid out for 240x320; scaled to the real 320x480 panel —
+  `ROW_H=24`, `TEXT_SIZE=2`, 20 rows × 24 = 480 full height.
+- Root cause 3 (white background): **ILI9488 inverts by default** → `tft.invertDisplay(true)` after
+  `tft.init()`. Black bg + coloured text now correct.
+- 3.3V logic rail fix (ESP32 3V3 → shield 3.3V pad) + wiring were already sorted by the user.
 
-**Fix (shipped):** a **pre-compiled merged binary** with the correct ILI9488/320x480/parallel
-config baked in, so the Kubuntu Arduino/TFT_eSPI setup is irrelevant.
-→ `spectre/v1/prebuilt/tft_diag_MERGED.bin`, flashed at `0x0`. Steps in `prebuilt/README.md`.
+**Flash the main firmware (board on `/dev/ttyUSB0`):**
+```bash
+git pull
+esptool.py --chip esp32 --port /dev/ttyUSB0 --baud 921600 write_flash 0x0 spectre/v1/prebuilt/spectre_MERGED.bin
+```
+`tft_diag_MERGED.bin` is still there as a display sanity-check if ever needed.
 
-## ▶ NEXT STEPS (run on the Kubuntu laptop)
-1. `git pull` (branch `main`).
-2. Flash the diagnostic (board on `/dev/ttyUSB0`, 3V3 wire connected):
-   ```bash
-   pip install esptool   # once, if needed
-   esptool.py --chip esp32 --port /dev/ttyUSB0 --baud 921600 write_flash 0x0 spectre/v1/prebuilt/tft_diag_MERGED.bin
-   ```
-   (or web flasher `espressif.github.io/esptool-js`, file @ `0x0`).
-   **Success** = Serial @115200 shows `width=320 height=480`, `94 88`, and the panel **cycles
-   RED/GREEN/BLUE/WHITE/BLACK**.
-3. If colours work → build the **main `spectre.ino`** into a merged `.bin` the same way and flash it.
-4. Hardware-test all modes. **Deauth/beacon/probe/karma/BLE spam/jammer/HID are active TX —
-   own lab / own gear only** (scope affirmed by user; homelab is ready). Targeting system stays
-   mandatory for deauth.
-5. APK already built (see above) — rebuild if the app changed:
-   `C:\Users\liamo\flutter\bin\flutter.bat build apk --release`.
+## ▶ NEXT STEPS — hardware-test the modes
+Display works; now validate behaviour, driven from the CyberDeck Android app over BLE.
+Suggested order: passive first (WiFi scan, BLE scan, GPS/Satellite, Wardrive, Packet Monitor),
+then handshake→pcap pull-to-phone, then the active-TX modes last.
+**Deauth/beacon/probe/karma/BLE spam/jammer/HID are active TX — own lab / own gear only**
+(scope affirmed; homelab ready). Deauth requires picking a target in the app.
+APK already built at `C:\Users\liamo\Desktop\CyberDeck.apk`; rebuild if the app changed:
+`C:\Users\liamo\flutter\bin\flutter.bat build apk --release`.
 
 ## Build toolchain (if compiling spectre.ino on Kubuntu)
 ESP32 Dev Module, **Huge APP** (3MB/1MB), 4MB, PSRAM off; core **esp32:esp32 2.0.17**,
