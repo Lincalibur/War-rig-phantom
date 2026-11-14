@@ -67,10 +67,11 @@ enum { ENC_OPEN = 0, ENC_WEP, ENC_WPA, ENC_WPA2, ENC_WPA3, ENC_WPA2_WPA3, ENC_EN
 #define FLAG_RANDOM 0x02
 
 // ---------------------------------------------------------------------------------------
-// TFT (portrait 240x320, parallel) — the display layer that replaces the C3->UNO UART link
+// TFT (portrait 320x480 ILI9488, parallel) — the display layer that replaces the C3->UNO UART link
 // ---------------------------------------------------------------------------------------
 static TFT_eSPI tft;
-static const int ROW_H = 16;            // 20 rows * 16 = 320 exactly
+static const int ROW_H = 24;            // 20 rows * 24 = 480 exactly (ILI9488 320x480, text size 2)
+static const int TEXT_SIZE = 2;         // bump to 1 for the old 240x320 panel
 static const uint16_t PAL[7] = {        // COL_W, GRAY, GREEN, YELLOW, RED, CYAN, ORANGE
   0xFFFF, 0x8410, 0x07E0, 0xFFE0, 0xF800, 0x07FF, 0xFD20
 };
@@ -225,7 +226,7 @@ static void setRow(int r, uint8_t color, const char* text) {
   int y = r * ROW_H;
   tft.fillRect(0, y, tft.width(), ROW_H, TFT_BLACK);
   tft.setTextFont(1);
-  tft.setTextSize(1);
+  tft.setTextSize(TEXT_SIZE);
   tft.setTextColor(PAL[color], TFT_BLACK);
   tft.setCursor(1, y + 4);
   tft.print(buf);
