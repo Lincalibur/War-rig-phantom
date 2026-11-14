@@ -13,15 +13,15 @@ against your physical board. `—` = no connection (leave unrouted).
 | 4 | IO39 (in-only) | `EXP_IN4` | J8.11 |
 | 5 | IO34 (in-only) | `EXP_IN1` | J8.8 |
 | 6 | IO35 (in-only) | `EXP_IN2` | J8.9 |
-| 7 | IO32 | `TFT_RST` | J4.5 (A4 = LCD_RST) |
-| 8 | IO33 | `TFT_CS` | J4.4 (A3 = LCD_CS) |
-| 9 | IO25 | `TFT_D3` | J5.4 (D3) |
-| 10 | IO26 | `TFT_D2` | J5.3 (D2) |
-| 11 | IO27 | `TFT_D6` | J5.7 (D6) |
-| 12 | IO14 | `TFT_D7` | J5.8 (D7) |
-| 13 | IO12 ⚠strap | `TFT_D0` | J6.1 (D8), R1 pulldown (DNP) |
+| 7 | IO32 | `TFT_RST` | J3 shield A4 (RST) |
+| 8 | IO33 | `TFT_CS` | J3 shield A3 (CS) |
+| 9 | IO25 | `TFT_D3` | J3 shield D3 |
+| 10 | IO26 | `TFT_D2` | J3 shield D2 |
+| 11 | IO27 | `TFT_D6` | J3 shield D6 |
+| 12 | IO14 | `TFT_D7` | J3 shield D7 |
+| 13 | IO12 ⚠strap | `TFT_D0` | J3 shield D8 (=LCD_D0); R1 pulldown (DNP) |
 | 14 | GND | `GND` | |
-| 15 | IO13 | `TFT_D1` | J6.2 (D9) |
+| 15 | IO13 | `TFT_D1` | J3 shield D9 (=LCD_D1) |
 | 16–18 | IO9/10/11 | — | internal flash — **do not use** |
 | 19 | 5V / VIN | `+5V` | power in |
 
@@ -37,24 +37,31 @@ against your physical board. `—` = no connection (leave unrouted).
 | 7 | IO19 | `EXP_MISO` | J8.6 |
 | 8 | IO18 | `EXP_SCK` | J8.4 |
 | 9 | IO5 | `EXP_CS0` | J8.7 |
-| 10 | IO17 | `TFT_D4` | J5.5 (D4) |
-| 11 | IO16 | `TFT_D5` | J5.6 (D5) |
-| 12 | IO4 | `TFT_WR` | J4.2 (A1 = LCD_WR) |
+| 10 | IO17 | `TFT_D4` | J3 shield D4 |
+| 11 | IO16 | `TFT_D5` | J3 shield D5 |
+| 12 | IO4 | `TFT_WR` | J3 shield A1 (WR) |
 | 13 | IO0 ⚠strap | — | boot — leave free |
-| 14 | IO2 ⚠strap | `TFT_RD` | J4.1 (A0 = LCD_RD) |
-| 15 | IO15 | `TFT_DC` | J4.3 (A2 = LCD_RS/DC) |
+| 14 | IO2 ⚠strap | `TFT_RD` | J3 shield A0 (RD) |
+| 15 | IO15 | `TFT_DC` | J3 shield A2 (DC) |
 | 16–18 | IO8/7/6 | — | internal flash — **do not use** |
 | 19 | GND | `GND` | |
 
-## TFT (ILI9488 parallel UNO shield) — front
-**J3 power (1×8):** 1 — · 2 IOREF — · 3 RESET — · **4 3V3 = `+3V3`** · **5 5V = `+5V`** · 6 GND=`GND` · 7 GND=`GND` · 8 VIN —
-*(J3.4 is the logic rail that was the white-screen fix — it MUST be fed.)*
-
-**J4 analog (1×6):** A0=`TFT_RD` · A1=`TFT_WR` · A2=`TFT_DC` · A3=`TFT_CS` · A4=`TFT_RST` · A5 —
-
-**J5 digital-low (1×8):** D0 — · D1 — · D2=`TFT_D2` · D3=`TFT_D3` · D4=`TFT_D4` · D5=`TFT_D5` · D6=`TFT_D6` · D7=`TFT_D7`
-
-**J6 digital-high (1×10):** D8=`TFT_D0` · D9=`TFT_D1` · D10–D13 — (SD, unused) · GND=`GND` · AREF — · SDA — · SCL —
+## J3 — TFT (ILI9488 parallel), one **Arduino-UNO-R3** shield footprint — front
+The physical shield plugs straight in. Only the pins below are wired (mcufriend mapping); all other
+shield pins (D0/D1, D10–D13 SD, A5, AREF, SDA/SCL, IOREF, RESET, VIN, NC) are left unconnected.
+| Shield pin | Pad # | Net |
+|---|---:|---|
+| **3V3** | 4 | `+3V3` — TFT logic rail (**the white-screen fix — must be fed**) |
+| **5V** | 5 | `+5V` |
+| GND | 6, 7, 29 | `GND` |
+| A0 (LCD_RD) | 9 | `TFT_RD` |
+| A1 (LCD_WR) | 10 | `TFT_WR` |
+| A2 (LCD_RS/DC) | 11 | `TFT_DC` |
+| A3 (LCD_CS) | 12 | `TFT_CS` |
+| A4 (LCD_RST) | 13 | `TFT_RST` |
+| D2–D7 (LCD_D2–D7) | 17–22 | `TFT_D2`…`TFT_D7` |
+| D8 (LCD_D0) | 23 | `TFT_D0` |
+| D9 (LCD_D1) | 24 | `TFT_D1` |
 
 ## J7 — NEO-7M GPS (1×5), top
 | Pin | Label | Net |

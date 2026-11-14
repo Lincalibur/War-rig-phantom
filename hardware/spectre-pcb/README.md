@@ -30,6 +30,8 @@ wiring map for every connector.
 - **ESP32 on the BACK:** J1/J2 (two 1×19 sockets) sit in the central gap, directly behind the screen.
 - **Antennas at the TOP:** WiFi SMA (`ANT1`) top-left, NEO-7M GPS (`J7`) top-centre, power LED top-right.
 - **Bottom:** expansion header `J8`, 5 V power in `J9`, decoupling/bulk caps.
+- **Pin-name silk labels** next to every wired pad (net name, e.g. `CS`, `D0`, `3V3`, `SCK`): TFT/GPS/
+  expansion/power on the **front**, ESP32 (J1/J2) on the **back** silk. Makes wiring/routing obvious.
 
 ![front](pcb-front.png) ![back](pcb-back.png)
 
@@ -45,7 +47,7 @@ Delete `spectre.kicad_pcb`, open the project, PCB Editor → **Tools → Update 
 | Ref | Part | Notes |
 |---|---|---|
 | J1 / J2 | **ESP32-WROOM-32U** DevKitC, two 1×19 sockets | The dev board sockets in. |
-| J3–J6 | **TFT** as the four Arduino-UNO shield headers (1×8 / 1×6 / 1×8 / 1×10) | Your mcufriend-style ILI9488 shield plugs straight on. |
+| J3 | **TFT** on one **Arduino-UNO-R3** footprint | Your mcufriend-style ILI9488 shield plugs straight on — exact Arduino geometry. |
 | J7 | **NEO-7M GPS**, 1×5 | VCC/GND/TXD/RXD/PPS. |
 | J8 | **Expansion**, 1×12 | VSPI bus + 4 input-only lines + power (see GPIO budget). |
 | J9 | **5 V power in**, 1×2 | From the 1S 18650 + boost module. |
@@ -83,10 +85,10 @@ Decide this before committing a board outline, since it changes the connector co
   Confirm against your actual WROOM-32U board; if a position differs, drag the net label (or edit
   the pin map in `generate_schematic.py` and re-run). IO6–IO11 are the internal flash pins — left
   unconnected on purpose; never route to them.
-- **TFT shield mapping.** Modelled with the **mcufriend standard**: LCD_D0/D1 on Arduino D8/D9,
-  LCD_D2–D7 on D2–D7, LCD_RD/WR/RS/CS/RST on A0–A4. Confirm your shield matches (most red 3.5"
-  parallel shields do). The 1×8/1×6/1×10 socket footprints are generic 2.54 mm — swap them for an
-  **Arduino-shield footprint** (or place at UNO coordinates) if you want true shield mating.
+- **TFT shield mapping.** Now on the real **`Module:Arduino_UNO_R3`** footprint (exact UNO geometry,
+  so the shield mates), wired to the **mcufriend standard**: LCD_D0/D1 on Arduino D8/D9, LCD_D2–D7 on
+  D2–D7, LCD_RD/WR/RS/CS/RST on A0–A4. Confirm your shield matches (most red 3.5" parallel shields do).
+  The TFT shield mounts on the **front**; the ESP32 is on the **back**, so they don't collide.
 - **GPS VCC.** On +5V (the NEO-7M module regulates). If it won't get a fix on 5 V, move J7.1 to
   +3V3. **Unplug GPS TXD while flashing** only matters on boards that share USB-serial pins — here
   GPS is on IO21/IO22 (UART2), clear of the USB pins, so flashing is fine with it attached.

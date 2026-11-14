@@ -32,10 +32,7 @@ for b in re.split(r'\(code "\d+"\)\s*\(name "', nets_sec)[1:]:
 FP = {
  "J1":"Connector_PinSocket_2.54mm:PinSocket_1x19_P2.54mm_Vertical",
  "J2":"Connector_PinSocket_2.54mm:PinSocket_1x19_P2.54mm_Vertical",
- "J3":"Connector_PinSocket_2.54mm:PinSocket_1x08_P2.54mm_Vertical",
- "J4":"Connector_PinSocket_2.54mm:PinSocket_1x06_P2.54mm_Vertical",
- "J5":"Connector_PinSocket_2.54mm:PinSocket_1x08_P2.54mm_Vertical",
- "J6":"Connector_PinSocket_2.54mm:PinSocket_1x10_P2.54mm_Vertical",
+ "J3":"Module:Arduino_UNO_R3",   # TFT UNO shield mates here (exact Arduino geometry)
  "J7":"Connector_PinSocket_2.54mm:PinSocket_1x05_P2.54mm_Vertical",
  "J8":"Connector_PinSocket_2.54mm:PinSocket_1x12_P2.54mm_Vertical",
  "J9":"Connector_PinHeader_2.54mm:PinHeader_1x02_P2.54mm_Vertical",
@@ -65,11 +62,9 @@ PLACE = {
  "J7":  (42,15, 90, "F"),    # NEO-7M GPS, horizontal, up top
  "D1":  (60,13,  0, "F"),    # power LED
  "R2":  (60,21,  0, "F"),    # LED series R, horizontal
- # --- MIDDLE: TFT shield headers on FRONT (vertical, rot 0), two columns 48 mm apart ---
- "J4":  (13,46,  0, "F"),    # analog  A0-A5     (left col, top)
- "J3":  (13,78,  0, "F"),    # power   8-pin     (left col, bottom)
- "J6":  (61,50,  0, "F"),    # digital-hi D8-D13 (right col, top)
- "J5":  (61,84,  0, "F"),    # digital-lo D2-D7  (right col, bottom)
+ # --- MIDDLE: TFT = one Arduino UNO shield footprint on FRONT, rotated 90 (screen vertical),
+ #     recentred to (CX, 65). Its two header rows land at x ~13 and ~61 (48 mm apart). ---
+ "J3":  (37.5,65, 90, "F"),
  # --- MIDDLE: ESP32 DevKit on BACK (two 1x19 rows, vertical), central gap, ~23 mm apart ---
  "J1":  (28,70,  0, "B"),    # left header row
  "J2":  (51,70,  0, "B"),    # right header row
@@ -99,6 +94,45 @@ def load_fp(fpid):
         raise SystemExit("footprint not found: " + fpid)
     return fp
 
+# ---- short, readable label for a net (for the silk pin names) ----
+def short(net):
+    if net is None: return None
+    return (net.replace("TFT_","").replace("EXP_","").replace("GPS_","G")
+               .replace("+3V3","3V3").replace("+5V","5V").replace("LED_A","LED"))
+
+# ---- add a small net-name label next to each netted pad, on the given silk layer ----
+def label_pads(fp, side, mode):
+    # mode: 'left'/'right' (vertical headers) or 'up'/'down' (horizontal) or 'auto' (2 columns)
+    layer = pcbnew.B_SilkS if side == "B" else pcbnew.F_SilkS
+    cx = fp.GetPosition().x
+    for pad in fp.Pads():
+        raw = pad.GetNetname()
+        if not raw or raw.startswith("unconnected") or raw.startswith("Net-"):
+            continue
+        nm = short(raw)
+        p = pad.GetPosition()
+        m = mode
+        if mode == "auto":
+            m = "left" if p.x < cx else "right"
+        dx, dy, rotT, just = 0, 0, 0, pcbnew.GR_TEXT_H_ALIGN_LEFT
+        if m == "left":  dx, just = -MM(1.4), pcbnew.GR_TEXT_H_ALIGN_RIGHT
+        elif m == "right": dx, just = MM(1.4), pcbnew.GR_TEXT_H_ALIGN_LEFT
+        elif m == "up":    dy, rotT, just = -MM(1.4), 90, pcbnew.GR_TEXT_H_ALIGN_LEFT
+        elif m == "down":  dy, rotT, just = MM(1.4), 90, pcbnew.GR_TEXT_H_ALIGN_RIGHT
+        tx = pcbnew.PCB_TEXT(board)
+        tx.SetText(nm); tx.SetPosition(pcbnew.VECTOR2I(p.x+dx, p.y+dy))
+        tx.SetLayer(layer)
+        tx.SetTextSize(pcbnew.VECTOR2I(MM(0.7), MM(0.7)))
+        tx.SetTextThickness(MM(0.12))
+        tx.SetHorizJustify(just)
+        tx.SetTextAngleDegrees(rotT)
+        if side == "B": tx.SetMirrored(True)
+        board.Add(tx)
+
+# which connectors get pin-name labels, and on which side
+LABEL = {"J1":("B","left"), "J2":("B","right"), "J3":("F","auto"),
+         "J7":("F","up"), "J8":("F","down"), "J9":("F","right")}
+
 placed = []
 # --- real (netted) components ---
 for ref, fpid in FP.items():
@@ -112,6 +146,11 @@ for ref, fpid in FP.items():
     if side == "B":
         fp.Flip(V(x, y), False)
     fp.SetOrientationDegrees(rot)
+    # recenter big footprints (Arduino) so pads sit symmetric about (x, y)
+    if ref == "J3":
+        bb = fp.GetBoundingBox(False, False)
+        ctr = bb.GetCenter()
+        fp.Move(pcbnew.VECTOR2I(V(x, y).x - ctr.x, V(x, y).y - ctr.y))
     for pad in fp.Pads():
         net = padmap.get(ref, {}).get(pad.GetNumber())
         if net:
@@ -119,6 +158,8 @@ for ref, fpid in FP.items():
     # hide the long value label (clutter); keep a small reference designator
     fp.Value().SetVisible(False)
     fp.Reference().SetTextSize(pcbnew.VECTOR2I(MM(1.0), MM(1.0)))
+    if ref in LABEL:
+        label_pads(fp, *LABEL[ref])
     placed.append(ref)
 
 # --- mechanical: WiFi SMA + 4 mounting holes (no nets) ---

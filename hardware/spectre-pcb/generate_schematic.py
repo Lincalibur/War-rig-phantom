@@ -159,36 +159,24 @@ add("J2", C+"Conn_01x19", "ESP32_WROOM_32U_R", PH+"PinSocket_1x19_P2.54mm_Vertic
 # logic - it MUST be supplied (this was the white-screen root cause). Backlight = VCC (no pin).
 # SD lines (D10-D13) are left unconnected (SD not wired in this build).
 # =======================================================================================
-add("J3", C+"Conn_01x08", "TFT_UNO_POWER", PH+"PinSocket_1x08_P2.54mm_Vertical", {
- "1":NC, "2":NC, "3":NC, "4":"+3V3",   # 3V3 -> TFT logic rail (REQUIRED)
- "5":"+5V", "6":"GND", "7":"GND", "8":NC})  # VIN unused
-add("J4", C+"Conn_01x06", "TFT_UNO_ANALOG", PH+"PinSocket_1x06_P2.54mm_Vertical", {
- "1":"TFT_RD",   # A0 = LCD_RD
- "2":"TFT_WR",   # A1 = LCD_WR
- "3":"TFT_DC",   # A2 = LCD_RS/DC
- "4":"TFT_CS",   # A3 = LCD_CS
- "5":"TFT_RST",  # A4 = LCD_RST
- "6":NC})        # A5
-add("J5", C+"Conn_01x08", "TFT_UNO_DIGITAL_LO", PH+"PinSocket_1x08_P2.54mm_Vertical", {
- "1":NC,         # D0/RX
- "2":NC,         # D1/TX
- "3":"TFT_D2",   # D2 = LCD_D2
- "4":"TFT_D3",   # D3 = LCD_D3
- "5":"TFT_D4",   # D4 = LCD_D4
- "6":"TFT_D5",   # D5 = LCD_D5
- "7":"TFT_D6",   # D6 = LCD_D6
- "8":"TFT_D7"})  # D7 = LCD_D7
-add("J6", C+"Conn_01x10", "TFT_UNO_DIGITAL_HI", PH+"PinSocket_1x10_P2.54mm_Vertical", {
- "1":"TFT_D0",   # D8 = LCD_D0
- "2":"TFT_D1",   # D9 = LCD_D1
- "3":NC,         # D10 = SD_CS   (SD not wired)
- "4":NC,         # D11 = SD_MOSI
- "5":NC,         # D12 = SD_MISO
- "6":NC,         # D13 = SD_SCK
- "7":"GND",      # GND
- "8":NC,         # AREF
- "9":NC,         # SDA
- "10":NC})       # SCL
+# Single Arduino-UNO-R3 shield footprint so the physical TFT shield mates exactly. Pins are
+# mapped by NUMBER (the symbol/footprint share 1..32); mcufriend mapping: A0-A4 = RD/WR/DC/CS/RST,
+# D2-D7 = LCD_D2..D7, D8/D9 = LCD_D0/D1. Pad 4 = 3V3 logic rail (REQUIRED - the white-screen fix).
+# SD (D10-D13), D0/D1, A5, AREF, SDA/SCL, IOREF, RESET, VIN, NC = unconnected.
+add("J3", "MCU_Module:Arduino_UNO_R3", "TFT_ILI9488_UNO_SHIELD", "Module:Arduino_UNO_R3", {
+ "4":"+3V3",   # 3V3  -> TFT logic
+ "5":"+5V",    # 5V
+ "6":"GND", "7":"GND", "29":"GND",
+ "9":"TFT_RD",    # A0
+ "10":"TFT_WR",   # A1
+ "11":"TFT_DC",   # A2
+ "12":"TFT_CS",   # A3
+ "13":"TFT_RST",  # A4
+ "17":"TFT_D2","18":"TFT_D3","19":"TFT_D4","20":"TFT_D5","21":"TFT_D6","22":"TFT_D7",  # D2-D7
+ "23":"TFT_D0",   # D8
+ "24":"TFT_D1",   # D9
+ "1":NC,"2":NC,"3":NC,"8":NC,"14":NC,"15":NC,"16":NC,
+ "25":NC,"26":NC,"27":NC,"28":NC,"30":NC,"31":NC,"32":NC})
 
 # =======================================================================================
 # NEO-7M GPS (UART2). Header labels VCC/GND/TXD/RXD. GPS TXD -> ESP32 RX2 (net GPS_RX);
@@ -249,8 +237,9 @@ cap("C6","10uF", EL, "+3V3")   # 3V3 bulk
 cap("C7","100nF",CER,"+5V")    # expansion
 cap("C8","10uF", EL, "+3V3")   # expansion radio bulk
 
-# Power flags so ERC sees each supply net as driven
-for i, net in enumerate(["+5V","+3V3","GND"], 1):
+# Power flag so ERC sees GND as driven. (+5V and +3V3 are already driven by the
+# Arduino_UNO_R3 symbol's power-output pins, so flagging them too is a power-output conflict.)
+for i, net in enumerate(["GND"], 1):
     add("#FLG%d" % i, "power:PWR_FLAG", net, "", {"1":net})
 
 # ---------------- place & emit ----------------

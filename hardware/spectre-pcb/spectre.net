@@ -2,7 +2,7 @@
 	(version "E")
 	(design
 		(source "C:\\Users\\liamo\\Desktop\\Ideas\\Cyber security\\CyberDeck\\hardware\\spectre-pcb\\spectre.kicad_sch")
-		(date "2026-11-15T01:05:14")
+		(date "2026-11-15T01:38:13")
 		(tool "Eeschema 10.0.6")
 		(sheet
 			(number "1")
@@ -93,7 +93,7 @@
 				(names "/")
 				(tstamps "/")
 			)
-			(tstamps "e2420afe-f551-4704-928d-e6cab0858b39")
+			(tstamps "8e52906e-18f1-4a03-8ec9-dba6a6b8f1da")
 			(units
 				(unit
 					(name "A")
@@ -147,7 +147,7 @@
 				(names "/")
 				(tstamps "/")
 			)
-			(tstamps "536c6261-bc0a-49b9-8633-421462ae3a82")
+			(tstamps "6e4944f1-dfd2-4063-922d-fc509273d17c")
 			(units
 				(unit
 					(name "A")
@@ -201,7 +201,7 @@
 				(names "/")
 				(tstamps "/")
 			)
-			(tstamps "5858d7a3-ff2c-4c04-81c9-8a7871b502f0")
+			(tstamps "6b113fcd-3745-4557-a412-8d2106979e82")
 			(units
 				(unit
 					(name "A")
@@ -255,7 +255,7 @@
 				(names "/")
 				(tstamps "/")
 			)
-			(tstamps "d1d974e8-f188-44ae-a9d3-301a5f08f611")
+			(tstamps "dc7377d3-8139-462e-94a8-f1b9e643d9da")
 			(units
 				(unit
 					(name "A")
@@ -309,7 +309,7 @@
 				(names "/")
 				(tstamps "/")
 			)
-			(tstamps "1b9cd854-7c9e-4a67-99f6-9130bbe9961a")
+			(tstamps "3428194b-fd61-42d4-8276-354b6b4b8851")
 			(units
 				(unit
 					(name "A")
@@ -363,7 +363,7 @@
 				(names "/")
 				(tstamps "/")
 			)
-			(tstamps "ed1c2a29-d147-4781-ba6e-420a85cc82e9")
+			(tstamps "0df0e2a5-f1af-4d56-84dd-a557fc4abb43")
 			(units
 				(unit
 					(name "A")
@@ -417,7 +417,7 @@
 				(names "/")
 				(tstamps "/")
 			)
-			(tstamps "45da5367-2326-42c4-96a0-50b849d84106")
+			(tstamps "2d430c49-beb0-4cee-91da-dc5a6132bb8f")
 			(units
 				(unit
 					(name "A")
@@ -471,7 +471,7 @@
 				(names "/")
 				(tstamps "/")
 			)
-			(tstamps "0b3c4050-0cfa-4701-ac61-3fba70a7a4b9")
+			(tstamps "d9cd2bc1-4e50-446e-96e0-9896e16df0a6")
 			(units
 				(unit
 					(name "A")
@@ -525,7 +525,7 @@
 				(names "/")
 				(tstamps "/")
 			)
-			(tstamps "889daa43-de7a-47bf-a7fa-6e9bfd7a168f")
+			(tstamps "0458da84-b99a-4c8b-add2-70a7f0aedd30")
 			(units
 				(unit
 					(name "A")
@@ -579,7 +579,7 @@
 				(names "/")
 				(tstamps "/")
 			)
-			(tstamps "3c89dce5-0836-4f4d-9fb2-49af5fca5dbb")
+			(tstamps "d7bec157-3680-4add-9cc8-b5b2d3d06745")
 			(units
 				(unit
 					(name "A")
@@ -684,7 +684,7 @@
 				(names "/")
 				(tstamps "/")
 			)
-			(tstamps "c0800eb6-bc1a-4730-83ee-d57cd40411db")
+			(tstamps "12ee8e28-4d23-4a82-b650-900b2d0b34cf")
 			(units
 				(unit
 					(name "A")
@@ -752,11 +752,11 @@
 		)
 		(comp
 			(ref "J3")
-			(value "TFT_UNO_POWER")
-			(footprint "Connector_PinSocket_2.54mm:PinSocket_1x08_P2.54mm_Vertical")
+			(value "TFT_ILI9488_UNO_SHIELD")
+			(footprint "Module:Arduino_UNO_R3")
 			(fields
 				(field
-					(name "Footprint") "Connector_PinSocket_2.54mm:PinSocket_1x08_P2.54mm_Vertical")
+					(name "Footprint") "Module:Arduino_UNO_R3")
 				(field
 					(name "Datasheet")
 				)
@@ -765,9 +765,9 @@
 				)
 			)
 			(libsource
-				(lib "Connector_Generic")
-				(part "Conn_01x08")
-				(description "Generic connector, single row, 01x08, script generated (kicad-library-utils/schlib/autogen/connector/)")
+				(lib "MCU_Module")
+				(part "Arduino_UNO_R3")
+				(description "Arduino UNO Microcontroller Module, release 3")
 			)
 			(property
 				(name "Sheetname")
@@ -779,260 +779,116 @@
 			)
 			(property
 				(name "ki_keywords")
-				(value "connector")
+				(value "Arduino UNO R3 Microcontroller Module Atmel AVR USB")
 			)
 			(property
 				(name "ki_fp_filters")
-				(value "Connector*:*_1x??_*")
+				(value "Arduino*UNO*R3*")
 			)
 			(sheetpath
 				(names "/")
 				(tstamps "/")
 			)
-			(tstamps "3e5ccc3b-7b24-4829-a0ec-02f4f7429c06")
+			(tstamps "a63a282e-9a82-49e3-a06c-1f71d1acbee2")
 			(units
 				(unit
 					(name "A")
 					(pins
 						(pin
+							(num "15")
+						)
+						(pin
+							(num "16")
+						)
+						(pin
+							(num "17")
+						)
+						(pin
+							(num "18")
+						)
+						(pin
+							(num "19")
+						)
+						(pin
+							(num "20")
+						)
+						(pin
+							(num "21")
+						)
+						(pin
+							(num "22")
+						)
+						(pin
+							(num "23")
+						)
+						(pin
+							(num "24")
+						)
+						(pin
+							(num "25")
+						)
+						(pin
+							(num "26")
+						)
+						(pin
+							(num "27")
+						)
+						(pin
+							(num "28")
+						)
+						(pin
 							(num "1")
 						)
 						(pin
-							(num "2")
+							(num "8")
 						)
 						(pin
-							(num "3")
-						)
-						(pin
-							(num "4")
-						)
-						(pin
-							(num "5")
+							(num "29")
 						)
 						(pin
 							(num "6")
+						)
+						(pin
+							(num "4")
 						)
 						(pin
 							(num "7")
 						)
 						(pin
-							(num "8")
-						)
-					)
-				)
-			)
-		)
-		(comp
-			(ref "J4")
-			(value "TFT_UNO_ANALOG")
-			(footprint "Connector_PinSocket_2.54mm:PinSocket_1x06_P2.54mm_Vertical")
-			(fields
-				(field
-					(name "Footprint") "Connector_PinSocket_2.54mm:PinSocket_1x06_P2.54mm_Vertical")
-				(field
-					(name "Datasheet")
-				)
-				(field
-					(name "Description")
-				)
-			)
-			(libsource
-				(lib "Connector_Generic")
-				(part "Conn_01x06")
-				(description "Generic connector, single row, 01x06, script generated (kicad-library-utils/schlib/autogen/connector/)")
-			)
-			(property
-				(name "Sheetname")
-				(value "spectre")
-			)
-			(property
-				(name "Sheetfile")
-				(value "spectre.kicad_sch")
-			)
-			(property
-				(name "ki_keywords")
-				(value "connector")
-			)
-			(property
-				(name "ki_fp_filters")
-				(value "Connector*:*_1x??_*")
-			)
-			(sheetpath
-				(names "/")
-				(tstamps "/")
-			)
-			(tstamps "786220e7-af1b-4d91-bfd4-41d4e44e5c6a")
-			(units
-				(unit
-					(name "A")
-					(pins
-						(pin
-							(num "1")
-						)
-						(pin
-							(num "2")
+							(num "5")
 						)
 						(pin
 							(num "3")
 						)
 						(pin
-							(num "4")
-						)
-						(pin
-							(num "5")
-						)
-						(pin
-							(num "6")
-						)
-					)
-				)
-			)
-		)
-		(comp
-			(ref "J5")
-			(value "TFT_UNO_DIGITAL_LO")
-			(footprint "Connector_PinSocket_2.54mm:PinSocket_1x08_P2.54mm_Vertical")
-			(fields
-				(field
-					(name "Footprint") "Connector_PinSocket_2.54mm:PinSocket_1x08_P2.54mm_Vertical")
-				(field
-					(name "Datasheet")
-				)
-				(field
-					(name "Description")
-				)
-			)
-			(libsource
-				(lib "Connector_Generic")
-				(part "Conn_01x08")
-				(description "Generic connector, single row, 01x08, script generated (kicad-library-utils/schlib/autogen/connector/)")
-			)
-			(property
-				(name "Sheetname")
-				(value "spectre")
-			)
-			(property
-				(name "Sheetfile")
-				(value "spectre.kicad_sch")
-			)
-			(property
-				(name "ki_keywords")
-				(value "connector")
-			)
-			(property
-				(name "ki_fp_filters")
-				(value "Connector*:*_1x??_*")
-			)
-			(sheetpath
-				(names "/")
-				(tstamps "/")
-			)
-			(tstamps "1938e1d4-0989-4fbd-8886-8d6dc226a09f")
-			(units
-				(unit
-					(name "A")
-					(pins
-						(pin
-							(num "1")
-						)
-						(pin
 							(num "2")
 						)
 						(pin
-							(num "3")
-						)
-						(pin
-							(num "4")
-						)
-						(pin
-							(num "5")
-						)
-						(pin
-							(num "6")
-						)
-						(pin
-							(num "7")
-						)
-						(pin
-							(num "8")
-						)
-					)
-				)
-			)
-		)
-		(comp
-			(ref "J6")
-			(value "TFT_UNO_DIGITAL_HI")
-			(footprint "Connector_PinSocket_2.54mm:PinSocket_1x10_P2.54mm_Vertical")
-			(fields
-				(field
-					(name "Footprint") "Connector_PinSocket_2.54mm:PinSocket_1x10_P2.54mm_Vertical")
-				(field
-					(name "Datasheet")
-				)
-				(field
-					(name "Description")
-				)
-			)
-			(libsource
-				(lib "Connector_Generic")
-				(part "Conn_01x10")
-				(description "Generic connector, single row, 01x10, script generated (kicad-library-utils/schlib/autogen/connector/)")
-			)
-			(property
-				(name "Sheetname")
-				(value "spectre")
-			)
-			(property
-				(name "Sheetfile")
-				(value "spectre.kicad_sch")
-			)
-			(property
-				(name "ki_keywords")
-				(value "connector")
-			)
-			(property
-				(name "ki_fp_filters")
-				(value "Connector*:*_1x??_*")
-			)
-			(sheetpath
-				(names "/")
-				(tstamps "/")
-			)
-			(tstamps "05caff5c-52fb-44fe-ad19-1440b50887b0")
-			(units
-				(unit
-					(name "A")
-					(pins
-						(pin
-							(num "1")
-						)
-						(pin
-							(num "2")
-						)
-						(pin
-							(num "3")
-						)
-						(pin
-							(num "4")
-						)
-						(pin
-							(num "5")
-						)
-						(pin
-							(num "6")
-						)
-						(pin
-							(num "7")
-						)
-						(pin
-							(num "8")
+							(num "30")
 						)
 						(pin
 							(num "9")
 						)
 						(pin
 							(num "10")
+						)
+						(pin
+							(num "11")
+						)
+						(pin
+							(num "12")
+						)
+						(pin
+							(num "13")
+						)
+						(pin
+							(num "14")
+						)
+						(pin
+							(num "31")
+						)
+						(pin
+							(num "32")
 						)
 					)
 				)
@@ -1077,7 +933,7 @@
 				(names "/")
 				(tstamps "/")
 			)
-			(tstamps "9991f440-ff38-4459-9fd5-6df469a9674d")
+			(tstamps "db84e0f4-e543-440e-b8eb-a9d134d9d9a7")
 			(units
 				(unit
 					(name "A")
@@ -1140,7 +996,7 @@
 				(names "/")
 				(tstamps "/")
 			)
-			(tstamps "55f910a9-130b-4814-9bfd-9b31b90dd416")
+			(tstamps "6ce8a411-503b-4859-b6ca-119e24289617")
 			(units
 				(unit
 					(name "A")
@@ -1224,7 +1080,7 @@
 				(names "/")
 				(tstamps "/")
 			)
-			(tstamps "42a3a688-d387-4bb2-aa7b-3b36e70efcd0")
+			(tstamps "56a4e1cc-114b-45bb-89f6-773de6ae023c")
 			(units
 				(unit
 					(name "A")
@@ -1278,7 +1134,7 @@
 				(names "/")
 				(tstamps "/")
 			)
-			(tstamps "3c695904-9d7e-4171-8660-78ccbd419331")
+			(tstamps "79c67731-0e7f-45e7-8eb2-6fe349e1a3a9")
 			(units
 				(unit
 					(name "A")
@@ -1332,7 +1188,7 @@
 				(names "/")
 				(tstamps "/")
 			)
-			(tstamps "0b79a40c-a968-4d1e-be8f-86e0f03bab2d")
+			(tstamps "b1a318fc-b382-4ea9-a86e-c4dddef31a0e")
 			(units
 				(unit
 					(name "A")
@@ -1430,198 +1286,6 @@
 				(pin
 					(num "5")
 					(name "Pin_5")
-					(type "passive")
-				)
-			)
-		)
-		(libpart
-			(lib "Connector_Generic")
-			(part "Conn_01x06")
-			(description "Generic connector, single row, 01x06, script generated (kicad-library-utils/schlib/autogen/connector/)")
-			(footprints
-				(fp "Connector*:*_1x??_*")
-			)
-			(fields
-				(field
-					(name "Reference") "J")
-				(field
-					(name "Value") "Conn_01x06")
-				(field
-					(name "Footprint")
-				)
-				(field
-					(name "Datasheet")
-				)
-				(field
-					(name "Description") "Generic connector, single row, 01x06, script generated (kicad-library-utils/schlib/autogen/connector/)")
-			)
-			(pins
-				(pin
-					(num "1")
-					(name "Pin_1")
-					(type "passive")
-				)
-				(pin
-					(num "2")
-					(name "Pin_2")
-					(type "passive")
-				)
-				(pin
-					(num "3")
-					(name "Pin_3")
-					(type "passive")
-				)
-				(pin
-					(num "4")
-					(name "Pin_4")
-					(type "passive")
-				)
-				(pin
-					(num "5")
-					(name "Pin_5")
-					(type "passive")
-				)
-				(pin
-					(num "6")
-					(name "Pin_6")
-					(type "passive")
-				)
-			)
-		)
-		(libpart
-			(lib "Connector_Generic")
-			(part "Conn_01x08")
-			(description "Generic connector, single row, 01x08, script generated (kicad-library-utils/schlib/autogen/connector/)")
-			(footprints
-				(fp "Connector*:*_1x??_*")
-			)
-			(fields
-				(field
-					(name "Reference") "J")
-				(field
-					(name "Value") "Conn_01x08")
-				(field
-					(name "Footprint")
-				)
-				(field
-					(name "Datasheet")
-				)
-				(field
-					(name "Description") "Generic connector, single row, 01x08, script generated (kicad-library-utils/schlib/autogen/connector/)")
-			)
-			(pins
-				(pin
-					(num "1")
-					(name "Pin_1")
-					(type "passive")
-				)
-				(pin
-					(num "2")
-					(name "Pin_2")
-					(type "passive")
-				)
-				(pin
-					(num "3")
-					(name "Pin_3")
-					(type "passive")
-				)
-				(pin
-					(num "4")
-					(name "Pin_4")
-					(type "passive")
-				)
-				(pin
-					(num "5")
-					(name "Pin_5")
-					(type "passive")
-				)
-				(pin
-					(num "6")
-					(name "Pin_6")
-					(type "passive")
-				)
-				(pin
-					(num "7")
-					(name "Pin_7")
-					(type "passive")
-				)
-				(pin
-					(num "8")
-					(name "Pin_8")
-					(type "passive")
-				)
-			)
-		)
-		(libpart
-			(lib "Connector_Generic")
-			(part "Conn_01x10")
-			(description "Generic connector, single row, 01x10, script generated (kicad-library-utils/schlib/autogen/connector/)")
-			(footprints
-				(fp "Connector*:*_1x??_*")
-			)
-			(fields
-				(field
-					(name "Reference") "J")
-				(field
-					(name "Value") "Conn_01x10")
-				(field
-					(name "Footprint")
-				)
-				(field
-					(name "Datasheet")
-				)
-				(field
-					(name "Description") "Generic connector, single row, 01x10, script generated (kicad-library-utils/schlib/autogen/connector/)")
-			)
-			(pins
-				(pin
-					(num "1")
-					(name "Pin_1")
-					(type "passive")
-				)
-				(pin
-					(num "2")
-					(name "Pin_2")
-					(type "passive")
-				)
-				(pin
-					(num "3")
-					(name "Pin_3")
-					(type "passive")
-				)
-				(pin
-					(num "4")
-					(name "Pin_4")
-					(type "passive")
-				)
-				(pin
-					(num "5")
-					(name "Pin_5")
-					(type "passive")
-				)
-				(pin
-					(num "6")
-					(name "Pin_6")
-					(type "passive")
-				)
-				(pin
-					(num "7")
-					(name "Pin_7")
-					(type "passive")
-				)
-				(pin
-					(num "8")
-					(name "Pin_8")
-					(type "passive")
-				)
-				(pin
-					(num "9")
-					(name "Pin_9")
-					(type "passive")
-				)
-				(pin
-					(num "10")
-					(name "Pin_10")
 					(type "passive")
 				)
 			)
@@ -1935,6 +1599,189 @@
 				)
 			)
 		)
+		(libpart
+			(lib "MCU_Module")
+			(part "Arduino_UNO_R3")
+			(description "Arduino UNO Microcontroller Module, release 3")
+			(docs "https://www.arduino.cc/en/Main/arduinoBoardUno")
+			(footprints
+				(fp "Arduino*UNO*R3*")
+			)
+			(fields
+				(field
+					(name "Reference") "A")
+				(field
+					(name "Value") "Arduino_UNO_R3")
+				(field
+					(name "Footprint") "Module:Arduino_UNO_R3")
+				(field
+					(name "Datasheet") "https://www.arduino.cc/en/Main/arduinoBoardUno")
+				(field
+					(name "Description") "Arduino UNO Microcontroller Module, release 3")
+			)
+			(pins
+				(pin
+					(num "1")
+					(name "NC")
+					(type "no_connect")
+				)
+				(pin
+					(num "2")
+					(name "IOREF")
+					(type "output")
+				)
+				(pin
+					(num "3")
+					(name "~{RESET}")
+					(type "input")
+				)
+				(pin
+					(num "4")
+					(name "3V3")
+					(type "power_out")
+				)
+				(pin
+					(num "5")
+					(name "+5V")
+					(type "power_out")
+				)
+				(pin
+					(num "6")
+					(name "GND")
+					(type "power_in")
+				)
+				(pin
+					(num "7")
+					(name "GND")
+					(type "power_in")
+				)
+				(pin
+					(num "8")
+					(name "VIN")
+					(type "power_in")
+				)
+				(pin
+					(num "9")
+					(name "A0")
+					(type "bidirectional")
+				)
+				(pin
+					(num "10")
+					(name "A1")
+					(type "bidirectional")
+				)
+				(pin
+					(num "11")
+					(name "A2")
+					(type "bidirectional")
+				)
+				(pin
+					(num "12")
+					(name "A3")
+					(type "bidirectional")
+				)
+				(pin
+					(num "13")
+					(name "SDA/A4")
+					(type "bidirectional")
+				)
+				(pin
+					(num "14")
+					(name "SCL/A5")
+					(type "bidirectional")
+				)
+				(pin
+					(num "15")
+					(name "D0/RX")
+					(type "bidirectional")
+				)
+				(pin
+					(num "16")
+					(name "D1/TX")
+					(type "bidirectional")
+				)
+				(pin
+					(num "17")
+					(name "D2")
+					(type "bidirectional")
+				)
+				(pin
+					(num "18")
+					(name "D3")
+					(type "bidirectional")
+				)
+				(pin
+					(num "19")
+					(name "D4")
+					(type "bidirectional")
+				)
+				(pin
+					(num "20")
+					(name "D5")
+					(type "bidirectional")
+				)
+				(pin
+					(num "21")
+					(name "D6")
+					(type "bidirectional")
+				)
+				(pin
+					(num "22")
+					(name "D7")
+					(type "bidirectional")
+				)
+				(pin
+					(num "23")
+					(name "D8")
+					(type "bidirectional")
+				)
+				(pin
+					(num "24")
+					(name "D9")
+					(type "bidirectional")
+				)
+				(pin
+					(num "25")
+					(name "D10")
+					(type "bidirectional")
+				)
+				(pin
+					(num "26")
+					(name "D11")
+					(type "bidirectional")
+				)
+				(pin
+					(num "27")
+					(name "D12")
+					(type "bidirectional")
+				)
+				(pin
+					(num "28")
+					(name "D13")
+					(type "bidirectional")
+				)
+				(pin
+					(num "29")
+					(name "GND")
+					(type "power_in")
+				)
+				(pin
+					(num "30")
+					(name "AREF")
+					(type "input")
+				)
+				(pin
+					(num "31")
+					(name "SDA/A4")
+					(type "bidirectional")
+				)
+				(pin
+					(num "32")
+					(name "SCL/A5")
+					(type "bidirectional")
+				)
+			)
+		)
 	)
 	(libraries
 		(library
@@ -1944,6 +1791,10 @@
 		(library
 			(logical "Device")
 			(uri "${KICAD10_SYMBOL_DIR}/Device.kicad_sym")
+		)
+		(library
+			(logical "MCU_Module")
+			(uri "${KICAD10_SYMBOL_DIR}/MCU_Module.kicad_sym")
 		)
 	)
 	(nets
@@ -1980,8 +1831,8 @@
 			(node
 				(ref "J3")
 				(pin "4")
-				(pinfunction "Pin_4_4")
-				(pintype "passive")
+				(pinfunction "3V3_4")
+				(pintype "power_out")
 			)
 			(node
 				(ref "J8")
@@ -2023,8 +1874,8 @@
 			(node
 				(ref "J3")
 				(pin "5")
-				(pinfunction "Pin_5_5")
-				(pintype "passive")
+				(pinfunction "+5V_5")
+				(pintype "power_out")
 			)
 			(node
 				(ref "J7")
@@ -2256,21 +2107,21 @@
 			)
 			(node
 				(ref "J3")
+				(pin "29")
+				(pinfunction "GND_29")
+				(pintype "power_in")
+			)
+			(node
+				(ref "J3")
 				(pin "6")
-				(pinfunction "Pin_6_6")
-				(pintype "passive")
+				(pinfunction "GND_6")
+				(pintype "power_in")
 			)
 			(node
 				(ref "J3")
 				(pin "7")
-				(pinfunction "Pin_7_7")
-				(pintype "passive")
-			)
-			(node
-				(ref "J6")
-				(pin "7")
-				(pinfunction "Pin_7_7")
-				(pintype "passive")
+				(pinfunction "GND_7")
+				(pintype "power_in")
 			)
 			(node
 				(ref "J7")
@@ -2363,10 +2214,10 @@
 				(pintype "passive")
 			)
 			(node
-				(ref "J4")
-				(pin "4")
-				(pinfunction "Pin_4_4")
-				(pintype "passive")
+				(ref "J3")
+				(pin "12")
+				(pinfunction "A3_12")
+				(pintype "bidirectional")
 			)
 		)
 		(net
@@ -2380,10 +2231,10 @@
 				(pintype "passive")
 			)
 			(node
-				(ref "J6")
-				(pin "1")
-				(pinfunction "Pin_1_1")
-				(pintype "passive")
+				(ref "J3")
+				(pin "23")
+				(pinfunction "D8_23")
+				(pintype "bidirectional")
 			)
 			(node
 				(ref "R1")
@@ -2402,10 +2253,10 @@
 				(pintype "passive")
 			)
 			(node
-				(ref "J6")
-				(pin "2")
-				(pinfunction "Pin_2_2")
-				(pintype "passive")
+				(ref "J3")
+				(pin "24")
+				(pinfunction "D9_24")
+				(pintype "bidirectional")
 			)
 		)
 		(net
@@ -2419,10 +2270,10 @@
 				(pintype "passive")
 			)
 			(node
-				(ref "J5")
-				(pin "3")
-				(pinfunction "Pin_3_3")
-				(pintype "passive")
+				(ref "J3")
+				(pin "17")
+				(pinfunction "D2_17")
+				(pintype "bidirectional")
 			)
 		)
 		(net
@@ -2436,10 +2287,10 @@
 				(pintype "passive")
 			)
 			(node
-				(ref "J5")
-				(pin "4")
-				(pinfunction "Pin_4_4")
-				(pintype "passive")
+				(ref "J3")
+				(pin "18")
+				(pinfunction "D3_18")
+				(pintype "bidirectional")
 			)
 		)
 		(net
@@ -2453,10 +2304,10 @@
 				(pintype "passive")
 			)
 			(node
-				(ref "J5")
-				(pin "5")
-				(pinfunction "Pin_5_5")
-				(pintype "passive")
+				(ref "J3")
+				(pin "19")
+				(pinfunction "D4_19")
+				(pintype "bidirectional")
 			)
 		)
 		(net
@@ -2470,10 +2321,10 @@
 				(pintype "passive")
 			)
 			(node
-				(ref "J5")
-				(pin "6")
-				(pinfunction "Pin_6_6")
-				(pintype "passive")
+				(ref "J3")
+				(pin "20")
+				(pinfunction "D5_20")
+				(pintype "bidirectional")
 			)
 		)
 		(net
@@ -2487,10 +2338,10 @@
 				(pintype "passive")
 			)
 			(node
-				(ref "J5")
-				(pin "7")
-				(pinfunction "Pin_7_7")
-				(pintype "passive")
+				(ref "J3")
+				(pin "21")
+				(pinfunction "D6_21")
+				(pintype "bidirectional")
 			)
 		)
 		(net
@@ -2504,10 +2355,10 @@
 				(pintype "passive")
 			)
 			(node
-				(ref "J5")
-				(pin "8")
-				(pinfunction "Pin_8_8")
-				(pintype "passive")
+				(ref "J3")
+				(pin "22")
+				(pinfunction "D7_22")
+				(pintype "bidirectional")
 			)
 		)
 		(net
@@ -2521,10 +2372,10 @@
 				(pintype "passive")
 			)
 			(node
-				(ref "J4")
-				(pin "3")
-				(pinfunction "Pin_3_3")
-				(pintype "passive")
+				(ref "J3")
+				(pin "11")
+				(pinfunction "A2_11")
+				(pintype "bidirectional")
 			)
 		)
 		(net
@@ -2538,10 +2389,10 @@
 				(pintype "passive")
 			)
 			(node
-				(ref "J4")
-				(pin "1")
-				(pinfunction "Pin_1_1")
-				(pintype "passive")
+				(ref "J3")
+				(pin "9")
+				(pinfunction "A0_9")
+				(pintype "bidirectional")
 			)
 		)
 		(net
@@ -2555,10 +2406,10 @@
 				(pintype "passive")
 			)
 			(node
-				(ref "J4")
-				(pin "5")
-				(pinfunction "Pin_5_5")
-				(pintype "passive")
+				(ref "J3")
+				(pin "13")
+				(pinfunction "SDA/A4_13")
+				(pintype "bidirectional")
 			)
 		)
 		(net
@@ -2572,10 +2423,10 @@
 				(pintype "passive")
 			)
 			(node
-				(ref "J4")
-				(pin "2")
-				(pinfunction "Pin_2_2")
-				(pintype "passive")
+				(ref "J3")
+				(pin "10")
+				(pinfunction "A1_10")
+				(pintype "bidirectional")
 			)
 		)
 		(net
@@ -2690,156 +2541,156 @@
 		)
 		(net
 			(code "38")
-			(name "unconnected-(J3-Pin_1-Pad1)")
+			(name "unconnected-(J3-AREF-Pad30)")
 			(class "Default")
 			(node
 				(ref "J3")
-				(pin "1")
-				(pinfunction "Pin_1_1")
-				(pintype "passive+no_connect")
+				(pin "30")
+				(pinfunction "AREF_30")
+				(pintype "input+no_connect")
 			)
 		)
 		(net
 			(code "39")
-			(name "unconnected-(J3-Pin_2-Pad2)")
+			(name "unconnected-(J3-D0{slash}RX-Pad15)")
 			(class "Default")
 			(node
 				(ref "J3")
-				(pin "2")
-				(pinfunction "Pin_2_2")
-				(pintype "passive+no_connect")
+				(pin "15")
+				(pinfunction "D0/RX_15")
+				(pintype "bidirectional+no_connect")
 			)
 		)
 		(net
 			(code "40")
-			(name "unconnected-(J3-Pin_3-Pad3)")
+			(name "unconnected-(J3-D1{slash}TX-Pad16)")
 			(class "Default")
 			(node
 				(ref "J3")
-				(pin "3")
-				(pinfunction "Pin_3_3")
-				(pintype "passive+no_connect")
+				(pin "16")
+				(pinfunction "D1/TX_16")
+				(pintype "bidirectional+no_connect")
 			)
 		)
 		(net
 			(code "41")
-			(name "unconnected-(J3-Pin_8-Pad8)")
+			(name "unconnected-(J3-D10-Pad25)")
 			(class "Default")
 			(node
 				(ref "J3")
-				(pin "8")
-				(pinfunction "Pin_8_8")
-				(pintype "passive+no_connect")
+				(pin "25")
+				(pinfunction "D10_25")
+				(pintype "bidirectional+no_connect")
 			)
 		)
 		(net
 			(code "42")
-			(name "unconnected-(J4-Pin_6-Pad6)")
+			(name "unconnected-(J3-D11-Pad26)")
 			(class "Default")
 			(node
-				(ref "J4")
-				(pin "6")
-				(pinfunction "Pin_6_6")
-				(pintype "passive+no_connect")
+				(ref "J3")
+				(pin "26")
+				(pinfunction "D11_26")
+				(pintype "bidirectional+no_connect")
 			)
 		)
 		(net
 			(code "43")
-			(name "unconnected-(J5-Pin_1-Pad1)")
+			(name "unconnected-(J3-D12-Pad27)")
 			(class "Default")
 			(node
-				(ref "J5")
-				(pin "1")
-				(pinfunction "Pin_1_1")
-				(pintype "passive+no_connect")
+				(ref "J3")
+				(pin "27")
+				(pinfunction "D12_27")
+				(pintype "bidirectional+no_connect")
 			)
 		)
 		(net
 			(code "44")
-			(name "unconnected-(J5-Pin_2-Pad2)")
+			(name "unconnected-(J3-D13-Pad28)")
 			(class "Default")
 			(node
-				(ref "J5")
-				(pin "2")
-				(pinfunction "Pin_2_2")
-				(pintype "passive+no_connect")
+				(ref "J3")
+				(pin "28")
+				(pinfunction "D13_28")
+				(pintype "bidirectional+no_connect")
 			)
 		)
 		(net
 			(code "45")
-			(name "unconnected-(J6-Pin_3-Pad3)")
+			(name "unconnected-(J3-IOREF-Pad2)")
 			(class "Default")
 			(node
-				(ref "J6")
-				(pin "3")
-				(pinfunction "Pin_3_3")
-				(pintype "passive+no_connect")
+				(ref "J3")
+				(pin "2")
+				(pinfunction "IOREF_2")
+				(pintype "output+no_connect")
 			)
 		)
 		(net
 			(code "46")
-			(name "unconnected-(J6-Pin_4-Pad4)")
+			(name "unconnected-(J3-NC-Pad1)")
 			(class "Default")
 			(node
-				(ref "J6")
-				(pin "4")
-				(pinfunction "Pin_4_4")
-				(pintype "passive+no_connect")
+				(ref "J3")
+				(pin "1")
+				(pinfunction "NC_1")
+				(pintype "no_connect")
 			)
 		)
 		(net
 			(code "47")
-			(name "unconnected-(J6-Pin_5-Pad5)")
+			(name "unconnected-(J3-SCL{slash}A5-Pad14)")
 			(class "Default")
 			(node
-				(ref "J6")
-				(pin "5")
-				(pinfunction "Pin_5_5")
-				(pintype "passive+no_connect")
+				(ref "J3")
+				(pin "14")
+				(pinfunction "SCL/A5_14")
+				(pintype "bidirectional+no_connect")
 			)
 		)
 		(net
 			(code "48")
-			(name "unconnected-(J6-Pin_6-Pad6)")
+			(name "unconnected-(J3-SCL{slash}A5-Pad32)")
 			(class "Default")
 			(node
-				(ref "J6")
-				(pin "6")
-				(pinfunction "Pin_6_6")
-				(pintype "passive+no_connect")
+				(ref "J3")
+				(pin "32")
+				(pinfunction "SCL/A5_32")
+				(pintype "bidirectional+no_connect")
 			)
 		)
 		(net
 			(code "49")
-			(name "unconnected-(J6-Pin_8-Pad8)")
+			(name "unconnected-(J3-SDA{slash}A4-Pad31)")
 			(class "Default")
 			(node
-				(ref "J6")
-				(pin "8")
-				(pinfunction "Pin_8_8")
-				(pintype "passive+no_connect")
+				(ref "J3")
+				(pin "31")
+				(pinfunction "SDA/A4_31")
+				(pintype "bidirectional+no_connect")
 			)
 		)
 		(net
 			(code "50")
-			(name "unconnected-(J6-Pin_9-Pad9)")
+			(name "unconnected-(J3-VIN-Pad8)")
 			(class "Default")
 			(node
-				(ref "J6")
-				(pin "9")
-				(pinfunction "Pin_9_9")
-				(pintype "passive+no_connect")
+				(ref "J3")
+				(pin "8")
+				(pinfunction "VIN_8")
+				(pintype "power_in+no_connect")
 			)
 		)
 		(net
 			(code "51")
-			(name "unconnected-(J6-Pin_10-Pad10)")
+			(name "unconnected-(J3-~{RESET}-Pad3)")
 			(class "Default")
 			(node
-				(ref "J6")
-				(pin "10")
-				(pinfunction "Pin_10_10")
-				(pintype "passive+no_connect")
+				(ref "J3")
+				(pin "3")
+				(pinfunction "~{RESET}_3")
+				(pintype "input+no_connect")
 			)
 		)
 		(net
