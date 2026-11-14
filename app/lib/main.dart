@@ -10,13 +10,14 @@
 
 import 'dart:async';
 import 'dart:convert';
-import 'dart:io' show Platform;
+import 'dart:io';
 import 'package:flutter/foundation.dart' show ValueListenable;
 import 'package:flutter/material.dart';
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:path_provider/path_provider.dart';
 
-// ---- Protocol (must match orchestrator/v1/c3/c3.ino) ----
+// ---- Protocol (must match spectre/v1/spectre/spectre.ino) ----
 const String kSvcUuid  = '6e40a000-b5a3-f393-e0a9-e50e24dcca9e';
 const String kCmdUuid  = '6e40a001-b5a3-f393-e0a9-e50e24dcca9e';
 const String kStatUuid = '6e40a002-b5a3-f393-e0a9-e50e24dcca9e';
@@ -28,6 +29,7 @@ const int kOpSetTarget = 0x20;      // [0x20, b0..b5, ch, ...ssid]
 const int kOpScanTargets = 0x21;    // brief WiFi scan, then auto-returns to IDLE
 const int kOpClearTarget = 0x22;
 const int kOpSendAplist = 0x23;     // pull the scanned AP list over DATA
+const int kOpPullCapture = 0xF1;    // drain buffered EAPOL frames as a base64 .pcap over DATA
 
 class DeckMode {
   final String name;
@@ -59,15 +61,23 @@ const List<DeckMode> kWifiModes = [
   DeckMode('Karma', 0x05, dropsBle: true, isTx: true, targetable: true),
   DeckMode('Handshake Capture', 0x06, dropsBle: true, targetable: true),
   DeckMode('Evil Portal', 0x07, dropsBle: true, isTx: true),
+  DeckMode('Wardrive', 0x08, dropsBle: true),
+  DeckMode('Packet Monitor', 0x0A, dropsBle: true),
 ];
 const List<DeckMode> kBleModes = [
   DeckMode('BLE Scan', 0x10),
   DeckMode('AirTag Scan', 0x11),
   DeckMode('Flipper Scan', 0x12),
   DeckMode('Skimmer Scan', 0x13),
+  DeckMode('BLE Sniffer', 0x16),
   DeckMode('BLE Spam', 0x14, isTx: true),
-  // HID Trap turns the C3 into a BLE keyboard, so the control link drops like a WiFi handoff.
+  DeckMode('BLE Jammer', 0x17, isTx: true),
+  // HID Trap turns the HUB into a BLE keyboard, so the control link drops like a WiFi handoff.
   DeckMode('BLE HID Trap', 0x15, dropsBle: true, isTx: true),
+];
+// GPS-only — the 2.4GHz radio stays idle, so the phone link stays connected.
+const List<DeckMode> kGpsModes = [
+  DeckMode('Satellite Scan', 0x09),
 ];
 
 // Ducky scripts embedded in the C3 firmware (orchestrator/v1/c3/ducky.h) — keep this list in the
@@ -111,7 +121,7 @@ const Map<int, ModeInfo> kModeInfo = {
     'Set a target first — Karma only beacons that one SSID (your own network\'s name) as bait. For safety it never re-broadcasts the real SSIDs it overhears nearby clients asking for, so it can\'t accidentally impersonate a neighbour\'s network. With no target it just emits made-up placeholder names.'),
   0x06: ModeInfo(
     'Waits to catch a WPA2 4-way handshake — the encrypted login exchange — when a device joins a network.',
-    'In promiscuous mode the C3 watches data frames for EAPOL packets (ethertype 0x888E) and counts them, remembering which AP they belong to. Tip: running Deauth briefly forces a client to reconnect, which replays the handshake. Full capture-to-phone (pcap) is the next milestone — for now it counts and identifies them.'),
+    'In promiscuous mode the C3 watches data frames for EAPOL packets (ethertype 0x888E) and counts them, remembering which AP they belong to. Tip: running Deauth briefly forces a client to reconnect, which replays the handshake. The raw EAPOL frames are buffered in RAM; after you STOP and reconnect, use "Pull capture (.pcap)" to download them to the phone as a Wireshark-ready file.'),
   0x07: ModeInfo(
     'Stands up a rogue open WiFi hotspot that redirects anything that joins to a test notice page. OWN-LAB ONLY.',
     'The C3 becomes an open SoftAP ("Free Airport WiFi"), runs a tiny DNS server that answers every lookup with its own address, and serves one plain "this is a lab test AP" page to every request. It demonstrates the rogue-AP + captive-redirect mechanics — it does NOT present a login form or collect anything.'),
@@ -132,7 +142,22 @@ const Map<int, ModeInfo> kModeInfo = {
     'The C3 rapidly rotates its BLE advertisements through forged proximity-pairing payloads, which makes "connect?" pop-ups appear on nearby devices. The phone\'s control link stays connected throughout. For testing your own devices only.'),
   0x15: ModeInfo(
     'Pretends to be a Bluetooth keyboard; once a computer pairs, it auto-types a chosen script (e.g. a rickroll). OWN-LAB ONLY.',
-    'The C3 advertises as a HID keyboard ("Wireless Keyboard"). When your target PC pairs, it waits ~2.5s then types the selected DuckyScript as if someone were at the keyboard. Pick the script below — the KDE/Kubuntu rickroll is the default for your laptop.'),
+    'The HUB advertises as a HID keyboard ("Wireless Keyboard"). When your target PC pairs, it waits ~2.5s then types the selected DuckyScript as if someone were at the keyboard. Pick the script below — the KDE/Kubuntu rickroll is the default for your laptop.'),
+  0x08: ModeInfo(
+    'Drives around logging WiFi networks tagged with your GPS position, shown live on the HUB screen.',
+    'The HUB runs promiscuous WiFi recon while reading the onboard NEO-7M GPS. Each network is shown with its live coordinates on the TFT. This is a live, on-screen view — nothing is logged to the phone or an SD card (there is no card wired yet). The 2.4GHz radio is busy, so the BLE link drops while it runs; the HUB screen is the surface.'),
+  0x09: ModeInfo(
+    'Shows the GPS satellites in view, their signal strength, and the fix quality.',
+    'Reads the NEO-7M over its own UART (GSV/GGA sentences) and draws a per-satellite SNR bar graph plus fix type, HDOP and position. The GPS is separate from the 2.4GHz radio, so the phone link stays connected the whole time — handy for checking the antenna has a clear view of the sky before wardriving.'),
+  0x0A: ModeInfo(
+    'Live traffic waterfall across all 13 WiFi channels, with a deauth counter.',
+    'The HUB hops channels in promiscuous mode and counts frames per channel, drawing a bar for each on the TFT so you can see where the activity (and any deauth storms) is. Passive and listen-only. The radio is busy, so the BLE link drops while it runs.'),
+  0x16: ModeInfo(
+    'Tracks BLE devices over time: signal, packet count and how long since each was last seen.',
+    'Like BLE Scan, but it keeps a persistent table sorted by how chatty each device is, with a packet counter and last-seen age. Good for spotting a device that keeps reappearing around you. The phone link stays connected.'),
+  0x17: ModeInfo(
+    'Floods randomised BLE advertisements to disrupt nearby BLE. OWN-LAB ONLY — best-effort, not a true jammer.',
+    'The HUB blasts randomised adverts on the primary advertising channels as fast as the controller allows, which degrades (not blocks) nearby BLE discovery/pairing. This is NOT real PHY-layer jamming — that needs the NRF24 radio-shield upgrade. Active transmission: own gear only.'),
 };
 
 void main() => runApp(const CyberDeckApp());
@@ -178,6 +203,8 @@ class _HomePageState extends State<HomePage> {
   final ValueNotifier<List<ApTarget>> _aps = ValueNotifier([]);   // networks from the last target scan
   final ValueNotifier<bool> _scanBusy = ValueNotifier(false);
   String _dataBuf = '';
+  bool _pcapMode = false;                 // true while a base64 .pcap is streaming over DATA
+  final StringBuffer _pcapB64 = StringBuffer();
   bool _scanningTargets = false;         // true during a 0x21 scan (auto-reconnect, no BOOT needed)
   bool _pullAplistOnReady = false;       // after reconnect, pull the scan list with 0x23
 
@@ -341,6 +368,13 @@ class _HomePageState extends State<HomePage> {
 
   void _onDataLine(String line) {
     if (line.isEmpty) return;
+    // Handshake -> .pcap: "PCAPB64\n" then base64 lines then "END\n".
+    if (line == 'PCAPB64') { _pcapMode = true; _pcapB64.clear(); _snack('Receiving capture…'); return; }
+    if (_pcapMode) {
+      if (line == 'END') { _pcapMode = false; _savePcap(_pcapB64.toString()); return; }
+      _pcapB64.write(line);
+      return;
+    }
     if (line == 'END') { _scanBusy.value = false; return; }
     final p = line.split('\t');
     if (p.length < 4) return;
@@ -381,6 +415,7 @@ class _HomePageState extends State<HomePage> {
         mode: m,
         target: _target,
         onChooseTarget: m.targetable ? _openTargetPage : null,
+        onPullCapture: m.opcode == 0x06 ? _pullCapture : null,
         onRun: (scriptIdx) => m.opcode == kOpHidTrap ? _sendHid(scriptIdx) : _send(m),
       ),
     ));
@@ -468,6 +503,35 @@ class _HomePageState extends State<HomePage> {
     if (_cmd == null) return;
     try { await _cmd!.write([kOpStop], withoutResponse: false); _snack('STOP → IDLE'); }
     catch (e) { _snack('Stop failed: $e'); }
+  }
+
+  // Pull the buffered EAPOL frames from the last Handshake Capture. Needs the BLE link UP, so run
+  // this after you STOP the capture and reconnect. The HUB streams a base64 .pcap over DATA.
+  Future<void> _pullCapture() async {
+    if (_cmd == null) { _snack('Connect first (STOP the capture, then Reconnect)'); return; }
+    _pcapMode = false; _pcapB64.clear();
+    try { await _cmd!.write([kOpPullCapture], withoutResponse: false); }
+    catch (e) { _snack('Pull failed: $e'); }
+  }
+
+  Future<void> _savePcap(String b64) async {
+    try {
+      final bytes = base64.decode(b64.trim());
+      if (bytes.length <= 24) { _snack('No frames captured yet'); return; }
+      Directory? dir;
+      try { dir = await getExternalStorageDirectory(); } catch (_) {}
+      dir ??= await getApplicationDocumentsDirectory();
+      final ts = DateTime.now().toIso8601String().replaceAll(RegExp(r'[:.]'), '-');
+      final f = File('${dir.path}/handshake-$ts.pcap');
+      await f.writeAsBytes(bytes, flush: true);
+      if (!mounted) return;
+      showDialog(context: context, builder: (_) => AlertDialog(
+        title: const Text('Capture saved'),
+        content: Text('${bytes.length} bytes written to:\n\n${f.path}\n\n'
+            'Open it in Wireshark / hashcat (LINKTYPE_IEEE802_11).'),
+        actions: [TextButton(onPressed: () => Navigator.pop(context), child: const Text('OK'))],
+      ));
+    } catch (e) { _snack('Save failed: $e'); }
   }
 
   Future<void> _reconnect() async {
@@ -591,6 +655,9 @@ class _HomePageState extends State<HomePage> {
         const SizedBox(height: 16),
         _sectionLabel('Bluetooth  ·  stays connected'),
         _grid(kBleModes),
+        const SizedBox(height: 16),
+        _sectionLabel('GPS  ·  stays connected'),
+        _grid(kGpsModes),
       ],
     );
   }
@@ -634,7 +701,8 @@ class ModeDetailPage extends StatefulWidget {
   final void Function(int scriptIdx) onRun;
   final ValueListenable<ApTarget?>? target;   // current locked target (for targetable modes)
   final VoidCallback? onChooseTarget;         // opens the target picker
-  const ModeDetailPage({super.key, required this.mode, required this.onRun, this.target, this.onChooseTarget});
+  final VoidCallback? onPullCapture;          // Handshake: download the buffered EAPOL as a .pcap
+  const ModeDetailPage({super.key, required this.mode, required this.onRun, this.target, this.onChooseTarget, this.onPullCapture});
   @override
   State<ModeDetailPage> createState() => _ModeDetailPageState();
 }
@@ -728,8 +796,22 @@ class _ModeDetailPageState extends State<ModeDetailPage> {
           if (m.dropsBle && !isHid) ...[
             const SizedBox(height: 16),
             Text('Running this hands the radio to WiFi, so the phone link drops. '
-                'Press the C3 BOOT button (or power-cycle) to return to IDLE, then Reconnect.',
+                'Send STOP (or power-cycle) to return to IDLE, then Reconnect.',
                 style: TextStyle(fontSize: 13, color: Colors.grey[400])),
+          ],
+          if (widget.onPullCapture != null) ...[
+            const SizedBox(height: 24),
+            _heading('Captured handshake', accent),
+            const SizedBox(height: 4),
+            Text('After you STOP the capture and reconnect, pull the buffered EAPOL frames '
+                'to the phone as a Wireshark-ready .pcap file.',
+                style: TextStyle(fontSize: 13, color: Colors.grey[400])),
+            const SizedBox(height: 10),
+            OutlinedButton.icon(
+              onPressed: widget.onPullCapture,
+              icon: const Icon(Icons.download, size: 18),
+              label: const Text('Pull capture (.pcap)'),
+            ),
           ],
           if (isHid) ...[
             const SizedBox(height: 24),

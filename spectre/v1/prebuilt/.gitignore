@@ -1,0 +1,3 @@
+# Bulky build artifacts — not needed to flash
+*.elf
+*.map
