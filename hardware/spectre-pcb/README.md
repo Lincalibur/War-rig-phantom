@@ -18,11 +18,27 @@ Built and validated against **KiCad 10.0**. **ERC: 0 violations.** Netlist check
 | `spectre.kicad_pro` | Project file, with a **Power** netclass (1 mm tracks) on `+5V` / `+3V3` / `GND`. |
 | `spectre.net` | Exported netlist (reference). |
 
-## Go straight to routing
-1. Open `spectre.kicad_pro` in KiCad.
-2. Open the **PCB Editor**.
-3. **Tools → Update PCB from Schematic** (F8) → *Update*. All footprints drop in with the ratsnest.
-4. Draw a board outline on Edge.Cuts, place, and route. Power nets are already on 1 mm tracks.
+## Board layout (done — placement + outline; routing is yours)
+`spectre.kicad_pcb` already has the **outline and basic placement**. Open `spectre.kicad_pro`,
+open the PCB Editor, and route — the full ratsnest is there. **`PINOUT.md`** is the human-readable
+wiring map for every connector.
+
+- **Portrait board, 70 × 130 mm** (screen is vertical → long board). 4× M3 mounting holes.
+- **TFT on the FRONT:** the four UNO shield headers run vertically down both long edges
+  (J3 power + J4 analog on the left, J6 + J5 digital on the right, ~48 mm apart to mate the shield).
+- **ESP32 on the BACK:** J1/J2 (two 1×19 sockets) sit in the central gap, directly behind the screen.
+- **Antennas at the TOP:** WiFi SMA (`ANT1`) top-left, NEO-7M GPS (`J7`) top-centre, power LED top-right.
+- **Bottom:** expansion header `J8`, 5 V power in `J9`, decoupling/bulk caps.
+
+![front](pcb-front.png) ![back](pcb-back.png)
+
+Regenerate the PCB after editing placement: run
+`"C:\Program Files\KiCad\10.0\bin\python.exe" generate_pcb.py` (edit the `PLACE` table first).
+Note it rewrites `spectre.kicad_pcb`, so route on a copy or re-run before routing, not after.
+
+### If you'd rather place it yourself from scratch
+Delete `spectre.kicad_pcb`, open the project, PCB Editor → **Tools → Update PCB from Schematic**
+(F8), then place and route. Power nets are already on 1 mm tracks via the Power netclass.
 
 ## What's on the board
 | Ref | Part | Notes |
