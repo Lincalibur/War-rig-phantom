@@ -28,6 +28,19 @@ Or browser (no terminal): open `https://espressif.github.io/esptool-js/` in Chro
 
 If that works, the main SPECTRE firmware gets built into a merged `.bin` the same way.
 
+## `spectre_MERGED.bin` — the MAIN SPECTRE firmware (flash this after the diag shows colours)
+
+Full orchestrator port: TFT UI + GPS + all WiFi/BLE modes + handshake->pcap. Same merged layout,
+flashes at offset **0x0**, same correct ILI9488/320x480/parallel config baked in.
+
+```bash
+esptool.py --chip esp32 --port /dev/ttyUSB0 --baud 921600 write_flash 0x0 spectre_MERGED.bin
+```
+(or web flasher `espressif.github.io/esptool-js`, file @ `0x0`).
+
+After flashing, drive it from the CyberDeck Android app over BLE. Active-TX modes
+(deauth/beacon/probe/karma/BLE spam/jammer/HID) are **own lab / own gear only**.
+
 ## Component binaries (if you prefer offset flashing instead of the merged image)
 ```bash
 esptool.py --chip esp32 --port /dev/ttyUSB0 --baud 921600 write_flash \
