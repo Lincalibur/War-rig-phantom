@@ -23,7 +23,8 @@ Built and validated against **KiCad 10.0**. **ERC: 0 violations.** Netlist check
 open the PCB Editor, and route — the full ratsnest is there. **`PINOUT.md`** is the human-readable
 wiring map for every connector.
 
-- **Portrait board, 70 × 130 mm** (screen is vertical → long board). 4× M3 mounting holes.
+- **Portrait board, 75 × 150 mm** (screen is vertical → long board). 4× M3 corner holes, kept clear.
+  Verified **0 footprint overlaps** (including no front/back pad collisions).
 - **TFT on the FRONT:** the four UNO shield headers run vertically down both long edges
   (J3 power + J4 analog on the left, J6 + J5 digital on the right, ~48 mm apart to mate the shield).
 - **ESP32 on the BACK:** J1/J2 (two 1×19 sockets) sit in the central gap, directly behind the screen.

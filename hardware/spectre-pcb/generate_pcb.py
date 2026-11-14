@@ -53,33 +53,33 @@ FP = {
 }
 
 # ---- placement table: ref -> (x_mm, y_mm, rotation_deg, side) ; side 'F' or 'B' ----
-# Board is 70 x 130 mm, portrait. Origin top-left, +Y down.
-# NOTE: these PinSocket footprints default to pads stacked ALONG Y (vertical) at rot 0;
-# rot 90 lays them horizontal. The TFT's two header groups run vertically down the long
-# side edges (so the UNO shield mates); GPS + expansion lie horizontal at top/bottom.
-# ESP32 rows on the BACK sit in the central gap, directly behind the screen.
+# Board is 75 x 150 mm, portrait. Origin top-left, +Y down. Mounting holes at the corners
+# are kept clear. These PinSocket footprints default to pads stacked ALONG Y (vertical) at
+# rot 0; rot 90 lays them horizontal. The TFT's two header groups run vertically down the
+# long side edges (so the UNO shield mates, ~48 mm apart); GPS + expansion lie horizontal.
+# ESP32 rows on the BACK sit in the central gap (x 28 & 51), directly behind the screen,
+# offset from the TFT header columns (x 13 & 61) so no through-hole pads collide.
 PLACE = {
  # --- TOP: antennas + indicator ---
- "ANT1":(14, 9,  0, "F"),    # WiFi SMA (mechanical, no net)
- "J7":  (45,14, 90, "F"),    # NEO-7M GPS, horizontal, up top
- "D1":  (61,10,  0, "F"),    # power LED
- "R2":  (61,17, 90, "F"),
- # --- MIDDLE: TFT shield headers on FRONT (vertical, rot 0), two columns ~48mm apart ---
- "J4":  (11,48,  0, "F"),    # analog  A0-A5     (left col, top)
- "J3":  (11,78,  0, "F"),    # power   8-pin     (left col, bottom)
- "J6":  (59,52,  0, "F"),    # digital-hi D8-D13 (right col, top)
- "J5":  (59,85,  0, "F"),    # digital-lo D2-D7  (right col, bottom)
- # --- MIDDLE: ESP32 DevKit on BACK (two 1x19 rows, vertical), in the central gap ---
- "J1":  (30,64,  0, "B"),    # left header row
- "J2":  (50,64,  0, "B"),    # right header row (~20mm apart)
- # --- BOTTOM: expansion, power, bulk ---
- "J8":  (35,104,90, "F"),    # expansion 1x12, horizontal
- "J9":  (9, 122, 0, "F"),    # 5V power in
- # decoupling / bulk along the bottom, front
- "C1":  (16,113,90,"F"), "C2":(24,113,90,"F"), "C3":(32,113,90,"F"), "C4":(40,113,90,"F"),
- "C7":  (48,113,90,"F"),
- "C5":  (16,122,90,"F"), "C6":(24,122,90,"F"), "C8":(32,122,90,"F"),
- "R1":  (58,113,90,"F"),     # DNP IO12 pulldown
+ "ANT1":(17,15,  0, "F"),    # WiFi SMA (mechanical, no net)
+ "J7":  (42,15, 90, "F"),    # NEO-7M GPS, horizontal, up top
+ "D1":  (60,13,  0, "F"),    # power LED
+ "R2":  (60,21,  0, "F"),    # LED series R, horizontal
+ # --- MIDDLE: TFT shield headers on FRONT (vertical, rot 0), two columns 48 mm apart ---
+ "J4":  (13,46,  0, "F"),    # analog  A0-A5     (left col, top)
+ "J3":  (13,78,  0, "F"),    # power   8-pin     (left col, bottom)
+ "J6":  (61,50,  0, "F"),    # digital-hi D8-D13 (right col, top)
+ "J5":  (61,84,  0, "F"),    # digital-lo D2-D7  (right col, bottom)
+ # --- MIDDLE: ESP32 DevKit on BACK (two 1x19 rows, vertical), central gap, ~23 mm apart ---
+ "J1":  (28,70,  0, "B"),    # left header row
+ "J2":  (51,70,  0, "B"),    # right header row
+ # --- BOTTOM: expansion, then two tidy rows of passives ---
+ "J8":  (37,106,90, "F"),    # expansion 1x12, horizontal
+ "C1":  (14,120,0,"F"), "C2":(25,120,0,"F"), "C3":(36,120,0,"F"), "C4":(47,120,0,"F"),
+ "C7":  (58,120,0,"F"),
+ "C5":  (14,133,0,"F"), "C6":(25,133,0,"F"), "C8":(36,133,0,"F"),
+ "R1":  (49,133,0,"F"),      # DNP IO12 pulldown, horizontal
+ "J9":  (60,133,0,"F"),      # 5V power in
 }
 
 board = pcbnew.CreateEmptyBoard()
@@ -116,20 +116,25 @@ for ref, fpid in FP.items():
         net = padmap.get(ref, {}).get(pad.GetNumber())
         if net:
             pad.SetNet(get_net(net))
+    # hide the long value label (clutter); keep a small reference designator
+    fp.Value().SetVisible(False)
+    fp.Reference().SetTextSize(pcbnew.VECTOR2I(MM(1.0), MM(1.0)))
     placed.append(ref)
 
 # --- mechanical: WiFi SMA + 4 mounting holes (no nets) ---
 sma = load_fp("Connector_Coaxial:SMA_Amphenol_132134_Vertical")
 sma.SetReference("ANT1")
 board.Add(sma); sma.SetPosition(V(*PLACE["ANT1"][:2]))
+sma.Value().SetVisible(False)
 placed.append("ANT1")
 
-for i,(hx,hy) in enumerate([(5,5),(65,5),(5,125),(65,125)], 1):
+for i,(hx,hy) in enumerate([(6,6),(69,6),(6,144),(69,144)], 1):
     h = load_fp("MountingHole:MountingHole_3.2mm_M3")
     h.SetReference("H%d"%i); board.Add(h); h.SetPosition(V(hx,hy))
+    h.Value().SetVisible(False)
 
-# ---- board outline on Edge.Cuts (portrait rectangle, 70 x 130) ----
-W, Hh = 70.0, 130.0
+# ---- board outline on Edge.Cuts (portrait rectangle, 75 x 150) ----
+W, Hh = 75.0, 150.0
 def edge(x1,y1,x2,y2):
     s = pcbnew.PCB_SHAPE(board)
     s.SetShape(pcbnew.SHAPE_T_SEGMENT)
@@ -145,11 +150,18 @@ def text(txt,x,y,size=1.2,layer=None):
     tx.SetLayer(layer if layer is not None else pcbnew.F_SilkS)
     tx.SetTextSize(pcbnew.VECTOR2I(MM(size),MM(size)))
     board.Add(tx)
-text("WiFi ANT", 14, 3)
-text("GPS (up)", 46, 4)
-text("SPECTRE HUB  (TFT front / ESP32 back)", 35, 128, 1.0)
+text("WiFi ANT", 17, 7, 1.0)
+text("GPS (up)", 42, 8, 1.0)
+text("SPECTRE HUB", 37, 33, 1.6)
+text("TFT front / ESP32 back", 37, 38, 1.0)
 
+# SaveBoard rewrites the sibling .kicad_pro and strips our Power netclass / ERC settings,
+# so preserve it across the save.
+PRO = os.path.join(HERE, "spectre.kicad_pro")
+pro_backup = open(PRO, encoding="utf-8").read() if os.path.exists(PRO) else None
 pcbnew.SaveBoard(OUT, board)
+if pro_backup is not None:
+    open(PRO, "w", encoding="utf-8").write(pro_backup)
 print("wrote", OUT)
 print("placed:", ", ".join(placed))
 print("nets:", len(netinfo))
