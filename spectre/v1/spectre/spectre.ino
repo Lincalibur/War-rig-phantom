@@ -1414,7 +1414,8 @@ void setup() {
   memset(cliTab, 0, sizeof(cliTab));
 
   tft.init();
-  tft.setRotation(0);              // portrait 240x320 (vertical)
+  tft.setRotation(0);              // portrait 320x480 (vertical)
+  tft.invertDisplay(true);         // ILI9488 quirk: without this black renders as white
   screenClear();
 
   bleStart();                      // boot into IDLE with BLE up, WiFi off
