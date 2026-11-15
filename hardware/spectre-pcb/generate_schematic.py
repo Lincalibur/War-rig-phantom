@@ -111,6 +111,10 @@ def add(ref, lib_id, value, fp, pinmap, byname=False):
 #   !! VERIFY the pin order against your physical board (DevKitC variants differ) before fab. !!
 # Flash pins IO6-IO11 are NOT usable (internal SPI flash). IO34/35/36/39 are INPUT-ONLY.
 # =======================================================================================
+# --- OPTIMIZED mapping (2026-11-15): control fans out from 5 adjacent J1 pins (8-12),
+#     data byte from 8 near-adjacent J2 pins (2-11, straddling the TX0/RX0 gap). All 8 data
+#     lines stay in bank 0-31; WR & DC moved into bank<32 (faster strobe); IO12 moved OFF the
+#     TFT bus onto EXP_MOSI (strap risk now on the optional expansion port, guarded by R1). ---
 add("J1", C+"Conn_01x19", "ESP32_WROOM_32U_L", PH+"PinSocket_1x19_P2.54mm_Vertical", {
  "1":"+3V3",      # 3V3  (board regulator OUT -> feeds TFT logic, GPS, expansion)
  "2":NC,          # EN
@@ -118,35 +122,35 @@ add("J1", C+"Conn_01x19", "ESP32_WROOM_32U_L", PH+"PinSocket_1x19_P2.54mm_Vertic
  "4":"EXP_IN4",   # IO39  input-only
  "5":"EXP_IN1",   # IO34  input-only
  "6":"EXP_IN2",   # IO35  input-only
- "7":"TFT_RST",   # IO32
- "8":"TFT_CS",    # IO33
- "9":"TFT_D3",    # IO25
- "10":"TFT_D2",   # IO26
- "11":"TFT_D6",   # IO27
- "12":"TFT_D7",   # IO14
- "13":"TFT_D0",   # IO12  (STRAPPING: MTDI sets flash voltage - see README; optional pulldown R1)
+ "7":"EXP_MISO",  # IO32  (full I/O; used as SPI MISO input - expansion)
+ "8":"TFT_RD",    # IO33  LCD read strobe (rarely toggles; upper-bank pin is fine here)
+ "9":"TFT_WR",    # IO25  LCD write strobe (bank<32 -> fast pulsing)
+ "10":"TFT_DC",   # IO26
+ "11":"TFT_CS",   # IO27
+ "12":"TFT_RST",  # IO14
+ "13":"EXP_MOSI", # IO12  (STRAPPING MTDI - must be LOW at boot; FIT R1 pulldown as insurance)
  "14":"GND",      # GND
- "15":"TFT_D1",   # IO13
+ "15":"EXP_SCK",  # IO13
  "16":NC,         # IO9   flash - do not use
  "17":NC,         # IO10  flash - do not use
  "18":NC,         # IO11  flash - do not use
  "19":"+5V"})     # 5V / VIN  (board regulator IN)
 add("J2", C+"Conn_01x19", "ESP32_WROOM_32U_R", PH+"PinSocket_1x19_P2.54mm_Vertical", {
  "1":"GND",       # GND
- "2":"EXP_MOSI",  # IO23  (VSPI MOSI - expansion)
- "3":"GPS_TX",    # IO22  ESP32 TX2 -> GPS RXD
+ "2":"TFT_D1",    # IO23
+ "3":"TFT_D0",    # IO22
  "4":NC,          # IO1   TX0 (USB serial) - leave free
  "5":NC,          # IO3   RX0 (USB serial) - leave free
- "6":"GPS_RX",    # IO21  ESP32 RX2 <- GPS TXD
- "7":"EXP_MISO",  # IO19  (VSPI MISO - expansion)
- "8":"EXP_SCK",   # IO18  (VSPI SCK  - expansion)
- "9":"EXP_CS0",   # IO5   (expansion chip-select; also a strapping pin, fine as output)
- "10":"TFT_D4",   # IO17
- "11":"TFT_D5",   # IO16
- "12":"TFT_WR",   # IO4
- "13":NC,         # IO0   boot strap - leave free
- "14":"TFT_RD",   # IO2   (STRAPPING - see README)
- "15":"TFT_DC",   # IO15  (STRAPPING - held by shield, usually fine)
+ "6":"TFT_D7",    # IO21
+ "7":"TFT_D6",    # IO19
+ "8":"TFT_D5",    # IO18
+ "9":"TFT_D4",    # IO5   (strapping pin, fine as a data line - a boot glitch here is harmless)
+ "10":"TFT_D3",   # IO17
+ "11":"TFT_D2",   # IO16
+ "12":"EXP_CS0",  # IO4   (expansion chip-select; add 10k pull-up when finalising)
+ "13":NC,         # IO0   boot strap - leave free (BOOT button)
+ "14":"GPS_TX",   # IO2   ESP32 TX2 -> GPS RXD (ESP32-driven, so strap is unaffected)
+ "15":"GPS_RX",   # IO15  ESP32 RX2 <- GPS TXD (GPS TX idles high -> fine for MTDO strap)
  "16":NC,         # IO8   flash - do not use
  "17":NC,         # IO7   flash - do not use
  "18":NC,         # IO6   flash - do not use
@@ -220,9 +224,17 @@ add("R2", "Device:R", "1k", "Resistor_THT:R_Axial_DIN0207_L6.3mm_D2.5mm_P7.62mm_
     {"1":"+5V","2":"LED_A"})
 add("D1", "Device:LED", "GREEN", "LED_THT:LED_D3.0mm", {"K":"GND","A":"LED_A"}, byname=True)
 
-# Optional pulldown on IO12 (TFT_D0) strapping pin - fit only if boot/flash flakes. DNP.
-add("R1", "Device:R", "10k_DNP", "Resistor_THT:R_Axial_DIN0207_L6.3mm_D2.5mm_P7.62mm_Horizontal",
-    {"1":"TFT_D0","2":"GND"})
+# Pulldown on IO12 (now EXP_MOSI) strapping pin - FIT (not DNP) as boot insurance: keeps IO12
+# low at reset so a connected expansion radio can't force 1.8V flash selection (-> no boot).
+add("R1", "Device:R", "10k", "Resistor_THT:R_Axial_DIN0207_L6.3mm_D2.5mm_P7.62mm_Horizontal",
+    {"1":"EXP_MOSI","2":"GND"})
+
+# Boot-safe pull-ups (10k -> +3V3). The ESP32 GPIOs float until firmware configures them, so these
+# hold the right idle level during that window.
+RUP = "Resistor_THT:R_Axial_DIN0207_L6.3mm_D2.5mm_P7.62mm_Horizontal"
+add("R3", "Device:R", "10k", RUP, {"1":"EXP_CS0","2":"+3V3"})  # IO4 is LOW at boot -> keep expansion CS deasserted
+add("R4", "Device:R", "10k", RUP, {"1":"TFT_CS", "2":"+3V3"})  # keep panel deselected at boot
+add("R5", "Device:R", "10k", RUP, {"1":"TFT_RD", "2":"+3V3"})  # RD inactive-high -> panel won't drive the data bus at boot
 
 def cap(ref, val, fp, vnet):
     add(ref, "Device:C", val, fp, {"1":vnet,"2":"GND"})

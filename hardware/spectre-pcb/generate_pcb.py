@@ -38,6 +38,9 @@ FP = {
  "J9":"Connector_PinHeader_2.54mm:PinHeader_1x02_P2.54mm_Vertical",
  "R1":"Resistor_THT:R_Axial_DIN0207_L6.3mm_D2.5mm_P7.62mm_Horizontal",
  "R2":"Resistor_THT:R_Axial_DIN0207_L6.3mm_D2.5mm_P7.62mm_Horizontal",
+ "R3":"Resistor_THT:R_Axial_DIN0207_L6.3mm_D2.5mm_P7.62mm_Horizontal",
+ "R4":"Resistor_THT:R_Axial_DIN0207_L6.3mm_D2.5mm_P7.62mm_Horizontal",
+ "R5":"Resistor_THT:R_Axial_DIN0207_L6.3mm_D2.5mm_P7.62mm_Horizontal",
  "D1":"LED_THT:LED_D3.0mm",
  "C1":"Capacitor_THT:C_Disc_D5.0mm_W2.5mm_P5.00mm",
  "C2":"Capacitor_THT:C_Disc_D5.0mm_W2.5mm_P5.00mm",
@@ -73,8 +76,10 @@ PLACE = {
  "C1":  (14,120,0,"F"), "C2":(25,120,0,"F"), "C3":(36,120,0,"F"), "C4":(47,120,0,"F"),
  "C7":  (58,120,0,"F"),
  "C5":  (14,133,0,"F"), "C6":(25,133,0,"F"), "C8":(36,133,0,"F"),
- "R1":  (49,133,0,"F"),      # DNP IO12 pulldown, horizontal
+ "R1":  (49,133,0,"F"),      # IO12 (EXP_MOSI) pulldown, horizontal
  "J9":  (60,133,0,"F"),      # 5V power in
+ # boot pull-ups (10k -> 3V3): EXP_CS0, TFT_CS, TFT_RD
+ "R3":  (14,140,0,"F"), "R4":(30,140,0,"F"), "R5":(46,140,0,"F"),
 }
 
 board = pcbnew.CreateEmptyBoard()
@@ -101,24 +106,40 @@ def short(net):
                .replace("+3V3","3V3").replace("+5V","5V").replace("LED_A","LED"))
 
 # ---- add a small net-name label next to each netted pad, on the given silk layer ----
-def label_pads(fp, side, mode):
+def label_pads(fp, side, mode, off=1.4, names=None):
     # mode: 'left'/'right' (vertical headers) or 'up'/'down' (horizontal) or 'auto' (2 columns)
+    # off : how far (mm) the label sits to the side of the pad; bump it up for fat
+    #       socket bodies (e.g. the ESP32 1x19 sockets) so the text clears the body.
+    # names: optional {pad_number: text}. If given, label each pad with that text (e.g. the
+    #       ESP32's own GPIO names) instead of the net name, so the header reads like the
+    #       physical dev board rather than echoing the shield's signal names.
     layer = pcbnew.B_SilkS if side == "B" else pcbnew.F_SilkS
     cx = fp.GetPosition().x
+    OFF = MM(off)
     for pad in fp.Pads():
-        raw = pad.GetNetname()
-        if not raw or raw.startswith("unconnected") or raw.startswith("Net-"):
-            continue
-        nm = short(raw)
+        if names is not None:
+            nm = names.get(int(pad.GetNumber()))
+            if not nm:
+                continue
+        else:
+            raw = pad.GetNetname()
+            if not raw or raw.startswith("unconnected") or raw.startswith("Net-"):
+                continue
+            nm = short(raw)
         p = pad.GetPosition()
         m = mode
         if mode == "auto":
             m = "left" if p.x < cx else "right"
         dx, dy, rotT, just = 0, 0, 0, pcbnew.GR_TEXT_H_ALIGN_LEFT
-        if m == "left":  dx, just = -MM(1.4), pcbnew.GR_TEXT_H_ALIGN_RIGHT
-        elif m == "right": dx, just = MM(1.4), pcbnew.GR_TEXT_H_ALIGN_LEFT
-        elif m == "up":    dy, rotT, just = -MM(1.4), 90, pcbnew.GR_TEXT_H_ALIGN_LEFT
-        elif m == "down":  dy, rotT, just = MM(1.4), 90, pcbnew.GR_TEXT_H_ALIGN_RIGHT
+        if m == "left":  dx, just = -OFF, pcbnew.GR_TEXT_H_ALIGN_RIGHT
+        elif m == "right": dx, just = OFF, pcbnew.GR_TEXT_H_ALIGN_LEFT
+        elif m == "up":    dy, rotT, just = -OFF, 90, pcbnew.GR_TEXT_H_ALIGN_LEFT
+        elif m == "down":  dy, rotT, just = OFF, 90, pcbnew.GR_TEXT_H_ALIGN_RIGHT
+        # Back-silk text is mirrored, which visually inverts horizontal justify and would
+        # make the label grow back UNDER the socket body. Flip it so it extends outward.
+        if side == "B" and m in ("left", "right"):
+            just = (pcbnew.GR_TEXT_H_ALIGN_LEFT if just == pcbnew.GR_TEXT_H_ALIGN_RIGHT
+                    else pcbnew.GR_TEXT_H_ALIGN_RIGHT)
         tx = pcbnew.PCB_TEXT(board)
         tx.SetText(nm); tx.SetPosition(pcbnew.VECTOR2I(p.x+dx, p.y+dy))
         tx.SetLayer(layer)
@@ -129,9 +150,22 @@ def label_pads(fp, side, mode):
         if side == "B": tx.SetMirrored(True)
         board.Add(tx)
 
-# which connectors get pin-name labels, and on which side
-LABEL = {"J1":("B","left"), "J2":("B","right"), "J3":("F","auto"),
+# which connectors get pin-name labels, on which side, and (optional) how far out.
+# J1/J2 are the ESP32 1x19 SOCKETS: their body is wide, so push the labels 2.6 mm out
+# to sit clearly beside the pins instead of tucked under the socket body.
+LABEL = {"J1":("B","left",2.6), "J2":("B","right",2.6), "J3":("F","auto"),
          "J7":("F","up"), "J8":("F","down"), "J9":("F","right")}
+
+# ESP32-WROOM-32U DevKitC-V4 GPIO names, by socket pad number (canonical dev-board order).
+# Used to label J1/J2 with the ESP32's OWN pin names, not the net/shield signal names.
+ESP32_GPIO = {
+ "J1": {1:"3V3",2:"EN",3:"IO36",4:"IO39",5:"IO34",6:"IO35",7:"IO32",8:"IO33",9:"IO25",
+        10:"IO26",11:"IO27",12:"IO14",13:"IO12",14:"GND",15:"IO13",16:"IO9",17:"IO10",
+        18:"IO11",19:"5V"},
+ "J2": {1:"GND",2:"IO23",3:"IO22",4:"TX0",5:"RX0",6:"IO21",7:"IO19",8:"IO18",9:"IO5",
+        10:"IO17",11:"IO16",12:"IO4",13:"IO0",14:"IO2",15:"IO15",16:"IO8",17:"IO7",
+        18:"IO6",19:"GND"},
+}
 
 placed = []
 # --- real (netted) components ---
@@ -146,8 +180,14 @@ for ref, fpid in FP.items():
     if side == "B":
         fp.Flip(V(x, y), False)
     fp.SetOrientationDegrees(rot)
-    # recenter big footprints (Arduino) so pads sit symmetric about (x, y)
+    # The Arduino_UNO_R3 footprint draws a big board OUTLINE (silk/fab/courtyard) that
+    # just clutters the carrier. Strip its graphic shapes but keep the pads (holes) and
+    # our pin-name labels. Done before recentre so the recenter uses the pad array only.
     if ref == "J3":
+        for it in list(fp.GraphicalItems()):
+            if isinstance(it, pcbnew.PCB_SHAPE):
+                fp.Remove(it)
+        # recenter so pads sit symmetric about (x, y)
         bb = fp.GetBoundingBox(False, False)
         ctr = bb.GetCenter()
         fp.Move(pcbnew.VECTOR2I(V(x, y).x - ctr.x, V(x, y).y - ctr.y))
@@ -159,7 +199,7 @@ for ref, fpid in FP.items():
     fp.Value().SetVisible(False)
     fp.Reference().SetTextSize(pcbnew.VECTOR2I(MM(1.0), MM(1.0)))
     if ref in LABEL:
-        label_pads(fp, *LABEL[ref])
+        label_pads(fp, *LABEL[ref], names=ESP32_GPIO.get(ref))
     placed.append(ref)
 
 # --- mechanical: WiFi SMA + 4 mounting holes (no nets) ---

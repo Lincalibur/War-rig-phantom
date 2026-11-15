@@ -51,7 +51,7 @@ Delete `spectre.kicad_pcb`, open the project, PCB Editor → **Tools → Update 
 | J7 | **NEO-7M GPS**, 1×5 | VCC/GND/TXD/RXD/PPS. |
 | J8 | **Expansion**, 1×12 | VSPI bus + 4 input-only lines + power (see GPIO budget). |
 | J9 | **5 V power in**, 1×2 | From the 1S 18650 + boost module. |
-| R1 | 10k pulldown on IO12 (TFT_D0), **DNP** | Fit only if boot/flash flakes (strapping pin). |
+| R1 | 10k pulldown on IO12 (EXP_MOSI), **FIT** | Keeps the MTDI strap low at boot so a plugged-in expansion radio can't force 1.8 V flash selection. |
 | R2 / D1 | Power LED | |
 | C1–C8 | Decoupling | 100 nF at each VCC + 10 µF bulk on 5V/3V3. |
 
@@ -91,13 +91,14 @@ Decide this before committing a board outline, since it changes the connector co
   The TFT shield mounts on the **front**; the ESP32 is on the **back**, so they don't collide.
 - **GPS VCC.** On +5V (the NEO-7M module regulates). If it won't get a fix on 5 V, move J7.1 to
   +3V3. **Unplug GPS TXD while flashing** only matters on boards that share USB-serial pins — here
-  GPS is on IO21/IO22 (UART2), clear of the USB pins, so flashing is fine with it attached.
-- **Strapping pins.** TFT uses IO12/IO2/IO15 (and expansion CS on IO5). These are boot-strapping
-  pins; the shield's high-Z data lines are normally fine, but if the board won't boot/flash, fit
-  R1 (10k pulldown on IO12).
+  GPS is on IO15/IO2 (UART2 remapped), clear of the USB pins, so flashing is fine with it attached.
+- **Strapping pins.** After the 2026-11-15 remap the TFT bus is off the fragile straps. Remaining
+  strap-pin uses: IO12 = `EXP_MOSI` (fit R1 10k pulldown — boot insurance), IO2/IO15 = GPS UART
+  (ESP32-driven TX / idle-high RX, both safe), IO5 = `TFT_D4` (data line, boot glitch harmless),
+  IO0 = BOOT button. `EXP_CS0` on IO4 wants a 10k pull-up so it isn't asserted at boot.
 
 ## Design notes
-- One parallel bus for the display (`TFT_D0..D7` + control); a separate VSPI bus for expansion.
-- GPS on UART2 (IO21 RX ← GPS TXD, IO22 TX → GPS RXD), independent of the 2.4 GHz radio.
+- One parallel bus for the display (`TFT_D0..D7` + control); a separate SPI bus for expansion.
+- GPS on UART2 (IO15 RX ← GPS TXD, IO2 TX → GPS RXD), independent of the 2.4 GHz radio.
 - Keep decoupling caps at the module pins when you place. Add a separate 3V3 LDO (not placed) if a
   future expansion radio browns out the dev-board regulator.

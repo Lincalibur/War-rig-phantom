@@ -2,7 +2,7 @@
 	(version "E")
 	(design
 		(source "C:\\Users\\liamo\\Desktop\\Ideas\\Cyber security\\CyberDeck\\hardware\\spectre-pcb\\spectre.kicad_sch")
-		(date "2026-11-15T01:38:13")
+		(date "2026-11-15T22:49:15")
 		(tool "Eeschema 10.0.6")
 		(sheet
 			(number "1")
@@ -93,7 +93,7 @@
 				(names "/")
 				(tstamps "/")
 			)
-			(tstamps "8e52906e-18f1-4a03-8ec9-dba6a6b8f1da")
+			(tstamps "7cf01dd4-2b6b-470d-8405-ca941911553a")
 			(units
 				(unit
 					(name "A")
@@ -147,7 +147,7 @@
 				(names "/")
 				(tstamps "/")
 			)
-			(tstamps "6e4944f1-dfd2-4063-922d-fc509273d17c")
+			(tstamps "a0809259-cab1-402e-abf6-aef8547319ca")
 			(units
 				(unit
 					(name "A")
@@ -201,7 +201,7 @@
 				(names "/")
 				(tstamps "/")
 			)
-			(tstamps "6b113fcd-3745-4557-a412-8d2106979e82")
+			(tstamps "c71bbb5c-db67-4e1e-8ec7-5f2edec7c3cd")
 			(units
 				(unit
 					(name "A")
@@ -255,7 +255,7 @@
 				(names "/")
 				(tstamps "/")
 			)
-			(tstamps "dc7377d3-8139-462e-94a8-f1b9e643d9da")
+			(tstamps "16a78c47-8371-451b-a797-b437a113d47b")
 			(units
 				(unit
 					(name "A")
@@ -309,7 +309,7 @@
 				(names "/")
 				(tstamps "/")
 			)
-			(tstamps "3428194b-fd61-42d4-8276-354b6b4b8851")
+			(tstamps "e5b689d6-99b2-43ed-88e4-d397f5b5e014")
 			(units
 				(unit
 					(name "A")
@@ -363,7 +363,7 @@
 				(names "/")
 				(tstamps "/")
 			)
-			(tstamps "0df0e2a5-f1af-4d56-84dd-a557fc4abb43")
+			(tstamps "629f3691-01cc-4235-a3a1-3c7be4dc3f74")
 			(units
 				(unit
 					(name "A")
@@ -417,7 +417,7 @@
 				(names "/")
 				(tstamps "/")
 			)
-			(tstamps "2d430c49-beb0-4cee-91da-dc5a6132bb8f")
+			(tstamps "e67e6777-55d6-4042-8aaa-a441182f6803")
 			(units
 				(unit
 					(name "A")
@@ -471,7 +471,7 @@
 				(names "/")
 				(tstamps "/")
 			)
-			(tstamps "d9cd2bc1-4e50-446e-96e0-9896e16df0a6")
+			(tstamps "674d6fac-6779-4fd4-9029-e7e0e74412e4")
 			(units
 				(unit
 					(name "A")
@@ -525,7 +525,7 @@
 				(names "/")
 				(tstamps "/")
 			)
-			(tstamps "0458da84-b99a-4c8b-add2-70a7f0aedd30")
+			(tstamps "234ce5c8-5cd6-4165-8591-1c094bbc5f46")
 			(units
 				(unit
 					(name "A")
@@ -579,7 +579,7 @@
 				(names "/")
 				(tstamps "/")
 			)
-			(tstamps "d7bec157-3680-4add-9cc8-b5b2d3d06745")
+			(tstamps "d5c6eb3b-a9ea-46ba-b8c6-a5ef422cbce5")
 			(units
 				(unit
 					(name "A")
@@ -684,7 +684,7 @@
 				(names "/")
 				(tstamps "/")
 			)
-			(tstamps "12ee8e28-4d23-4a82-b650-900b2d0b34cf")
+			(tstamps "347aa221-0c01-43aa-8f12-087dd0036e59")
 			(units
 				(unit
 					(name "A")
@@ -789,7 +789,7 @@
 				(names "/")
 				(tstamps "/")
 			)
-			(tstamps "a63a282e-9a82-49e3-a06c-1f71d1acbee2")
+			(tstamps "b832c2e4-bec6-4381-8ac8-5d42c095bc41")
 			(units
 				(unit
 					(name "A")
@@ -933,7 +933,7 @@
 				(names "/")
 				(tstamps "/")
 			)
-			(tstamps "db84e0f4-e543-440e-b8eb-a9d134d9d9a7")
+			(tstamps "53abb60c-b167-4dac-bddf-5c3b686ab5ce")
 			(units
 				(unit
 					(name "A")
@@ -996,7 +996,7 @@
 				(names "/")
 				(tstamps "/")
 			)
-			(tstamps "6ce8a411-503b-4859-b6ca-119e24289617")
+			(tstamps "342d45b6-8c00-4d57-ace0-e7cb053e4cc7")
 			(units
 				(unit
 					(name "A")
@@ -1080,7 +1080,7 @@
 				(names "/")
 				(tstamps "/")
 			)
-			(tstamps "56a4e1cc-114b-45bb-89f6-773de6ae023c")
+			(tstamps "14c5a5a0-6365-462a-84b8-da5c74e8ea35")
 			(units
 				(unit
 					(name "A")
@@ -1097,7 +1097,7 @@
 		)
 		(comp
 			(ref "R1")
-			(value "10k_DNP")
+			(value "10k")
 			(footprint "Resistor_THT:R_Axial_DIN0207_L6.3mm_D2.5mm_P7.62mm_Horizontal")
 			(fields
 				(field
@@ -1134,7 +1134,7 @@
 				(names "/")
 				(tstamps "/")
 			)
-			(tstamps "79c67731-0e7f-45e7-8eb2-6fe349e1a3a9")
+			(tstamps "1addc1a6-cb7c-4480-ab1e-9c431d04e2c2")
 			(units
 				(unit
 					(name "A")
@@ -1188,7 +1188,169 @@
 				(names "/")
 				(tstamps "/")
 			)
-			(tstamps "b1a318fc-b382-4ea9-a86e-c4dddef31a0e")
+			(tstamps "f9826065-aed3-44ee-98f2-7035494d3c7a")
+			(units
+				(unit
+					(name "A")
+					(pins
+						(pin
+							(num "1")
+						)
+						(pin
+							(num "2")
+						)
+					)
+				)
+			)
+		)
+		(comp
+			(ref "R3")
+			(value "10k")
+			(footprint "Resistor_THT:R_Axial_DIN0207_L6.3mm_D2.5mm_P7.62mm_Horizontal")
+			(fields
+				(field
+					(name "Footprint") "Resistor_THT:R_Axial_DIN0207_L6.3mm_D2.5mm_P7.62mm_Horizontal")
+				(field
+					(name "Datasheet")
+				)
+				(field
+					(name "Description")
+				)
+			)
+			(libsource
+				(lib "Device")
+				(part "R")
+				(description "Resistor")
+			)
+			(property
+				(name "Sheetname")
+				(value "spectre")
+			)
+			(property
+				(name "Sheetfile")
+				(value "spectre.kicad_sch")
+			)
+			(property
+				(name "ki_keywords")
+				(value "R res resistor")
+			)
+			(property
+				(name "ki_fp_filters")
+				(value "R_*")
+			)
+			(sheetpath
+				(names "/")
+				(tstamps "/")
+			)
+			(tstamps "d2da24e8-5b8c-4d6d-afb3-db27995bbd41")
+			(units
+				(unit
+					(name "A")
+					(pins
+						(pin
+							(num "1")
+						)
+						(pin
+							(num "2")
+						)
+					)
+				)
+			)
+		)
+		(comp
+			(ref "R4")
+			(value "10k")
+			(footprint "Resistor_THT:R_Axial_DIN0207_L6.3mm_D2.5mm_P7.62mm_Horizontal")
+			(fields
+				(field
+					(name "Footprint") "Resistor_THT:R_Axial_DIN0207_L6.3mm_D2.5mm_P7.62mm_Horizontal")
+				(field
+					(name "Datasheet")
+				)
+				(field
+					(name "Description")
+				)
+			)
+			(libsource
+				(lib "Device")
+				(part "R")
+				(description "Resistor")
+			)
+			(property
+				(name "Sheetname")
+				(value "spectre")
+			)
+			(property
+				(name "Sheetfile")
+				(value "spectre.kicad_sch")
+			)
+			(property
+				(name "ki_keywords")
+				(value "R res resistor")
+			)
+			(property
+				(name "ki_fp_filters")
+				(value "R_*")
+			)
+			(sheetpath
+				(names "/")
+				(tstamps "/")
+			)
+			(tstamps "be12aa60-2290-4c5c-abb6-8cae7461fbf7")
+			(units
+				(unit
+					(name "A")
+					(pins
+						(pin
+							(num "1")
+						)
+						(pin
+							(num "2")
+						)
+					)
+				)
+			)
+		)
+		(comp
+			(ref "R5")
+			(value "10k")
+			(footprint "Resistor_THT:R_Axial_DIN0207_L6.3mm_D2.5mm_P7.62mm_Horizontal")
+			(fields
+				(field
+					(name "Footprint") "Resistor_THT:R_Axial_DIN0207_L6.3mm_D2.5mm_P7.62mm_Horizontal")
+				(field
+					(name "Datasheet")
+				)
+				(field
+					(name "Description")
+				)
+			)
+			(libsource
+				(lib "Device")
+				(part "R")
+				(description "Resistor")
+			)
+			(property
+				(name "Sheetname")
+				(value "spectre")
+			)
+			(property
+				(name "Sheetfile")
+				(value "spectre.kicad_sch")
+			)
+			(property
+				(name "ki_keywords")
+				(value "R res resistor")
+			)
+			(property
+				(name "ki_fp_filters")
+				(value "R_*")
+			)
+			(sheetpath
+				(names "/")
+				(tstamps "/")
+			)
+			(tstamps "a845cf49-2aae-4f92-8a36-b4f1cab930f4")
 			(units
 				(unit
 					(name "A")
@@ -1840,6 +2002,21 @@
 				(pinfunction "Pin_2_2")
 				(pintype "passive")
 			)
+			(node
+				(ref "R3")
+				(pin "2")
+				(pintype "passive")
+			)
+			(node
+				(ref "R4")
+				(pin "2")
+				(pintype "passive")
+			)
+			(node
+				(ref "R5")
+				(pin "2")
+				(pintype "passive")
+			)
 		)
 		(net
 			(code "2")
@@ -1907,14 +2084,19 @@
 			(class "Default")
 			(node
 				(ref "J2")
-				(pin "9")
-				(pinfunction "Pin_9_9")
+				(pin "12")
+				(pinfunction "Pin_12_12")
 				(pintype "passive")
 			)
 			(node
 				(ref "J8")
 				(pin "7")
 				(pinfunction "Pin_7_7")
+				(pintype "passive")
+			)
+			(node
+				(ref "R3")
+				(pin "1")
 				(pintype "passive")
 			)
 		)
@@ -1991,7 +2173,7 @@
 			(name "EXP_MISO")
 			(class "Default")
 			(node
-				(ref "J2")
+				(ref "J1")
 				(pin "7")
 				(pinfunction "Pin_7_7")
 				(pintype "passive")
@@ -2008,9 +2190,9 @@
 			(name "EXP_MOSI")
 			(class "Default")
 			(node
-				(ref "J2")
-				(pin "2")
-				(pinfunction "Pin_2_2")
+				(ref "J1")
+				(pin "13")
+				(pinfunction "Pin_13_13")
 				(pintype "passive")
 			)
 			(node
@@ -2019,15 +2201,20 @@
 				(pinfunction "Pin_5_5")
 				(pintype "passive")
 			)
+			(node
+				(ref "R1")
+				(pin "1")
+				(pintype "passive")
+			)
 		)
 		(net
 			(code "10")
 			(name "EXP_SCK")
 			(class "Default")
 			(node
-				(ref "J2")
-				(pin "8")
-				(pinfunction "Pin_8_8")
+				(ref "J1")
+				(pin "15")
+				(pinfunction "Pin_15_15")
 				(pintype "passive")
 			)
 			(node
@@ -2159,8 +2346,8 @@
 			(class "Default")
 			(node
 				(ref "J2")
-				(pin "6")
-				(pinfunction "Pin_6_6")
+				(pin "15")
+				(pinfunction "Pin_15_15")
 				(pintype "passive")
 			)
 			(node
@@ -2176,8 +2363,8 @@
 			(class "Default")
 			(node
 				(ref "J2")
-				(pin "3")
-				(pinfunction "Pin_3_3")
+				(pin "14")
+				(pinfunction "Pin_14_14")
 				(pintype "passive")
 			)
 			(node
@@ -2209,8 +2396,8 @@
 			(class "Default")
 			(node
 				(ref "J1")
-				(pin "8")
-				(pinfunction "Pin_8_8")
+				(pin "11")
+				(pinfunction "Pin_11_11")
 				(pintype "passive")
 			)
 			(node
@@ -2219,15 +2406,20 @@
 				(pinfunction "A3_12")
 				(pintype "bidirectional")
 			)
+			(node
+				(ref "R4")
+				(pin "1")
+				(pintype "passive")
+			)
 		)
 		(net
 			(code "16")
 			(name "TFT_D0")
 			(class "Default")
 			(node
-				(ref "J1")
-				(pin "13")
-				(pinfunction "Pin_13_13")
+				(ref "J2")
+				(pin "3")
+				(pinfunction "Pin_3_3")
 				(pintype "passive")
 			)
 			(node
@@ -2236,20 +2428,15 @@
 				(pinfunction "D8_23")
 				(pintype "bidirectional")
 			)
-			(node
-				(ref "R1")
-				(pin "1")
-				(pintype "passive")
-			)
 		)
 		(net
 			(code "17")
 			(name "TFT_D1")
 			(class "Default")
 			(node
-				(ref "J1")
-				(pin "15")
-				(pinfunction "Pin_15_15")
+				(ref "J2")
+				(pin "2")
+				(pinfunction "Pin_2_2")
 				(pintype "passive")
 			)
 			(node
@@ -2264,9 +2451,9 @@
 			(name "TFT_D2")
 			(class "Default")
 			(node
-				(ref "J1")
-				(pin "10")
-				(pinfunction "Pin_10_10")
+				(ref "J2")
+				(pin "11")
+				(pinfunction "Pin_11_11")
 				(pintype "passive")
 			)
 			(node
@@ -2281,9 +2468,9 @@
 			(name "TFT_D3")
 			(class "Default")
 			(node
-				(ref "J1")
-				(pin "9")
-				(pinfunction "Pin_9_9")
+				(ref "J2")
+				(pin "10")
+				(pinfunction "Pin_10_10")
 				(pintype "passive")
 			)
 			(node
@@ -2299,8 +2486,8 @@
 			(class "Default")
 			(node
 				(ref "J2")
-				(pin "10")
-				(pinfunction "Pin_10_10")
+				(pin "9")
+				(pinfunction "Pin_9_9")
 				(pintype "passive")
 			)
 			(node
@@ -2316,8 +2503,8 @@
 			(class "Default")
 			(node
 				(ref "J2")
-				(pin "11")
-				(pinfunction "Pin_11_11")
+				(pin "8")
+				(pinfunction "Pin_8_8")
 				(pintype "passive")
 			)
 			(node
@@ -2332,9 +2519,9 @@
 			(name "TFT_D6")
 			(class "Default")
 			(node
-				(ref "J1")
-				(pin "11")
-				(pinfunction "Pin_11_11")
+				(ref "J2")
+				(pin "7")
+				(pinfunction "Pin_7_7")
 				(pintype "passive")
 			)
 			(node
@@ -2349,9 +2536,9 @@
 			(name "TFT_D7")
 			(class "Default")
 			(node
-				(ref "J1")
-				(pin "12")
-				(pinfunction "Pin_12_12")
+				(ref "J2")
+				(pin "6")
+				(pinfunction "Pin_6_6")
 				(pintype "passive")
 			)
 			(node
@@ -2366,9 +2553,9 @@
 			(name "TFT_DC")
 			(class "Default")
 			(node
-				(ref "J2")
-				(pin "15")
-				(pinfunction "Pin_15_15")
+				(ref "J1")
+				(pin "10")
+				(pinfunction "Pin_10_10")
 				(pintype "passive")
 			)
 			(node
@@ -2383,9 +2570,9 @@
 			(name "TFT_RD")
 			(class "Default")
 			(node
-				(ref "J2")
-				(pin "14")
-				(pinfunction "Pin_14_14")
+				(ref "J1")
+				(pin "8")
+				(pinfunction "Pin_8_8")
 				(pintype "passive")
 			)
 			(node
@@ -2394,6 +2581,11 @@
 				(pinfunction "A0_9")
 				(pintype "bidirectional")
 			)
+			(node
+				(ref "R5")
+				(pin "1")
+				(pintype "passive")
+			)
 		)
 		(net
 			(code "26")
@@ -2401,8 +2593,8 @@
 			(class "Default")
 			(node
 				(ref "J1")
-				(pin "7")
-				(pinfunction "Pin_7_7")
+				(pin "12")
+				(pinfunction "Pin_12_12")
 				(pintype "passive")
 			)
 			(node
@@ -2417,9 +2609,9 @@
 			(name "TFT_WR")
 			(class "Default")
 			(node
-				(ref "J2")
-				(pin "12")
-				(pinfunction "Pin_12_12")
+				(ref "J1")
+				(pin "9")
+				(pinfunction "Pin_9_9")
 				(pintype "passive")
 			)
 			(node
