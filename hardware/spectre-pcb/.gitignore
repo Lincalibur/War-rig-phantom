@@ -1,0 +1,13 @@
+# KiCad transient / local files
+*.erc.rpt
+*.kicad_prl
+*-backups/
+fp-info-cache
+*.lck
+*.kicad_sch-bak
+*.kicad_pcb-bak
+
+# local renders
+_top.png
+_bottom.png
+*.kicad_pcb-bak
