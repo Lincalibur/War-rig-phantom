@@ -1,6 +1,6 @@
 # HUB migration plan — move the phone-driven orchestrator onto the ESP32-DIV hardware
 
-**Status: PLAN ONLY (specced 2026-11-12, not started). Do not implement until the user says go.**
+> **Status: DONE (2026-11-14).** This migration was carried out — the orchestrator now runs on one ESP32-WROOM-32U as **SPECTRE** (`spectre/v1/`, [`STATUS.md`](../spectre/v1/STATUS.md)). Kept as the design record for how the port was planned. Note: SPECTRE targets its own ESP32-WROOM hardware, not stock cifertech ESP32-DIV firmware.
 
 ## Goal
 

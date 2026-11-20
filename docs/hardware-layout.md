@@ -104,7 +104,7 @@ The radios come from cifertech's ESP32-DIV V1 shield: **3× NRF24L01+** (2.4 GHz
 
 ## Case
 
-The 22 × 22 cm clamshell case and its printed filler blocks (`cad/case_filler/`) were designed for the Pi 5 and 7" panel. They don't fit these parts. The module layout below is the current plan — schematic, not to scale; the foam compartments get cut once the parts are measured. The Pi 5 filler files stay in the repo for reference, and the measured case numbers still hold.
+The 22 × 22 cm clamshell case and its printed filler blocks (the old `cad/case_filler/`) were designed for the Pi 5 and 7" panel. They don't fit these parts. The module layout below is the current plan — schematic, not to scale; the foam compartments get cut once the parts are measured. The Pi 5 filler files were removed on 2026-11-20 (recoverable from git tag `pre-cleanup-2026-11-20`), and the measured case numbers still hold.
 
 The whole **bottom section** holds power: the powerbank, the three 18650 cells and the charging station. **Two power lines** run up the right-hand side into the **top section**, where a **USB hub** sits across the middle with its ports facing up. Each module above the hub (SPECTRE, SENTINEL, BEACON) plugs in with its own power cable — SENTINEL uses two (C3 + UNO). The phone (CONSOLE) is carried by the operator, not stored in the case.
 

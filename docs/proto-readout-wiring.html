@@ -66,7 +66,7 @@ footer{padding:28px 0 60px;color:var(--muted);font-size:13px}
 <div class="wrap">
 <header class="top">
   <h1>Big-screen readout — wiring</h1>
-  <p class="lede">A bench prototype built from spare parts: an <b>ESP32-C3</b> scans WiFi + BLE and streams "draw this row" commands over one wire to an <b>Arduino UNO</b>, which paints a <b>3.5" TFT shield</b> and logs to its microSD. This page shows exactly what connects where. Firmware lives in <span class="mono">v2/proto_readout_c3/</span> and <span class="mono">v2/proto_readout_uno/</span>.</p>
+  <p class="lede">A bench prototype built from spare parts: an <b>ESP32-C3</b> scans WiFi + BLE and streams "draw this row" commands over one wire to an <b>Arduino UNO</b>, which paints a <b>3.5" TFT shield</b> and logs to its microSD. This page shows exactly what connects where. The C3 + UNO pair now runs the <b>SENTINEL</b> watcher firmware in <span class="mono">sentinel/v1/c3/</span> and <span class="mono">sentinel/v1/uno/</span>.</p>
   <ul class="facts">
     <li>Link <b>one-way UART</b>, C3 → UNO</li>
     <li>Just <b>2 signal wires</b> (data + ground)</li>
@@ -244,7 +244,7 @@ footer{padding:28px 0 60px;color:var(--muted);font-size:13px}
 </section>
 
 <footer>
-  CyberDeck v2 · bench prototype wiring reference. See <span class="mono">v2/proto_readout_c3/</span>, <span class="mono">v2/proto_readout_uno/</span>, and <span class="mono">docs/OVERVIEW.md</span> for the full project.
+  CyberDeck · SENTINEL C3 + UNO wiring reference. See <span class="mono">sentinel/v1/c3/</span>, <span class="mono">sentinel/v1/uno/</span>, and <span class="mono">docs/OVERVIEW.md</span> for the full project.
 </footer>
 </div>
 </body>
