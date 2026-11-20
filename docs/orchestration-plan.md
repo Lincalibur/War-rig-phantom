@@ -1,6 +1,6 @@
 # CyberDeck — C3 + UNO Orchestration Build (Spec)
 
-> **Historical (superseded 2026-11-14).** This two-chip (C3 + UNO) orchestrator was built as `orchestrator/v1/` and then **ported onto a single ESP32-WROOM-32U as SPECTRE** — see [`../spectre/v1/STATUS.md`](../spectre/v1/STATUS.md). The C3 + UNO hardware was repurposed to the passive **SENTINEL** watcher (`sentinel/v1/`). Kept for the mode-design rationale below; not the current build.
+> **Historical (superseded 2026-11-14).** This two-chip (C3 + UNO) orchestrator was built as `orchestrator/v1/` (removed 2026-11-20, archived in git tag `pre-cleanup-2026-11-20`) and then **ported onto a single ESP32-WROOM-32U as SPECTRE** — see [`../spectre/v1/STATUS.md`](../spectre/v1/STATUS.md). The C3 + UNO hardware was repurposed to the passive **SENTINEL** watcher (`sentinel/v1/`). Kept for the mode-design rationale below; not the current build.
 
 **Date:** 2026-11-12
 **Boards:** ESP32-C3 + Arduino UNO with 3.5" mcufriend TFT shield, soldered together. Firmware was `orchestrator/v1/{c3,uno}`.

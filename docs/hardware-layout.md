@@ -1,5 +1,15 @@
 # Hardware layout
 
+> **⚠️ SPECTRE spec below is being reconciled (flagged 2026-11-20).** The SPECTRE rows — the
+> display (this doc says 2.4" ILI9341 SPI; the actual panel is a **3.5" ILI9488 parallel**), the
+> **"HUB pins"** table, the **"Radio shield (NRF24 + CC1101)"** section, and the "stock ESP32-DIV
+> firmware" framing — predate the orchestrator port and are **not confirmed against the current
+> build**. SPECTRE runs the **ported CyberDeck orchestrator** (`spectre/v1/`), not stock
+> ESP32-DIV, and its 8-bit parallel TFT uses enough GPIOs that only **one** SPI radio fits (not the
+> 3×NRF24 + CC1101 shield described here). The hardware-verified truth is
+> [`../spectre/v1/STATUS.md`](../spectre/v1/STATUS.md); treat the sections below as the earlier plan
+> until they are rewritten. SENTINEL, BEACON, power and case details are unaffected.
+
 The current build, as of 2026-11-13. The cyberdeck is a kit of separate modules. Each module has a
 **fixed proper name** (so references don't drift when a module's role changes) and its own screen and job:
 
