@@ -12,9 +12,10 @@ Start here. This page covers what the deck does, the hardware decisions and the 
 | Build page: shopping list, wiring diagram, build order | [`build-page.html`](build-page.html), deployed to <https://lincalibur.github.io/War-rig-phantom/> |
 | Board names (`HUB`, `WIFI-NODE`, `READOUT`, `STATUS`, `BLE-SCAN`) | [`hardware-layout.md`](hardware-layout.md#board-names) |
 | `WIFI-NODE` → `READOUT` wiring | [`proto-readout-wiring.html`](proto-readout-wiring.html) |
-| Firmware for the C3 and UNO boards | [`../v2/README.md`](../v2/README.md) |
+| SPECTRE firmware (orchestrator on one WROOM) | [`../spectre/v1/`](../spectre/v1/), status in [`../spectre/v1/STATUS.md`](../spectre/v1/STATUS.md) |
+| SENTINEL firmware (passive watcher, C3 + UNO) | [`../sentinel/v1/`](../sentinel/v1/) |
 | `BLE-SCAN` board spec (on hand, not in this build) | [`BOARD-BLE-SCAN-ESP32-1732S019.md`](BOARD-BLE-SCAN-ESP32-1732S019.md) |
-| Shelved designs: single PCB, S3 hub, Pi 5 clamshell | [`PCB-BOM-AND-NETLIST.md`](PCB-BOM-AND-NETLIST.md), [`esp32-hub-board.html`](esp32-hub-board.html), [`../cad/case_filler/`](../cad/case_filler/), git history |
+| Shelved designs: single PCB, S3 hub, Pi 5 clamshell | Removed from the tree 2026-11-20; recoverable from git tag `pre-cleanup-2026-11-20` and history |
 
 The v1 ESP-NOW build (C3 nodes, ESP32-1732S019 hub) is kept in git under the tag `v1-espnow-archive`.
 

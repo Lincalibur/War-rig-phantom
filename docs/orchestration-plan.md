@@ -1,7 +1,9 @@
 # CyberDeck — C3 + UNO Orchestration Build (Spec)
 
+> **Historical (superseded 2026-11-14).** This two-chip (C3 + UNO) orchestrator was built as `orchestrator/v1/` and then **ported onto a single ESP32-WROOM-32U as SPECTRE** — see [`../spectre/v1/STATUS.md`](../spectre/v1/STATUS.md). The C3 + UNO hardware was repurposed to the passive **SENTINEL** watcher (`sentinel/v1/`). Kept for the mode-design rationale below; not the current build.
+
 **Date:** 2026-11-12
-**Boards:** ESP32-C3 (`v2/proto_readout_c3`) + Arduino UNO with 3.5" mcufriend TFT shield (`v2/proto_readout_uno`), soldered together.
+**Boards:** ESP32-C3 + Arduino UNO with 3.5" mcufriend TFT shield, soldered together. Firmware was `orchestrator/v1/{c3,uno}`.
 **Goal:** Turn the existing passive WiFi-recon prototype into a multi-mode, Ghost-ESP-inspired toolkit driven from a native Android app, keeping the C3 as the single processing unit and the UNO as a dumb UART display.
 
 This supersedes the single-board assumption in the original pasted plan (which put the TFT on the C3 over SPI). Here the display is on a separate board over a one-way UART, which is an advantage: **the display never contends with the radio.**
