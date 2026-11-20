@@ -66,6 +66,11 @@ td{padding:9px 10px;border-bottom:1px solid var(--rule);vertical-align:top}
 .tag{font-family:var(--mono);font-size:13px;background:var(--copper-soft);border-radius:4px;padding:1px 7px;white-space:nowrap}
 .figure{background:#FFFFFF;border:1px solid var(--rule);border-radius:10px;padding:10px;overflow-x:auto}
 .figure img{display:block;width:100%;min-width:640px;height:auto}
+.pcb-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;margin:0 0 6px}
+.pcb-fig{margin:0;background:#0d1117;border:1px solid var(--rule);border-radius:10px;padding:10px;text-align:center}
+.pcb-fig img{display:block;width:100%;height:auto;border-radius:6px}
+.pcb-fig figcaption{margin-top:8px;font-size:13px;color:var(--muted)}
+.pcb-fig figcaption b{color:var(--ink)}
 pre{font-family:var(--mono);font-size:12.5px;line-height:1.5;background:var(--card);border:1px solid var(--rule);border-radius:10px;padding:14px 16px;overflow-x:auto;margin:0 0 18px}
 .callout{background:var(--warn-bg);color:var(--warn);border-radius:10px;padding:14px 18px;margin:0 0 18px;max-width:90ch}
 .callout b{font-weight:600}
@@ -89,7 +94,7 @@ footer{padding:28px 0 60px;color:var(--muted);font-size:13px}
     <li>Radio <b>built-in 2.4 GHz</b> WiFi + BLE; one expansion slot</li>
     <li><b>Active tools</b> transmit — authorized own-lab use only</li>
   </ul>
-  <nav><a href="#boards">Boards</a><a href="#firmware">Firmware</a><a href="#parts">Parts</a><a href="#power">Power</a><a href="#wiring">Wiring</a><a href="#build">Build order</a><a href="#case">Case</a><a href="#later">Later</a></nav>
+  <nav><a href="#boards">Boards</a><a href="#firmware">Firmware</a><a href="#parts">Parts</a><a href="#power">Power</a><a href="#wiring">Wiring</a><a href="#pcb">PCB</a><a href="#build">Build order</a><a href="#case">Case</a><a href="#later">Later</a></nav>
 </header>
 
 <section id="boards">
@@ -213,6 +218,22 @@ footer{padding:28px 0 60px;color:var(--muted);font-size:13px}
       </ul>
     </div>
   </div>
+</section>
+
+<section id="pcb">
+  <h2>PCB <span class="phase">Hand-routed</span></h2>
+  <p class="sec-intro">A custom carrier PCB for SPECTRE (KiCad, on branch <span class="mono">spectre-pcb</span>, 75 × 131.7 mm). The TFT shield plugs in on the front; the ESP32-WROOM-32U sits on the back. Hand-routed, DRC-clean, fab files generated — but <b>hardware-untested</b>. Renders below.</p>
+  <div class="pcb-grid">
+    <figure class="pcb-fig"><img src="spectre-pcb-top.png" alt="SPECTRE PCB top copper layer render, showing the ESP32 header, TFT header, GPS header, WiFi antenna pad and routed top-side tracks.">
+      <figcaption><b>Top copper</b> — front, TFT side</figcaption></figure>
+    <figure class="pcb-fig"><img src="spectre-pcb-bottom.png" alt="SPECTRE PCB bottom copper layer render, showing the bottom-side tracks and the ground pour.">
+      <figcaption><b>Bottom copper</b> — back, ESP32 side</figcaption></figure>
+    <figure class="pcb-fig"><img src="spectre-pcb-combined.png" alt="SPECTRE PCB render with both copper layers and the ground pour shown together.">
+      <figcaption><b>Both layers</b> — combined</figcaption></figure>
+    <figure class="pcb-fig"><img src="spectre-pcb-wires.png" alt="SPECTRE PCB routing-only render: just the copper tracks on both layers, without the pours, showing every net's path between the ESP32, TFT, GPS, expansion and power.">
+      <figcaption><b>Routing only</b> — tracks, no pours</figcaption></figure>
+  </div>
+  <p class="note">Full KiCad project, pinout and fab files (gerbers, BOM, pick-and-place) are in <span class="mono">hardware/spectre-pcb/</span>.</p>
 </section>
 
 <section id="build">
