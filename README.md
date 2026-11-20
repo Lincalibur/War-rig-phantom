@@ -61,7 +61,7 @@ flowchart TD
     end
 ```
 
-SPECTRE wiring is drawn in [`docs/wiring.svg`](docs/wiring.svg) and documented in [`docs/hardware-layout.md`](docs/hardware-layout.md#hub-pins). Board names are defined in [`docs/hardware-layout.md`](docs/hardware-layout.md#module-names).
+SPECTRE wiring is documented in [`docs/hardware-layout.md`](docs/hardware-layout.md#spectre-pins) and [`hardware/spectre-pcb/PINOUT.md`](hardware/spectre-pcb/PINOUT.md). (The drawing [`docs/wiring.svg`](docs/wiring.svg) predates the 2026-11-15 pin remap and is stale.) Board names are defined in [`docs/hardware-layout.md`](docs/hardware-layout.md#module-names).
 
 ## Repository
 

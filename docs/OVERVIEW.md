@@ -64,7 +64,7 @@ Each module works on its own. None of them transmit on the scanned bands.
 
 ## What the radios can and can't do
 - **HUB (ESP32 + external antenna):** the full ESP32-DIV toolkit. WiFi scanning, packet monitor across channels 1-14 with optional PCAP to SD, deauth detection **and** the active WiFi tools (deauth, beacon/probe flood, captive/evil portal); BLE scanning/sniffing plus BLE spoof/spam and jam; and GPS wardriving to SD as WiGLE CSV. The ESP32 radio is 2.4 GHz only.
-- **HUB radio shield (NRF24 + CC1101):** 3× NRF24L01 for 2.4 GHz jam/spoof and ESB/MouseJack tools; 1× CC1101 for sub-GHz (e.g. 433 MHz) capture, replay and jam. These are time-shared on the SD SPI bus — see [`hardware-layout.md`](hardware-layout.md#radio-shield-nrf24--cc1101).
+- **HUB radio shield (NRF24 + CC1101):** 3× NRF24L01 for 2.4 GHz jam/spoof and ESB/MouseJack tools; 1× CC1101 for sub-GHz (e.g. 433 MHz) capture, replay and jam. These are time-shared on the SD SPI bus — see [`hardware-layout.md`](hardware-layout.md#radios--expansion). **(Superseded — SPECTRE has no NRF24/CC1101 shield; only a single expansion SPI slot. See that section and `../spectre/v1/STATUS.md`.)**
 - **WIFI-NODE (C3, promiscuous):** APs, clients, probed SSIDs and deauth counts while channel hopping 1-13. Clients are sorted by persistence, so the device that has been shadowing longest is the "following me" candidate.
 - **Not covered:** 5 GHz WiFi, Classic Bluetooth, and a true wideband SDR (no RTL-SDR in this build). CC1101 is fixed-band per module, not a spectrum analyser.
 - **Not possible here:** cellular, including fake-tower (IMSI catcher) detection. That needs dedicated hardware.

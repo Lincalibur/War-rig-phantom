@@ -1,19 +1,15 @@
 # Hardware layout
 
-> **⚠️ SPECTRE spec below is being reconciled (flagged 2026-11-20).** The SPECTRE rows — the
-> display (this doc says 2.4" ILI9341 SPI; the actual panel is a **3.5" ILI9488 parallel**), the
-> **"HUB pins"** table, the **"Radio shield (NRF24 + CC1101)"** section, and the "stock ESP32-DIV
-> firmware" framing — predate the orchestrator port and are **not confirmed against the current
-> build**. SPECTRE runs the **ported CyberDeck orchestrator** (`spectre/v1/`), not stock
-> ESP32-DIV, and its 8-bit parallel TFT uses enough GPIOs that only **one** SPI radio fits (not the
-> 3×NRF24 + CC1101 shield described here). The hardware-verified truth is
-> [`../spectre/v1/STATUS.md`](../spectre/v1/STATUS.md); treat the sections below as the earlier plan
-> until they are rewritten. SENTINEL, BEACON, power and case details are unaffected.
+> The SPECTRE sections were rewritten 2026-11-21 to match the hardware-verified build in
+> [`../spectre/v1/STATUS.md`](../spectre/v1/STATUS.md) and the carrier pinout in
+> [`../hardware/spectre-pcb/PINOUT.md`](../hardware/spectre-pcb/PINOUT.md). SPECTRE runs the **ported
+> CyberDeck orchestrator** (`spectre/v1/`), **not** stock cifertech ESP32-DIV firmware — that was only
+> a reference example. If a detail here and STATUS.md ever disagree, STATUS.md wins.
 
-The current build, as of 2026-11-13. The cyberdeck is a kit of separate modules. Each module has a
+The current build, as of 2026-11-21. The cyberdeck is a kit of separate modules. Each module has a
 **fixed proper name** (so references don't drift when a module's role changes) and its own screen and job:
 
-- **SPECTRE** is the active, phone-driven ESP32-DIV handheld.
+- **SPECTRE** is the active, phone-driven handheld: one ESP32-WROOM-32U running the ported orchestrator firmware (`../spectre/v1/`) with a 3.5" parallel TFT and a GPS.
 - **SENTINEL** is the passive, always-on watcher (an ESP32-C3 + UNO pair). See [`watcher-plan.md`](watcher-plan.md).
 - **BEACON** is the removable logging watch.
 
@@ -23,11 +19,15 @@ The [build page](build-page.html) has the shopping list, wiring and build order.
 
 ![Wiring: ESP32 + touchscreen + GPS](./wiring.svg)
 
-> The wiring drawing comes from [`cad/wiring/generate_wiring.py`](../cad/wiring/generate_wiring.py). Pins are taken from cifertech's ESP32-DIV firmware, v1 target (`shared.h` and `Libraries/User_Setup v1.h`). The GPS wires straight to the ESP32 — there is no protoboard and no button matrix; the handheld is driven from the CONSOLE phone app over BLE (and the touchscreen). Nothing has been wired or tested yet.
+> ⚠️ **`wiring.svg` is stale** — it was generated from `cad/wiring/generate_wiring.py` using cifertech's old ESP32-DIV pins, before the 2026-11-15 SPECTRE-carrier remap. Use the **"SPECTRE pins"** table below and [`../hardware/spectre-pcb/PINOUT.md`](../hardware/spectre-pcb/PINOUT.md) instead until the drawing is regenerated. The GPS wires straight to the ESP32; there is no protoboard and no button matrix — the handheld is driven from the CONSOLE phone app over BLE.
 
-**Full ESP32-DIV capability (2026-11-10).** The HUB now targets the complete ESP32-DIV V1 feature set, including the active tools (WiFi deauth, beacon/probe flood, captive/evil portal, BLE spoof/spam and jammer), plus the NRF24 (2.4 GHz jam/spoof/ESB) and CC1101 (sub-GHz capture/replay/jam) radios.
+**What SPECTRE does.** It runs the ported CyberDeck orchestrator — a Ghost-ESP-style toolkit on one ESP32-WROOM-32U, driven from the CONSOLE phone app over BLE. The modes use the ESP32's **built-in 2.4 GHz radio** (WiFi + BLE) only:
 
-> **Authorized testing only.** The active tools transmit. Use them **only** against hardware you own and control — the project's own test laptop and spare router on an isolated bench. Do not transmit against networks, devices or people you don't own. Deauth/jamming is illegal in most jurisdictions when aimed at others.
+- **Passive:** WiFi scan (OUI vendor + encryption type), packet-monitor waterfall, BLE sniffer/tracking table, GPS satellite scan, live GPS-stamped wardrive, and handshake capture → base64 EAPOL streamed to the phone as a `.pcap`.
+- **Active (TX):** WiFi deauth (target chosen in the app), beacon/probe/karma floods, evil portal, BLE spam, best-effort BLE adv-flood "jammer", and HID. These **transmit**.
+- There is **no NRF24 or CC1101 radio in the firmware.** The "jammer" is a WiFi-based adv-flood, not a true PHY jammer. A real 2.4 GHz (NRF24) or sub-GHz (CC1101) radio is a **future** add-on via the single expansion SPI slot (see "Radios & expansion" below).
+
+> **Authorized testing only.** The active tools transmit. Use them **only** against hardware you own and control — the project's own test laptop and spare router on an isolated bench. Do not transmit against networks, devices or people you don't own. Deauth is illegal in most jurisdictions when aimed at others.
 
 ---
 
@@ -39,7 +39,7 @@ aliases so older docs still make sense.)
 
 | Name | Was | Board | Role now | Firmware |
 |---|---|---|---|---|
-| **SPECTRE** | `HUB` | ESP32-WROOM-32U dev board (U.FL antenna) + 2.4" ILI9341 touch/SD TFT + NEO-7M GPS (phone-app control, no button matrix) + ESP32-DIV radio shield (3× NRF24L01 + CC1101) | **Active, phone-driven power tool.** Full ESP32-DIV multi-tool: WiFi scan/deauth/evil-portal/packet-monitor, BLE scan/spoof/jam, 2.4 GHz (NRF24) jam/spoof/ESB, sub-GHz (CC1101) capture/replay/jam, GPS wardriving to SD. The orchestrator is being ported here ([`hub-migration-plan.md`](hub-migration-plan.md)) | stock ESP32-DIV v1.7.2 today → ported orchestrator |
+| **SPECTRE** | `HUB` | ESP32-WROOM-32U dev board (U.FL antenna) + **3.5" ILI9488 8-bit parallel TFT, 320×480** (no SD, no touch wired) + NEO-7M GPS. Phone/BLE driven, no button matrix. One expansion SPI slot for a future radio | **Active, phone-driven power tool** running the ported orchestrator: WiFi scan/deauth/evil-portal/packet-monitor/wardrive, BLE scan/spam, handshake→pcap, HID — all on the ESP32's built-in 2.4 GHz radio. No NRF24/CC1101 in firmware yet | **ported CyberDeck orchestrator** (`spectre/v1/`), compiles ~34% flash / 22% RAM, display verified on hardware |
 | **SENTINEL** | `WIFI-NODE` + `READOUT` | ESP32-C3 + Arduino UNO R3 / 3.5" TFT (soldered pair, one-way 19200 UART) | **Passive, always-on watcher** (never transmits): TRACKERS (following BLE tags), TAILS (persistent WiFi clients), ATTACKS (deauth floods, evil-twin APs). Alerts on screen + red LED. SENTINEL-C3 = brain, SENTINEL-TFT = screen | `sentinel/v1/{c3,uno}` (compile-verified 2026-11-13) |
 | **BEACON** | `STATUS` | ESP32-C3 + 128×64 OLED | Removable logging watch. Logs GPS + WiFi scans and sends CSV to an Android phone; docks to the kit now and then | Working, on the watch |
 | **CONSOLE** | — | Android phone app (Flutter) | Controls SPECTRE over BLE. `app/` | Built: `CyberDeck.apk` |
@@ -49,42 +49,57 @@ Retired: the Raspberry Pi 5 hub, the 7" panel and its RTD2660 driver, the RTL-SD
 
 ---
 
-## HUB pins
+## SPECTRE pins
 
-| Part | Part pin | ESP32 GPIO |
-|---|---|---|
-| ILI9341 TFT | CS, RESET, DC | 15, 0, 2 |
-| | SDI (MOSI), SCK, SDO (MISO) | 13, 14, 12 |
-| | LED (backlight, PWM) | 32 |
-| XPT2046 touch | T_CS | 33 |
-| SD card | SD_CS | 5 |
-| Touch + SD, shared bus | T_CLK + SD_SCK, T_DIN + SD_MOSI, T_DO + SD_MISO | 18, 23, 19 |
-| NEO-7M GPS | TX, RX | 3 (ESP32 RX), 1 (ESP32 TX) |
-| NRF24 #1 (primary) | CE, CSN | 4, 5 |
-| NRF24 #2 | CE, CSN | 26, 27 |
-| NRF24 #3 (scanner/ESB/MouseJack) | CE, CSN | 16, 17 |
-| CC1101 (sub-GHz) | CS, GDO0, GDO2 | 27, 26, 16 |
-| Radios shared SPI | SCK, MOSI, MISO | 18, 23, 19 (shared with SD + touch) |
+The authoritative source is [`../spectre/v1/User_Setup_SPECTRE.h`](../spectre/v1/User_Setup_SPECTRE.h) (display) + [`../spectre/v1/spectre/spectre.ino`](../spectre/v1/spectre/spectre.ino) (GPS), and the carrier-connector map is [`../hardware/spectre-pcb/PINOUT.md`](../hardware/spectre-pcb/PINOUT.md). This is the optimized SPECTRE-carrier mapping (remapped 2026-11-15).
 
-- **GPS wired straight to the ESP32.** VCC to 3V3, GND to GND, TXD to GPIO 3, RXD (optional) to GPIO 1, PPS unconnected. No protoboard. Feed VCC from 5 V only if it won't get a fix.
-- **GPS on the USB serial pins.** GPIO 1 and 3 are also used by the board's USB serial chip. Unplug the GPS (or pull its TXD lead off GPIO 3) while flashing.
-- **No button matrix.** The PCF8574 and the five buttons were dropped; the handheld is driven from the CONSOLE phone app over BLE and the touchscreen. GPIO 21/22 are free.
-- **No battery gauge.** `BATTERY_ADC_PIN` is -1.
-- **Antenna.** A router antenna (RP-SMA) and pigtail go on the board's U.FL socket.
+**Display — ILI9488, 3.5" 8-bit parallel, 320×480** (mcufriend-style Arduino-UNO-R3 shield footprint):
 
-The `WIFI-NODE` → `READOUT` link is a one-way 19200-baud UART. Its wiring is in [`proto-readout-wiring.html`](proto-readout-wiring.html).
+| Signal | ESP32 GPIO | | Signal | ESP32 GPIO |
+|---|---|---|---|---|
+| CS | 27 | | D0 | 22 |
+| DC / RS | 26 | | D1 | 23 |
+| RST | 14 | | D2 | 16 |
+| WR | 25 | | D3 | 17 |
+| RD | 33 | | D4 | 5 |
+| | | | D5 | 18 |
+| | | | D6 | 19 |
+| | | | D7 | 21 |
+
+**GPS — NEO-7M on UART2:**
+
+| Signal | ESP32 GPIO |
+|---|---|
+| GPS TXD → ESP32 RX | 15 |
+| ESP32 TX → GPS RXD | 2 |
+
+- **3.3 V logic rail — the white-screen fix.** The shield doesn't self-regulate: wire **ESP32 3V3 → the shield's 3.3 V pad**, or the panel shows white. Backlight is hardwired to VCC (no PWM pin). The firmware calls `tft.invertDisplay(true)` after init (ILI9488 inverts by default).
+- **No SD and no touch wired.** Display only. There is no battery gauge (`BATTERY_ADC_PIN = -1`).
+- **No button matrix.** The PCF8574 and the five buttons were dropped; the handheld is driven from the CONSOLE phone app over BLE. There is no touch control either.
+- **Strapping pins to watch** if boot/flash flakes: GPIO 5 (D4 — a glitch on a data line is harmless), GPIO 2 and 15 (GPS UART — IO2 is ESP32-driven and GPS TX idles high, both fine), GPIO 12 (expansion MOSI — see below), GPIO 0 (BOOT, left free).
+- **GPS vs USB serial.** GPS is on IO15/IO2, *not* the USB-serial pins IO1/IO3, so flashing over USB is unaffected by the GPS.
+- **Antenna.** A router antenna (RP-SMA) and pigtail go on the ESP32-WROOM-32U's U.FL socket. This is the only radio SPECTRE transmits on.
+
+SENTINEL (the separate C3 + UNO watcher) uses a one-way 19200-baud UART between its two boards; that wiring is in [`proto-readout-wiring.html`](proto-readout-wiring.html) and [`watcher-plan.md`](watcher-plan.md), not here.
 
 ---
 
-## Radio shield (NRF24 + CC1101)
+## Radios & expansion
 
-The radios come from cifertech's ESP32-DIV V1 shield: **3× NRF24L01+** (2.4 GHz jam/spoof/ESB/MouseJack) and **1× CC1101** (sub-GHz). Pins are fixed by the stock firmware's `shared.h`, so wire to the GPIOs above and flash the unmodified V1 binary — no source changes.
+SPECTRE's only working radio is the **ESP32-WROOM-32U's built-in 2.4 GHz** (WiFi + BLE), on the U.FL external antenna. **There is no NRF24 or CC1101 in the firmware** — every mode, including the "jammer," runs on the built-in radio (the BLE jammer is a best-effort adv-flood, not a true PHY jammer).
 
-- **One shared SPI bus, time-shared.** The SD card, touch, all three NRF24 and the CC1101 sit on SCK 18 / MOSI 23 / MISO 19. They are not all active at once: the firmware reclaims the bus and re-mounts the SD card after a radio tool runs. By design, **GPIO 5 is both `SD_CS` and NRF24 #1 `CSN`** (SD or NRF24 #1, not both at the same instant), and **GPIO 26/27/16 are reused** between NRF24 #2/#3 and the CC1101, so 2.4 GHz-NRF tools and sub-GHz tools run one mode at a time. This is cifertech's own multiplexing, not a wiring error.
-- **NRF24 is 3V3 only.** Power each module from 3V3, not 5 V. Put a **10 µF** (plus a 100 nF) cap right across each NRF24's VCC/GND — they brown out and misbehave without it, and three radios on one rail is demanding. NRF24L01+PA+LNA modules give more range but draw more; budget the power accordingly (see the power table — radios were not in the original load estimate).
-- **CC1101 band.** Pick the module for the band you'll test: **433 MHz** is the common SA ISM band for remotes/sensors; 868/915 MHz is the other. Decoupling as above.
-- **Antennas.** Each NRF24 and the CC1101 wants its own antenna. Keep them physically separated — the earlier build hit near-field interference between close 2.4 GHz radios.
-- **Not yet verified against the schematic.** The pin table is taken from the firmware source (`shared.h`, v1 branch). Cifertech's `Schematic/v1/ESP32DIV-SHIELD.jpg` + `ESP32DIV-SHIELD-BOM.pdf` are the physical reference; cross-check them before soldering the shield.
+The carrier PCB brings out **one expansion SPI slot** (connector J8) for a *future* radio — it is **not wired or used by the firmware yet**:
+
+| Signal | ESP32 GPIO | Notes |
+|---|---|---|
+| EXP_SCK | 13 | |
+| EXP_MOSI | 12 | ⚠ strapping pin — **fit R1 (10k pulldown)** so a plugged-in radio can't hold IO12 high at boot (would select 1.8 V flash → no boot) |
+| EXP_MISO | 32 | input-capable |
+| EXP_CS0 | 4 | ⚠ IO4 low at boot — **add a 10k pull-up** |
+| EXP_IN1–4 | 34, 35, 36, 39 | input-only (e.g. a radio's IRQ/GDO lines) |
+
+- It's a VSPI-style bus via the GPIO matrix (~26 MHz cap — fine for a CC1101 or a single NRF24). It has room for **one** SPI radio at a time, **not** the full 3×NRF24 + CC1101 shield the earlier plan assumed: the 8-bit parallel TFT consumes 13 GPIOs, leaving only this one slot.
+- If a radio is added later: power it from 3V3 with a **10 µF + 100 nF** decoupling pair at its pins, give it its own antenna, and a sub-GHz CC1101 needs a band choice (**433 MHz** is the common ISM band for remotes/sensors; 868/915 MHz is the other).
 
 ---
 
@@ -92,9 +107,9 @@ The radios come from cifertech's ESP32-DIV V1 shield: **3× NRF24L01+** (2.4 GHz
 
 ```
 3x 18650 in parallel (1S3P) -> master switch -> 5V 2A charge/boost module -> 5 V rail
-                                                       ^                         |-> HUB: ESP32 VIN, TFT VCC, GPS VCC
-                                 USB-C breakout -------+                         |-> READOUT: UNO 5V, WIFI-NODE 5V
-                                 (charge input pads)                             +-> STATUS dock (when docked)
+                                                       ^                         |-> SPECTRE: ESP32 VIN, TFT VCC, GPS VCC
+                                 USB-C breakout -------+                         |-> SENTINEL: C3 5V, UNO 5V
+                                 (charge input pads)                             +-> BEACON dock (when docked)
 ```
 
 | Item | Value |
@@ -135,7 +150,7 @@ The whole **bottom section** holds power: the powerbank, the three 18650 cells a
 - Is the ESP32 board a full dev board (USB and headers)? This is checked when the parts are collected.
 - Does the 5V 2A module cut out on a low cell, and how much current can it really give?
 - How should the kit sit in the case? Measure the parts first.
-- How do logs get to the laptop? The `HUB` writes WiGLE CSV and PCAP to SD, and `STATUS` sends CSV to the phone. Collecting both on a laptop for analysis is planned but not designed yet.
-- Source the radio shield: 3× NRF24L01 (nde3d doesn't stock them — check another supplier), 1× CC1101 at 433 MHz, antennas, and the decoupling caps. Or buy cifertech's assembled V1 shield.
+- How do logs get to the laptop? SPECTRE has **no SD** — it streams captured handshakes to the phone as `.pcap` over BLE, and the wardrive view is display-only (no logging). BEACON sends CSV to the phone. Collecting both on a laptop for analysis is planned but not designed yet.
+- A radio on the expansion slot is optional and deferred. If pursued, source **one** module (a CC1101 at 433 MHz for sub-GHz, or a single NRF24L01 for 2.4 GHz) plus its antenna and decoupling caps — not the 3×NRF24+CC1101 shield, which doesn't fit (one SPI slot). Fit R1 (IO12 pulldown) and the IO4 pull-up first.
 - Cross-check the radio pin table against cifertech's `Schematic/v1` JPGs before soldering.
-- Power: fold the three NRF24 + CC1101 into the 5 V/3V3 load estimate and re-check runtime.
+- Power: if an expansion radio is ever added, fold its 3V3 draw into the load estimate and re-check runtime.
