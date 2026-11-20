@@ -20,9 +20,10 @@ becomes **SENTINEL** (passive counter-surveillance watcher) later.
 ## Hardware (confirmed)
 - Controller: **ILI9488** (RDID 0xD3 → `94 88`), 3.5" **8-bit parallel** (mcufriend-style shield), **320x480**.
 - 3.3V logic rail fix done: ESP32 **3V3 → shield 3.3V pad** wired (shield doesn't self-regulate). Backlight hardwired to VCC.
-- TFT pinout (see `User_Setup_SPECTRE.h`): CS=33, DC/RS=15, RST=32, WR=4, RD=2; D0-D7 = 12,13,26,25,17,16,27,14.
-- GPS: NEO-7M on **UART2**, RX=21 / TX=22 (separate from the 2.4GHz radio, always on). SD lines (18/19/23/5) NOT wired — display only for now.
-- Strapping pins to watch if boot/flash flakes: GPIO12 (D0), GPIO2 (RD).
+- TFT pinout (see `User_Setup_SPECTRE.h`) — optimized SPECTRE-carrier mapping 2026-11-15:
+  CS=27, DC/RS=26, RST=14, WR=25, RD=33; D0-D7 = 22,23,16,17,5,18,19,21.
+- GPS: NEO-7M on **UART2**, RX=15 / TX=2 (separate from the 2.4GHz radio, always on). Expansion SPI (future radio) = SCK 13 / MOSI 12 / MISO 32 / CS 4 — not used in firmware yet.
+- Strapping pins to watch if boot/flash flakes: GPIO12 (EXP_MOSI, fit R1 pulldown), GPIO2/15 (GPS UART), GPIO5 (D4).
 
 ## Code state — DONE, compiles, hardware-untested
 - `spectre/v1/spectre/spectre.ino` (+ `ducky.h`): orchestrator on one WROOM. TFT_eSPI direct draw
@@ -40,6 +41,12 @@ becomes **SENTINEL** (passive counter-surveillance watcher) later.
 - App `app/lib/main.dart`: 5 new mode tiles + briefings, GPS section, pcap pull/decode/save
   (`path_provider` added to pubspec). `flutter analyze` error-free. APK built on Windows at
   `C:\Users\liamo\Desktop\CyberDeck.apk` (48.3MB).
+
+## ⚠️ PINOUT REMAPPED (2026-11-15) — prebuilt bins are STALE
+TFT + GPS pins were remapped to the optimized SPECTRE-carrier layout (see the pinout line above).
+**`spectre/v1/prebuilt/*_MERGED.bin` were built with the OLD pins — do NOT flash them** or the
+display/GPS won't work. Rebuild from source (`spectre/v1/spectre/spectre.ino` + the updated
+`User_Setup_SPECTRE.h`) and regenerate the merged bin before flashing.
 
 ## ✅ DISPLAY SOLVED (2026-11-15)
 The whole white-screen saga is done. Final state, working on hardware:

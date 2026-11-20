@@ -3,7 +3,7 @@
 // Single-chip port of orchestrator/v1 (C3 brain + UNO readout) onto the SPECTRE HUB:
 //   - one ESP32-WROOM-32U runs the radio + brains + BLE control AND paints the TFT directly
 //   - 8-bit PARALLEL 2.4" ILI9341 TFT via TFT_eSPI (portrait 240x320) — replaces the UART-to-UNO link
-//   - native NEO-7M GPS on UART2 (RX=21, TX=22) — replaces the old phone-GPS workaround
+//   - native NEO-7M GPS on UART2 (RX=IO15, TX=IO2) — replaces the old phone-GPS workaround
 //   - external U.FL antenna on the WROOM for range
 //
 // New vs the C3 build: Wardriver (live, GPS-stamped), Satellite Scanner, Packet-Monitor waterfall,
@@ -40,7 +40,7 @@ extern "C" {
 // ---------------------------------------------------------------------------------------
 // Pins + tunables
 // ---------------------------------------------------------------------------------------
-static const int      GPS_RX_PIN = 21, GPS_TX_PIN = 22;   // NEO-7M: GPS TXD->21, GPS RXD<-22
+static const int      GPS_RX_PIN = 15, GPS_TX_PIN = 2;    // NEO-7M: GPS TXD->IO15, GPS RXD<-IO2 (optimized SPECTRE-carrier mapping)
 static const uint32_t GPS_BAUD  = 9600;
 static const int      BOOT_BTN  = 0;        // WROOM BOOT button (bench mode-cycle; phone is the real UI)
 static const int      SCREEN_ROWS = 20, ROW_TEXT_MAX = 38;

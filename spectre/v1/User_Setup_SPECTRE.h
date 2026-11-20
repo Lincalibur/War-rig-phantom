@@ -25,22 +25,22 @@
 #define TFT_WIDTH  320
 #define TFT_HEIGHT 480
 
-// Control lines
-#define TFT_CS   33   // LCD_CS (library pulls permanently low)
-#define TFT_DC   15   // LCD_RS / DC
-#define TFT_RST  32   // LCD_RST
-#define TFT_WR    4   // LCD_WR write strobe
-#define TFT_RD    2   // LCD_RD read strobe
+// Control lines  (optimized SPECTRE-carrier mapping, 2026-11-15)
+#define TFT_CS   27   // LCD_CS (library pulls permanently low)
+#define TFT_DC   26   // LCD_RS / DC   (bank<32)
+#define TFT_RST  14   // LCD_RST
+#define TFT_WR   25   // LCD_WR write strobe (bank<32 -> faster pulsing)
+#define TFT_RD   33   // LCD_RD read strobe (rarely toggles; upper-bank pin is fine)
 
-// Data bus (all < 32)
-#define TFT_D0   12
-#define TFT_D1   13
-#define TFT_D2   26
-#define TFT_D3   25
-#define TFT_D4   17
-#define TFT_D5   16
-#define TFT_D6   27
-#define TFT_D7   14
+// Data bus (all < 32 so one register write drives the byte; order is free - LUT driven)
+#define TFT_D0   22
+#define TFT_D1   23
+#define TFT_D2   16
+#define TFT_D3   17
+#define TFT_D4    5
+#define TFT_D5   18
+#define TFT_D6   19
+#define TFT_D7   21
 
 // Backlight is hardwired to VCC on this shield — no TFT_BL.
 
