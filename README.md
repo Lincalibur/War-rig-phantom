@@ -20,17 +20,18 @@
 
 **War-rig-phantom** is a portable wireless multi-tool and recon kit made of separate modules. Each module has its own screen and job:
 
-- **`HUB`:** a full ESP32-DIV V1 handheld on an ESP32-WROOM-32U with a router antenna and a radio shield (3× NRF24L01 + CC1101). It has a 2.4" touch TFT, buttons and a NEO-7M GPS. It runs the complete ESP32-DIV toolkit — WiFi scan/deauth/evil-portal/packet-monitor, BLE scan/spoof/jam, 2.4 GHz (NRF24) and sub-GHz (CC1101) tools, deauth detection, and GPS wardriving logged to SD as WiGLE CSV.
-- **`WIFI-NODE` → `READOUT`:** an ESP32-C3 WiFi sniffer streams to an Arduino UNO with a 3.5" screen. It sorts clients by how long they've been nearby, which flags devices that keep following you.
-- **`STATUS`:** a removable ESP32-C3 + OLED watch that logs GPS and WiFi scans to a phone.
+- **`SPECTRE`** (role: `HUB`): the active handheld — an ESP32-WROOM-32U with a router antenna on U.FL, a **3.5" ILI9488 8-bit parallel TFT** and a NEO-7M GPS. It runs the ported **CyberDeck orchestrator** (a Ghost-ESP-style toolkit), driven from the `CONSOLE` phone app over BLE, on the ESP32's **built-in 2.4 GHz radio**: WiFi scan/deauth/evil-portal/packet-monitor/wardrive, BLE scan/spam, handshake → `.pcap` streamed to the phone, and HID. No radio shield, no buttons, no SD; one expansion SPI slot is reserved for a single future CC1101/NRF24.
+- **`SENTINEL`** (roles: `WIFI-NODE` + `READOUT`): an ESP32-C3 WiFi/BLE sniffer streams over a one-way 19200 UART to an Arduino UNO with a 3.5" screen. It's the passive, always-on watcher — flags trackers, tails and attacks, and never transmits.
+- **`BEACON`** (role: `STATUS`): a removable ESP32-C3 + OLED watch that logs GPS and WiFi scans to a phone.
+- **`CONSOLE`:** the Android (Flutter) app that drives `SPECTRE` over BLE.
 
-The modules share one 3x 18650 pack and a 5 V boost module. Later, all the logs go to a laptop for analysis.
+The modules share one 18650 pack and a 5 V boost module. Later, all the logs go to a laptop for analysis.
 
 > **Scope & Ethics**
-> The HUB runs the full ESP32-DIV firmware, which **includes active, transmitting attack tools** (deauth, beacon/probe flood, evil portal, BLE spoof/jam, NRF24 and CC1101 jam/replay).
+> `SPECTRE`'s orchestrator **includes active, transmitting tools** (WiFi deauth, beacon/probe/karma flood, evil portal, BLE spam, a best-effort BLE adv-flood "jammer", and HID) — all on the ESP32's built-in 2.4 GHz radio.
 > - Use them **only** against hardware you own and control — the project's test laptop and spare router, on an isolated bench.
-> - Never transmit against networks, devices or people you don't own. Deauth and jamming are illegal in most jurisdictions when aimed at others, and the radios interfere with anyone nearby.
-> - The passive recon modules (`WIFI-NODE`/`READOUT`, `STATUS`) only listen and log.
+> - Never transmit against networks, devices or people you don't own. Deauth is illegal in most jurisdictions when aimed at others, and the radio interferes with anyone nearby.
+> - The passive modules (`SENTINEL`, `BEACON`) only listen and log.
 >
 > This is an authorized-testing and learning platform. You are responsible for staying within the law.
 
@@ -38,21 +39,22 @@ The modules share one 3x 18650 pack and a 5 V boost module. Later, all the logs 
 
 ```mermaid
 flowchart TD
-    subgraph HUBG["HUB · ESP32-DIV V1 firmware"]
-      ESP["ESP32-WROOM-32U<br/>router antenna on U.FL"]
-      TFT["2.4 in ILI9341<br/>touch + SD"]
-      PCF["PCF8574<br/>5 buttons"]
+    subgraph SPECTREG["SPECTRE (HUB) · ported orchestrator firmware"]
+      ESP["ESP32-WROOM-32U<br/>router antenna on U.FL<br/>built-in 2.4 GHz WiFi + BLE"]
+      TFT["3.5 in ILI9488<br/>8-bit parallel, 320x480"]
       GPS["GPS · NEO-7M"]
-      RADIO["Radio shield<br/>3x NRF24L01 + CC1101"]
-      ESP -->|SPI| TFT
-      ESP -->|I2C| PCF
-      GPS -->|UART| ESP
-      ESP -->|shared SPI| RADIO
+      EXP["expansion SPI slot<br/>1 future radio, unused"]
+      ESP -->|8-bit parallel| TFT
+      GPS -->|UART2| ESP
+      ESP -.->|SPI, future| EXP
     end
-    WIFI["WIFI-NODE<br/>ESP32-C3, promiscuous"] -->|UART 19200| READOUT["READOUT<br/>UNO + 3.5 in TFT"]
-    STATUS["STATUS · C3 + OLED watch"] -->|CSV| PHONE["Android phone"]
-    TFT --> SD[("SD card<br/>WiGLE CSV, PCAP")]
-    SD -.->|later| LAPTOP["Laptop analysis"]
+    CONSOLE["CONSOLE · Android app"] <-->|BLE| ESP
+    ESP -.->|handshake .pcap over BLE| CONSOLE
+    subgraph SENTG["SENTINEL (WIFI-NODE + READOUT) · passive, never TX"]
+      WIFI["ESP32-C3<br/>promiscuous"] -->|UART 19200| READOUT["UNO + 3.5 in TFT"]
+    end
+    BEACON["BEACON (STATUS)<br/>C3 + OLED watch"] -->|CSV| PHONE["Android phone"]
+    CONSOLE -.->|later| LAPTOP["Laptop analysis"]
     PHONE -.->|later| LAPTOP
 
     subgraph POWER["Power"]
