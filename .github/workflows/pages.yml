@@ -7,6 +7,7 @@ on:
       - "docs/build-page.html"
       - "docs/case-layout.svg"
       - "docs/wiring*.svg"
+      - "docs/spectre-pcb-*.png"
       - ".github/workflows/pages.yml"
   workflow_dispatch:
 
@@ -33,6 +34,7 @@ jobs:
           mkdir -p _site
           cp docs/build-page.html _site/index.html
           cp docs/case-layout.svg docs/wiring*.svg _site/
+          cp docs/spectre-pcb-*.png _site/
           touch _site/.nojekyll
 
       - uses: actions/configure-pages@v5
