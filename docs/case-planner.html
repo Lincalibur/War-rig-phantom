@@ -1,0 +1,772 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0;font:14px system-ui,sans-serif}img{max-width:100%}[hidden]{display:none!important}</style>
+<title>CyberDeck Case Planner</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+/* Layout: full-height workbench — parts panel on the left, 3D clamshell (opened flat) fills the rest. Stacks on phones. */
+:root {
+  --bg: #E9EDF1; --panel: #FFFFFF; --fg: #17202B; --muted: #5B6775; --line: #D3DAE2; --raise: #F3F6F9;
+  --accent: #2B6CB0; --accent-fg: #FFFFFF; --amber: #A8710A; --bad: #C8392B; --ok: #2F855A;
+  --scene: #DCE2E8; --tray: #2C3238; --tray-edge: #59636D; --grid: #6C7782;
+  --f-display: "Chakra Petch", "Segoe UI", system-ui, sans-serif;
+  --f-body: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+  --f-mono: "IBM Plex Mono", ui-monospace, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #0E1317; --panel: #151C22; --fg: #E2E8EE; --muted: #8C98A5; --line: #26313B; --raise: #1B242B;
+  --accent: #5C9CE2; --accent-fg: #0B1117; --amber: #D9A23A; --bad: #E5604F; --ok: #52B47F;
+  --scene: #0A0E12; --tray: #1D242B; --tray-edge: #3B4652; --grid: #4A5866; color-scheme: dark } }
+:root[data-theme="dark"] {
+  --bg: #0E1317; --panel: #151C22; --fg: #E2E8EE; --muted: #8C98A5; --line: #26313B; --raise: #1B242B;
+  --accent: #5C9CE2; --accent-fg: #0B1117; --amber: #D9A23A; --bad: #E5604F; --ok: #52B47F;
+  --scene: #0A0E12; --tray: #1D242B; --tray-edge: #3B4652; --grid: #4A5866; color-scheme: dark }
+
+html, body { height: 100%; }
+body { background: var(--bg); color: var(--fg); font-family: var(--f-body); font-size: 14px; line-height: 1.45; }
+*, *::before, *::after { box-sizing: border-box; }
+button, input, select, textarea { font: inherit; color: inherit; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+.app { display: grid; grid-template-columns: minmax(310px, 370px) minmax(0, 1fr); height: 100%; }
+.panel { background: var(--panel); border-right: 1px solid var(--line); overflow-y: auto; padding: 20px 18px 28px; display: flex; flex-direction: column; gap: 22px; min-width: 0; }
+.stage { position: relative; min-width: 0; overflow: hidden; background: var(--scene); }
+.stage canvas { display: block; width: 100%; height: 100%; touch-action: none; }
+
+.eyebrow { font-family: var(--f-mono); font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
+h1 { font-family: var(--f-display); font-weight: 700; font-size: 28px; line-height: 1.05; margin: 4px 0 8px; letter-spacing: .01em; text-wrap: balance; }
+h2 { font-family: var(--f-display); font-weight: 600; font-size: 15px; letter-spacing: .06em; text-transform: uppercase; margin: 0; }
+.lede { margin: 0; color: var(--muted); max-width: 60ch; }
+.sec { display: flex; flex-direction: column; gap: 10px; }
+.sec-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+
+.btn { border: 1px solid var(--line); background: var(--raise); border-radius: 6px; padding: 6px 10px; cursor: pointer; font-size: 13px; font-weight: 500; }
+.btn:hover { border-color: var(--accent); }
+.btn.primary { background: var(--accent); color: var(--accent-fg); border-color: var(--accent); }
+.btn.danger { color: var(--bad); }
+.btn.danger.armed { background: var(--bad); color: #fff; border-color: var(--bad); }
+
+.list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 2px; }
+.row { width: 100%; display: grid; grid-template-columns: 12px minmax(0,1fr) auto auto 10px; align-items: center; gap: 8px; padding: 7px 8px; border: 1px solid transparent; border-radius: 6px; background: none; cursor: pointer; text-align: left; }
+.row:hover { background: var(--raise); }
+.row.sel { border-color: var(--accent); background: var(--raise); }
+.sw { width: 12px; height: 12px; border-radius: 3px; }
+.nm { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 500; }
+.nm .est { font-family: var(--f-mono); font-size: 10px; color: var(--amber); margin-left: 6px; letter-spacing: .04em; }
+.dims { font-family: var(--f-mono); font-size: 12px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.half { font-family: var(--f-mono); font-size: 10px; letter-spacing: .08em; padding: 1px 5px; border-radius: 3px; border: 1px solid var(--line); color: var(--muted); }
+.dot { width: 9px; height: 9px; border-radius: 50%; background: var(--ok); }
+.dot.warn { background: var(--amber); } .dot.bad { background: var(--bad); }
+
+.editor { border: 1px solid var(--line); border-radius: 8px; padding: 14px; background: var(--raise); display: flex; flex-direction: column; gap: 12px; }
+.editor .empty { color: var(--muted); margin: 0; }
+.field { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.field label, .lbl { font-size: 11px; color: var(--muted); letter-spacing: .06em; text-transform: uppercase; }
+.field input, .field select { width: 100%; border: 1px solid var(--line); border-radius: 5px; padding: 6px 8px; background: var(--panel); font-family: var(--f-mono); font-variant-numeric: tabular-nums; }
+.field input[type=text] { font-family: var(--f-body); }
+.grid3 { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 8px; }
+.grid2 { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 8px; }
+.seg { display: inline-flex; border: 1px solid var(--line); border-radius: 6px; overflow: hidden; }
+.seg button { border: 0; background: var(--panel); padding: 6px 12px; cursor: pointer; font-size: 12px; font-family: var(--f-mono); letter-spacing: .06em; }
+.seg button + button { border-left: 1px solid var(--line); }
+.seg button[aria-pressed="true"] { background: var(--accent); color: var(--accent-fg); }
+.swatches { display: flex; gap: 6px; flex-wrap: wrap; }
+.swatches button { width: 22px; height: 22px; border-radius: 4px; border: 2px solid transparent; cursor: pointer; padding: 0; }
+.swatches button[aria-pressed="true"] { border-color: var(--fg); }
+.actions { display: flex; gap: 8px; flex-wrap: wrap; }
+.check { display: flex; align-items: center; gap: 8px; font-size: 13px; }
+
+.summary { display: flex; gap: 6px; flex-wrap: wrap; }
+.chip { font-family: var(--f-mono); font-size: 11px; padding: 3px 8px; border-radius: 99px; border: 1px solid var(--line); }
+.chip.ok { color: var(--ok); border-color: color-mix(in srgb, var(--ok) 45%, var(--line)); }
+.chip.warn { color: var(--amber); border-color: color-mix(in srgb, var(--amber) 45%, var(--line)); }
+.chip.bad { color: var(--bad); border-color: color-mix(in srgb, var(--bad) 45%, var(--line)); }
+.msgs { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 4px; font-size: 13px; }
+.msgs li { padding-left: 12px; border-left: 3px solid var(--line); }
+.msgs li.bad { border-color: var(--bad); } .msgs li.warn { border-color: var(--amber); } .msgs li.info { border-color: var(--accent); color: var(--muted); }
+.stats { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+.stats th, .stats td { text-align: left; padding: 5px 0; border-bottom: 1px solid var(--line); }
+.stats td { font-family: var(--f-mono); font-variant-numeric: tabular-nums; }
+.stats th { font-weight: 500; color: var(--muted); }
+.bar { height: 4px; background: var(--line); border-radius: 2px; margin-top: 4px; overflow: hidden; }
+.bar i { display: block; height: 100%; background: var(--accent); }
+
+details { border-top: 1px solid var(--line); padding-top: 14px; }
+details summary { cursor: pointer; font-family: var(--f-display); font-weight: 600; font-size: 15px; letter-spacing: .06em; text-transform: uppercase; }
+details[open] summary { margin-bottom: 12px; }
+details .note { color: var(--muted); font-size: 12.5px; margin: 0 0 10px; }
+textarea { width: 100%; min-height: 140px; border: 1px solid var(--line); border-radius: 6px; padding: 8px; background: var(--raise); font-family: var(--f-mono); font-size: 11.5px; resize: vertical; }
+.io-msg { font-size: 12.5px; color: var(--muted); min-height: 1.2em; margin: 6px 0 0; }
+
+.toolbar { position: absolute; top: 12px; right: 12px; left: 12px; display: flex; gap: 8px; flex-wrap: wrap; justify-content: flex-end; pointer-events: none; }
+.toolbar > * { pointer-events: auto; }
+.tb { display: flex; align-items: center; gap: 8px; background: color-mix(in srgb, var(--panel) 92%, transparent); border: 1px solid var(--line); border-radius: 8px; padding: 5px 8px; font-size: 12px; }
+.tb .lbl { font-size: 10px; }
+.tb input[type=range] { width: 110px; accent-color: var(--accent); }
+.tb select { border: 1px solid var(--line); border-radius: 4px; background: var(--panel); padding: 2px 4px; font-family: var(--f-mono); font-size: 12px; }
+.tb .val { font-family: var(--f-mono); font-variant-numeric: tabular-nums; min-width: 3.2em; text-align: right; }
+.hint { position: absolute; left: 12px; bottom: 12px; right: 12px; display: flex; gap: 6px 14px; flex-wrap: wrap; font-size: 12px; color: var(--muted); pointer-events: none; }
+.hint kbd { font-family: var(--f-mono); font-size: 11px; border: 1px solid var(--line); border-bottom-width: 2px; border-radius: 3px; padding: 0 4px; background: var(--panel); color: var(--fg); }
+.hint .warnline { color: var(--amber); font-weight: 600; }
+
+@media (max-width: 820px) {
+  html, body { height: auto; }
+  .app { grid-template-columns: minmax(0,1fr); height: auto; }
+  .stage { order: -1; height: 60vh; min-height: 340px; }
+  .panel { border-right: 0; overflow: visible; }
+  .hint .keys { display: none; }
+}
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+
+</head>
+<body>
+<div class="app">
+  <aside class="panel">
+    <header>
+      <div class="eyebrow"><a href="index.html" style="color:inherit">← Build page</a> · CyberDeck · 220 mm clamshell</div>
+      <h1>Case Planner</h1>
+      <p class="lede">Set each part's size, then drag parts around the lid and base to find a layout that fits and still closes. Sizes marked <span style="color:var(--amber);font-family:var(--f-mono);font-size:12px">est.</span> are estimates. Swap in your caliper readings.</p>
+    </header>
+
+    <section class="sec">
+      <div class="sec-head"><h2>Parts</h2><button class="btn primary" id="add">+ Add part</button></div>
+      <ul class="list" id="list"></ul>
+    </section>
+
+    <section class="editor" id="editor"></section>
+
+    <section class="sec">
+      <h2>Fit check</h2>
+      <div class="summary" id="summary"></div>
+      <ul class="msgs" id="msgs"></ul>
+      <table class="stats" id="stats"></table>
+    </section>
+
+    <details id="case-details">
+      <summary>Case dimensions</summary>
+      <p class="note">Interior sizes, in mm. Distances run from the hinge wall. The handle recess is the block that sticks into the front of both halves.</p>
+      <div class="grid3">
+        <div class="field"><label for="cs-W">Inner width</label><input id="cs-W" type="number" step="0.5" min="20"></div>
+        <div class="field"><label for="cs-D">Hinge → front</label><input id="cs-D" type="number" step="0.5" min="20"></div>
+        <div class="field"><label for="cs-H">Depth / half</label><input id="cs-H" type="number" step="0.5" min="2"></div>
+        <div class="field"><label for="cs-hw">Handle width</label><input id="cs-hw" type="number" step="0.5" min="0"></div>
+        <div class="field"><label for="cs-hs">Handle starts</label><input id="cs-hs" type="number" step="0.5" min="0"></div>
+        <div class="field"><label for="cs-c">Pocket gap</label><input id="cs-c" type="number" step="0.1" min="0"></div>
+      </div>
+      <div class="field" style="margin-top:8px"><label for="cs-seat">Parts sit</label>
+        <select id="cs-seat"><option value="floor">On the tray floor (filler is a frame)</option><option value="rim">Flush with the rim (filler raises short parts)</option></select>
+      </div>
+    </details>
+
+    <details>
+      <summary>Save, load, export</summary>
+      <p class="note">Your layout autosaves in this browser. Copy the JSON to keep it or send it to Claude. The OpenSCAD export is a starting filler: one block per half with a pocket for each part.</p>
+      <div class="actions">
+        <button class="btn" id="copy-json">Copy layout JSON</button>
+        <button class="btn" id="copy-scad">Copy OpenSCAD filler</button>
+        <button class="btn" id="load-json">Load JSON from box</button>
+        <button class="btn danger" id="reset">Reset to example</button>
+      </div>
+      <p class="io-msg" id="io-msg"></p>
+      <textarea id="io" spellcheck="false" placeholder="Exported text appears here. Paste a layout JSON here, then press Load."></textarea>
+    </details>
+  </aside>
+
+  <main class="stage" id="stage">
+    <canvas id="c" aria-label="3D view of the open case and its parts"></canvas>
+    <div class="toolbar">
+      <div class="tb"><span class="lbl">View</span>
+        <div class="seg" role="group" aria-label="Camera view"><button id="v-3d" aria-pressed="true">3D</button><button id="v-top" aria-pressed="false">TOP</button></div>
+      </div>
+      <div class="tb"><label class="lbl" for="lid">Lid</label><input id="lid" type="range" min="0" max="180" step="1" value="180"><span class="val" id="lid-val">180°</span>
+        <button class="btn" id="lid-toggle" style="padding:3px 8px">Close</button></div>
+      <div class="tb"><label class="lbl" for="snap">Snap</label>
+        <select id="snap"><option value="0.5">0.5 mm</option><option value="1">1 mm</option><option value="5" selected>5 mm</option><option value="10">10 mm</option></select></div>
+    </div>
+    <div class="hint" id="hint"></div>
+  </main>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+<script>
+(() => {
+const $ = s => document.querySelector(s);
+const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const r1 = n => Math.round(n * 10) / 10;
+const fmt = n => String(r1(n));
+const uid = () => 'p' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const KEY = 'cyberdeck-case-planner-v3';
+const COLORS = ['#5B8FD6', '#9A84C9', '#E0A94A', '#D9785F', '#5FAF8A', '#7F8E9C', '#C96F9E', '#4FB0C6'];
+
+const DEFAULT_CASE = { W: 205, D: 190, H: 25, handleW: 95, handleStart: 165, clearance: 0.5, seat: 'floor' };
+// Starting layout = the case as photographed 2026-11-21 (hardware/Case preview.jpeg).
+// Sizes scaled off the photo using the 18650 holders and the 205 mm inner width: all estimates,
+// except SPECTRE's footprint, which is the carrier PCB outline (131.7 x 75 mm). Its height
+// (ESP32 socketed underneath + TFT shield on headers on top) is estimated.
+// The lid is rearranged from the photo so the full-size SPECTRE fits.
+const EXAMPLE = [
+  { name: 'SPECTRE (carrier PCB + TFT + ESP32)', w: 131.7, d: 75, h: 31, half: 'lid', x: -35, z: 73, rot: 0, color: COLORS[0] },
+  { name: 'SENTINEL (C3 + UNO + 3.5" TFT)', w: 88, d: 56, h: 24, half: 'lid', x: 68, z: 80, rot: 1, color: COLORS[1] },
+  { name: 'BEACON watch (C3 + OLED)', w: 27, d: 33, h: 12, half: 'lid', x: 68.5, z: 161.5, rot: 0, color: COLORS[2] },
+  // Router removed; the antennas mount through holes drilled in the case side wall.
+  // USB hub = printed switch case (cad/usb_hub_case): board on edge, ports face forward,
+  // 156 x 23 x 33.5 mm + 9 mm toggle levers. Straight plugs need ~35 mm clear in front.
+  { name: 'USB hub in switch case', w: 156, d: 23, h: 42.5, half: 'lid', x: 0, z: 12, rot: 0, color: COLORS[5] },
+  { name: 'Grey powerbank', w: 138, d: 62, h: 16, half: 'base', x: -33, z: 42, rot: 0, color: COLORS[3] },
+  { name: 'HONOR powerbank (black)', w: 76, d: 56, h: 16, half: 'base', x: -61, z: 115, rot: 0, color: COLORS[3] },
+  { name: 'Charge/boost module', w: 25, d: 21, h: 6, half: 'base', x: 21, z: 85, rot: 0, color: COLORS[7] },
+  { name: '18650 pack (3 holders glued)', w: 77, d: 64, h: 20, half: 'base', x: 46, z: 132, rot: 0, color: COLORS[4] },
+];
+const fresh = () => ({ caseDims: { ...DEFAULT_CASE }, items: EXAMPLE.map(it => ({ id: uid(), measured: false, ...it })) });
+
+function load() {
+  for (const k of [KEY, 'cyberdeck-case-planner-v2', 'cyberdeck-case-planner-v1']) {
+    try {
+      const s = JSON.parse(localStorage.getItem(k));
+      if (!(s && Array.isArray(s.items) && s.caseDims)) continue;
+      if (k !== KEY) {
+        // Older saves had SPECTRE at its photo size. Resize it to the carrier PCB, keeping its centre.
+        s.items.forEach(it => {
+          if (/^spectre/i.test(it.name || '') && it.w * it.d < 131 * 75) {
+            const portrait = (it.rot ? it.w : it.d) > (it.rot ? it.d : it.w);
+            it.w = 131.7; it.d = 75; it.h = Math.max(it.h || 0, 31); it.rot = portrait ? 1 : 0;
+            it.name = 'SPECTRE (carrier PCB + TFT + ESP32)'; it.measured = false;
+          }
+        });
+      }
+      return s;
+    } catch (e) {}
+  }
+  return null;
+}
+function save() { try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) {} }
+
+let state = load() || fresh();
+state.caseDims = { ...DEFAULT_CASE, ...state.caseDims };
+let selectedId = null;
+let snap = 5;
+let lidDeg = 180;
+let viewKind = '3d';
+
+const get = id => state.items.find(i => i.id === id);
+function fp(it) {
+  const fw = it.rot ? it.d : it.w, fd = it.rot ? it.w : it.d;
+  return { fw, fd, x0: it.x - fw / 2, x1: it.x + fw / 2, z0: it.z - fd / 2, z1: it.z + fd / 2 };
+}
+const E = 0.01;
+const overlap = (a, b) => a.x0 < b.x1 - E && b.x0 < a.x1 - E && a.z0 < b.z1 - E && b.z0 < a.z1 - E;
+const seatBottom = it => state.caseDims.seat === 'rim' ? Math.max(0, state.caseDims.H - it.h) : 0;
+
+/* ---------- checks ---------- */
+const RANK = { ok: 0, info: 0, warn: 1, bad: 2 };
+function runChecks() {
+  const { W, D, H, handleW, handleStart } = state.caseDims;
+  const byId = {}; const msgs = [];
+  const mark = (ids, level, text) => {
+    ids.forEach(id => { const b = byId[id] || (byId[id] = { level: 'ok' }); if (RANK[level] > RANK[b.level]) b.level = level; });
+    msgs.push({ level, text });
+  };
+  const handle = { x0: -handleW / 2, x1: handleW / 2, z0: handleStart, z1: D };
+  const F = new Map(state.items.map(it => [it.id, fp(it)]));
+  for (const it of state.items) {
+    const f = F.get(it.id);
+    if (f.x0 < -W / 2 - E || f.x1 > W / 2 + E || f.z0 < -E || f.z1 > D + E) mark([it.id], 'bad', `${it.name} goes past the case wall.`);
+    else if (handleW > 0 && handleStart < D && overlap(f, handle)) mark([it.id], 'bad', `${it.name} sits on the handle recess.`);
+    if (it.h > 2 * H) mark([it.id], 'bad', `${it.name} is ${fmt(it.h)} mm tall. The closed case is ${fmt(2 * H)} mm deep.`);
+    else if (seatBottom(it) + it.h > H + E) mark([it.id], 'info', `${it.name} sticks ${fmt(seatBottom(it) + it.h - H)} mm past the rim into the other half.`);
+  }
+  const items = state.items;
+  for (let i = 0; i < items.length; i++) for (let j = i + 1; j < items.length; j++) {
+    const a = items[i], b = items[j];
+    if (!overlap(F.get(a.id), F.get(b.id))) continue;
+    if (a.half === b.half) { mark([a.id, b.id], 'bad', `${a.name} and ${b.name} overlap.`); continue; }
+    const lid = a.half === 'lid' ? a : b, base = a.half === 'lid' ? b : a;
+    const b0 = seatBottom(base), b1 = b0 + base.h;
+    const l1 = 2 * H - seatBottom(lid), l0 = l1 - lid.h;
+    if (l0 < b1 - E && b0 < l1 - E) mark([a.id, b.id], 'warn', `${lid.name} (lid) hits ${base.name} (base) when closed, by ${fmt(b1 - l0)} mm.`);
+  }
+  return { byId, msgs };
+}
+
+/* ---------- three.js scene ---------- */
+const stage = $('#stage'), canvas = $('#c');
+const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
+renderer.setPixelRatio(Math.min(devicePixelRatio || 1, 2));
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(38, 1, 1, 6000);
+camera.position.set(0, 420, 330);
+
+scene.add(new THREE.HemisphereLight(0xffffff, 0x3a4450, 0.85));
+const sun = new THREE.DirectionalLight(0xffffff, 0.75);
+sun.position.set(140, 320, 160);
+sun.castShadow = true;
+sun.shadow.mapSize.set(2048, 2048);
+Object.assign(sun.shadow.camera, { left: -280, right: 280, top: 280, bottom: -280, near: 50, far: 900 });
+sun.shadow.bias = -0.0008;
+scene.add(sun);
+
+const ground = new THREE.Mesh(new THREE.PlaneGeometry(3000, 3000), new THREE.ShadowMaterial({ opacity: 0.18 }));
+ground.rotation.x = -Math.PI / 2; ground.position.y = -3.6; ground.receiveShadow = true;
+scene.add(ground);
+
+const trayMat = new THREE.MeshStandardMaterial({ color: 0x2c3238, roughness: 0.85, metalness: 0.05 });
+const handleMat = new THREE.MeshStandardMaterial({ color: 0x2c3238, roughness: 0.7, metalness: 0.05, transparent: true, opacity: 0.92 });
+const edgeMat = new THREE.LineBasicMaterial({ color: 0x59636d });
+const gridMinor = new THREE.LineBasicMaterial({ color: 0x6c7782, transparent: true, opacity: 0.22 });
+const gridMajor = new THREE.LineBasicMaterial({ color: 0x6c7782, transparent: true, opacity: 0.55 });
+const hingeMat = new THREE.MeshStandardMaterial({ color: 0xB07A0E, roughness: 0.4, metalness: 0.4 });
+
+const baseGroup = new THREE.Group(); scene.add(baseGroup);
+const lidPivot = new THREE.Group(); scene.add(lidPivot);
+let caseParts = [];
+
+function makeText(text, { px = 30, worldH = 9, fg = '#ffffff', bg = 'rgba(16,22,28,0.82)', weight = 600, font = 'IBM Plex Mono' } = {}) {
+  const c = document.createElement('canvas'), g = c.getContext('2d');
+  const f = `${weight} ${px}px "${font}", ui-monospace, monospace`;
+  g.font = f; const tw = Math.ceil(g.measureText(text).width);
+  const padX = bg ? 14 : 4, h = Math.round(px * 1.5);
+  c.width = tw + padX * 2; c.height = h;
+  g.font = f;
+  if (bg) { g.fillStyle = bg; const r = 8; g.beginPath(); g.moveTo(r, 0); g.arcTo(c.width, 0, c.width, h, r); g.arcTo(c.width, h, 0, h, r); g.arcTo(0, h, 0, 0, r); g.arcTo(0, 0, c.width, 0, r); g.fill(); }
+  g.fillStyle = fg; g.textBaseline = 'middle'; g.fillText(text, padX, h / 2 + 1);
+  const tex = new THREE.CanvasTexture(c); tex.minFilter = THREE.LinearFilter; tex.anisotropy = 4;
+  const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: tex, transparent: true, depthWrite: false }));
+  s.scale.set(worldH * c.width / h, worldH, 1);
+  s.renderOrder = 5;
+  return s;
+}
+
+function buildTray() {
+  const { W, D, H, handleW, handleStart } = state.caseDims;
+  const t = 3, ft = 3, g = new THREE.Group();
+  const box = (w, h, d, x, y, z, mat = trayMat) => {
+    const geo = new THREE.BoxGeometry(w, h, d);
+    const m = new THREE.Mesh(geo, mat); m.position.set(x, y, z); m.receiveShadow = true; m.castShadow = true;
+    const e = new THREE.LineSegments(new THREE.EdgesGeometry(geo), edgeMat); m.add(e);
+    g.add(m); return m;
+  };
+  box(W + 2 * t, ft, D + 2 * t, 0, -ft / 2, D / 2).castShadow = false;
+  box(t, H, D + 2 * t, -W / 2 - t / 2, H / 2, D / 2);
+  box(t, H, D + 2 * t, W / 2 + t / 2, H / 2, D / 2);
+  box(W, H, t, 0, H / 2, -t / 2);
+  box(W, H, t, 0, H / 2, D + t / 2);
+  if (handleW > 0 && handleStart < D) box(handleW, H, D - handleStart, 0, H / 2, (handleStart + D) / 2, handleMat);
+  // 10 mm floor grid, 50 mm major lines
+  const minor = [], major = [];
+  for (let x = 0; x <= W + E; x += 10) { const arr = (Math.round(x) % 50 === 0) ? major : minor; arr.push(x - W / 2, 0.15, 0, x - W / 2, 0.15, D); }
+  for (let z = 0; z <= D + E; z += 10) { const arr = (Math.round(z) % 50 === 0) ? major : minor; arr.push(-W / 2, 0.15, z, W / 2, 0.15, z); }
+  [[minor, gridMinor], [major, gridMajor]].forEach(([pts, mat]) => {
+    const geo = new THREE.BufferGeometry(); geo.setAttribute('position', new THREE.Float32BufferAttribute(pts, 3));
+    g.add(new THREE.LineSegments(geo, mat));
+  });
+  return g;
+}
+
+function disposeTree(o) {
+  o.traverse(n => { if (n.geometry) n.geometry.dispose(); if (n.material && n.material.map) { n.material.map.dispose(); n.material.dispose(); } });
+}
+function buildCase() {
+  caseParts.forEach(p => { p.parent && p.parent.remove(p); disposeTree(p); });
+  caseParts = [];
+  const { W, D, H } = state.caseDims;
+  const baseTray = buildTray(); baseGroup.add(baseTray);
+  const lidTray = buildTray(); lidTray.scale.y = -1; lidTray.position.y = H; lidPivot.add(lidTray);
+  lidPivot.position.set(0, H, 0);
+  const hinge = new THREE.Mesh(new THREE.CylinderGeometry(2.6, 2.6, W + 14, 20), hingeMat);
+  hinge.rotation.z = Math.PI / 2; hinge.position.set(0, H, -1.5); scene.add(hinge);
+  const bl = makeText('BASE', { px: 40, worldH: 11, bg: null, fg: '#9AA6B2', weight: 700, font: 'Chakra Petch' });
+  bl.position.set(-W / 2 + 18, 1, D + 16); baseGroup.add(bl);
+  const ll = makeText('LID', { px: 40, worldH: 11, bg: null, fg: '#9AA6B2', weight: 700, font: 'Chakra Petch' });
+  ll.position.set(-W / 2 + 14, H - 1, D + 16); lidPivot.add(ll);
+  const hl = makeText('hinge', { px: 30, worldH: 8, bg: null, fg: '#B07A0E', weight: 600 });
+  hl.position.set(W / 2 + 26, H, 0); scene.add(hl);
+  const dl = makeText(`${fmt(W)} × ${fmt(D)} × ${fmt(H)} mm / half`, { px: 26, worldH: 7, bg: null, fg: '#9AA6B2', weight: 500 });
+  dl.position.set(W / 2 - 52, 1, D + 16); baseGroup.add(dl);
+  caseParts.push(baseTray, lidTray, hinge, bl, ll, hl, dl);
+  applyTheme();
+}
+
+/* ---------- part meshes ---------- */
+const views = new Map();
+function makeView(it) {
+  const f = fp(it);
+  const geo = new THREE.BoxGeometry(f.fw, it.h, f.fd);
+  const mat = new THREE.MeshStandardMaterial({ color: it.color, roughness: 0.55, metalness: 0.05 });
+  const mesh = new THREE.Mesh(geo, mat); mesh.castShadow = true; mesh.receiveShadow = true; mesh.userData.id = it.id;
+  const edges = new THREE.LineSegments(new THREE.EdgesGeometry(geo), new THREE.LineBasicMaterial({ color: 0x10161c }));
+  mesh.add(edges);
+  const label = makeText(it.name.length > 26 ? it.name.slice(0, 25) + '…' : it.name, { px: 28, worldH: 7.5 });
+  mesh.add(label);
+  return { mesh, edges, label, mat };
+}
+function disposeView(v) { v.mesh.parent && v.mesh.parent.remove(v.mesh); disposeTree(v.mesh); }
+function place(it, v) {
+  const H = state.caseDims.H, lid = it.half === 'lid', parent = lid ? lidPivot : baseGroup;
+  if (v.mesh.parent !== parent) parent.add(v.mesh);
+  const yc = seatBottom(it) + it.h / 2;
+  v.mesh.position.set(it.x, lid ? H - yc : yc, it.z);
+  v.label.position.set(0, (lid ? -1 : 1) * (it.h / 2 + 6), 0);
+}
+function syncScene() {
+  const res = runChecks();
+  const ids = new Set(state.items.map(i => i.id));
+  for (const [id, v] of views) if (!ids.has(id)) { disposeView(v); views.delete(id); }
+  for (const it of state.items) {
+    let v = views.get(it.id);
+    const key = [it.w, it.d, it.h, it.rot, it.color, it.name].join('|');
+    if (!v || v.key !== key) { if (v) disposeView(v); v = makeView(it); v.key = key; views.set(it.id, v); }
+    place(it, v);
+    const lvl = (res.byId[it.id] || {}).level || 'ok', sel = it.id === selectedId;
+    const col = lvl === 'bad' ? tok('--bad') : lvl === 'warn' ? tok('--amber') : null;
+    v.mat.emissive.set(col || (sel ? tok('--accent') : '#000000'));
+    v.mat.emissiveIntensity = col ? 0.45 : sel ? 0.28 : 0;
+    v.edges.material.color.set(sel ? '#ffffff' : col || '#10161c');
+  }
+  return res;
+}
+
+/* ---------- theme ---------- */
+const tok = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim() || '#888888';
+function applyTheme() {
+  scene.background = new THREE.Color(tok('--scene'));
+  trayMat.color.set(tok('--tray')); handleMat.color.set(tok('--tray')).offsetHSL(0, 0, 0.04);
+  edgeMat.color.set(tok('--tray-edge'));
+  gridMinor.color.set(tok('--grid')); gridMajor.color.set(tok('--grid'));
+}
+matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => { applyTheme(); commit(false); });
+new MutationObserver(() => { applyTheme(); commit(false); }).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+
+/* ---------- interaction (registered before OrbitControls so it can veto orbiting) ---------- */
+const ray = new THREE.Raycaster(), ndc = new THREE.Vector2();
+const dragPlane = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0), hitPt = new THREE.Vector3();
+let drag = null, down = null;
+const lidOpen = () => lidDeg >= 179.5;
+function setRay(e) {
+  const r = canvas.getBoundingClientRect();
+  ndc.set(((e.clientX - r.left) / r.width) * 2 - 1, -((e.clientY - r.top) / r.height) * 2 + 1);
+  ray.setFromCamera(ndc, camera);
+}
+const pickMeshes = () => [...views.values()].map(v => v.mesh);
+function worldCenter(it) { return { x: it.x, z: it.half === 'lid' ? -it.z : it.z }; }
+function setFromWorld(it, wx, wz, doSnap = true) {
+  const { W } = state.caseDims, f = fp(it);
+  it.half = wz < 0 ? 'lid' : 'base';
+  let d = Math.abs(wz);
+  let x0 = wx - f.fw / 2 + W / 2, z0 = d - f.fd / 2;
+  if (doSnap) { x0 = Math.round(x0 / snap) * snap; z0 = Math.round(z0 / snap) * snap; }
+  it.x = r1(x0 + f.fw / 2 - W / 2); it.z = r1(z0 + f.fd / 2);
+}
+
+canvas.addEventListener('pointerdown', e => {
+  down = { x: e.clientX, y: e.clientY };
+  setRay(e);
+  const hits = ray.intersectObjects(pickMeshes(), false);
+  if (!hits.length) return;
+  const id = hits[0].object.userData.id;
+  select(id);
+  if (!lidOpen()) return;
+  dragPlane.constant = -hits[0].point.y;
+  if (ray.ray.intersectPlane(dragPlane, hitPt)) {
+    const wc = worldCenter(get(id));
+    drag = { id, ox: wc.x - hitPt.x, oz: wc.z - hitPt.z };
+    controls.enabled = false;
+    canvas.setPointerCapture(e.pointerId);
+    canvas.style.cursor = 'grabbing';
+  }
+});
+canvas.addEventListener('pointermove', e => {
+  setRay(e);
+  if (drag) {
+    if (!ray.ray.intersectPlane(dragPlane, hitPt)) return;
+    const it = get(drag.id); if (!it) return;
+    setFromWorld(it, hitPt.x + drag.ox, hitPt.z + drag.oz);
+    syncScene(); updateEditorPos();
+    return;
+  }
+  if (e.pointerType === 'mouse') {
+    const over = ray.intersectObjects(pickMeshes(), false).length > 0;
+    canvas.style.cursor = over ? (lidOpen() ? 'grab' : 'pointer') : '';
+  }
+});
+function endPointer(e) {
+  if (drag) { drag = null; controls.enabled = true; canvas.style.cursor = ''; commit(); renderEditor(); return; }
+  if (down && Math.hypot(e.clientX - down.x, e.clientY - down.y) < 4) {
+    setRay(e);
+    if (!ray.intersectObjects(pickMeshes(), false).length) select(null);
+  }
+  down = null;
+}
+canvas.addEventListener('pointerup', endPointer);
+canvas.addEventListener('pointercancel', () => { if (drag) { drag = null; controls.enabled = true; commit(); } });
+
+const controls = new THREE.OrbitControls(camera, canvas);
+controls.enableDamping = true; controls.dampingFactor = 0.09;
+controls.maxPolarAngle = Math.PI * 0.495; controls.minDistance = 80; controls.maxDistance = 2200;
+controls.screenSpacePanning = true;
+
+window.addEventListener('keydown', e => {
+  const tag = (e.target.tagName || '').toLowerCase();
+  if (tag === 'input' || tag === 'textarea' || tag === 'select') return;
+  const it = selectedId && get(selectedId); if (!it) return;
+  const step = e.shiftKey ? 10 : 1;
+  const wc = worldCenter(it);
+  if (e.key === 'r' || e.key === 'R') { rotate(it); e.preventDefault(); return; }
+  if (e.key === 'Delete' || e.key === 'Backspace') { removeItem(it.id); e.preventDefault(); return; }
+  if (e.key === 'Escape') { select(null); return; }
+  const mv = { ArrowLeft: [-step, 0], ArrowRight: [step, 0], ArrowUp: [0, -step], ArrowDown: [0, step] }[e.key];
+  if (!mv) return;
+  e.preventDefault();
+  let nz = wc.z + mv[1];
+  if (Math.sign(nz) !== Math.sign(wc.z) && wc.z !== 0) nz = wc.z; // arrows don't hop halves; drag does
+  setFromWorld(it, wc.x + mv[0], nz, false);
+  commit(); renderEditor();
+});
+
+/* ---------- camera + lid ---------- */
+function tween(ms, fn, done) {
+  if (reduced || ms <= 0) { fn(1); done && done(); return; }
+  const t0 = performance.now();
+  const step = now => { const k = Math.min(1, (now - t0) / ms); fn(k < .5 ? 2 * k * k : 1 - Math.pow(-2 * k + 2, 2) / 2); if (k < 1) requestAnimationFrame(step); else done && done(); };
+  requestAnimationFrame(step);
+}
+function cameraGoal(kind) {
+  const { W, D, H } = state.caseDims, open = lidDeg > 90;
+  const target = new THREE.Vector3(0, open ? 0 : H, open ? 0 : D / 2);
+  const t = Math.tan(THREE.MathUtils.degToRad(camera.fov / 2));
+  const needZ = (open ? 2 * D : D) + 70, needX = W + 90;
+  let dist = Math.max(needZ / (2 * t), needX / (2 * t * camera.aspect));
+  const dir = kind === 'top' ? new THREE.Vector3(0, 1, 0.002) : new THREE.Vector3(0, 0.8, 0.6);
+  if (kind !== 'top') dist *= 0.92;
+  return { pos: target.clone().add(dir.normalize().multiplyScalar(dist)), target };
+}
+function goView(kind, ms = 600) {
+  viewKind = kind;
+  $('#v-3d').setAttribute('aria-pressed', kind === '3d'); $('#v-top').setAttribute('aria-pressed', kind === 'top');
+  const g = cameraGoal(kind), p0 = camera.position.clone(), t0 = controls.target.clone();
+  tween(ms, k => { camera.position.lerpVectors(p0, g.pos, k); controls.target.lerpVectors(t0, g.target, k); controls.update(); });
+}
+function setLid(deg) {
+  lidDeg = deg;
+  lidPivot.rotation.x = -THREE.MathUtils.degToRad(deg);
+  $('#lid').value = Math.round(deg); $('#lid-val').textContent = Math.round(deg) + '°';
+  $('#lid-toggle').textContent = deg > 90 ? 'Close' : 'Open';
+  renderHint();
+}
+$('#lid').addEventListener('input', e => setLid(+e.target.value));
+$('#lid-toggle').addEventListener('click', () => {
+  const from = lidDeg, to = lidDeg > 90 ? 0 : 180;
+  tween(900, k => setLid(from + (to - from) * k), () => goView(viewKind, 500));
+});
+$('#v-3d').addEventListener('click', () => goView('3d'));
+$('#v-top').addEventListener('click', () => goView('top'));
+$('#snap').addEventListener('change', e => { snap = +e.target.value; });
+
+function renderHint() {
+  const h = $('#hint');
+  h.innerHTML = lidOpen()
+    ? `<span>Drag a part to move it, across the hinge to switch halves</span><span class="keys"><kbd>R</kbd> rotate · <kbd>←↑→↓</kbd> nudge 1 mm (<kbd>Shift</kbd> 10) · <kbd>Del</kbd> remove</span><span class="keys">Right-drag to pan, scroll to zoom</span>`
+    : `<span class="warnline">Open the lid fully to move parts.</span><span>Closed view shows what collides.</span>`;
+}
+
+/* ---------- panel ---------- */
+let lastRes = { byId: {}, msgs: [] };
+function commit(doSave = true) {
+  lastRes = syncScene();
+  renderList(); renderChecks();
+  if (doSave) save();
+}
+function select(id) { selectedId = id; syncScene(); renderList(); renderEditor(); }
+
+function renderList() {
+  $('#list').innerHTML = state.items.map(it => {
+    const lvl = (lastRes.byId[it.id] || {}).level || 'ok';
+    const f = fp(it);
+    return `<li><button class="row${it.id === selectedId ? ' sel' : ''}" data-id="${it.id}">
+      <span class="sw" style="background:${esc(it.color)}"></span>
+      <span class="nm">${esc(it.name)}${it.measured ? '' : '<span class="est">est.</span>'}</span>
+      <span class="dims">${fmt(f.fw)}×${fmt(f.fd)}×${fmt(it.h)}</span>
+      <span class="half">${it.half === 'lid' ? 'LID' : 'BASE'}</span>
+      <span class="dot ${lvl === 'info' ? '' : lvl}" title="${lvl === 'bad' ? 'Problem' : lvl === 'warn' ? 'Clashes when closed' : 'Fits'}"></span>
+    </button></li>`;
+  }).join('');
+}
+$('#list').addEventListener('click', e => { const b = e.target.closest('[data-id]'); if (b) select(b.dataset.id); });
+
+function renderEditor() {
+  const ed = $('#editor'), it = selectedId && get(selectedId);
+  if (!it) { ed.innerHTML = `<p class="empty">Select a part in the list or the 3D view to change its size, half or position.</p>`; return; }
+  const { W } = state.caseDims, f = fp(it);
+  ed.innerHTML = `
+    <div class="field"><label for="ed-name">Name</label><input id="ed-name" type="text" value="${esc(it.name)}"></div>
+    <div><div class="lbl" style="margin-bottom:4px">Size, mm (before rotating)</div>
+      <div class="grid3">
+        <div class="field"><label for="ed-w">Width</label><input id="ed-w" type="number" step="0.1" min="1" value="${it.w}"></div>
+        <div class="field"><label for="ed-d">Length</label><input id="ed-d" type="number" step="0.1" min="1" value="${it.d}"></div>
+        <div class="field"><label for="ed-h">Height</label><input id="ed-h" type="number" step="0.1" min="0.5" value="${it.h}"></div>
+      </div></div>
+    <div class="grid2">
+      <div class="field"><label for="ed-left">Edge from left wall</label><input id="ed-left" type="number" step="0.5" value="${fmt(f.x0 + W / 2)}"></div>
+      <div class="field"><label for="ed-hinge">Edge from hinge</label><input id="ed-hinge" type="number" step="0.5" value="${fmt(f.z0)}"></div>
+    </div>
+    <div class="sec-head">
+      <div class="seg" role="group" aria-label="Case half"><button data-half="lid" aria-pressed="${it.half === 'lid'}">LID</button><button data-half="base" aria-pressed="${it.half === 'base'}">BASE</button></div>
+      <button class="btn" id="ed-rot">Rotate 90°</button>
+    </div>
+    <div class="swatches" role="group" aria-label="Colour">${COLORS.map(c => `<button data-color="${c}" style="background:${c}" aria-pressed="${c === it.color}" aria-label="Colour ${c}"></button>`).join('')}</div>
+    <label class="check"><input id="ed-measured" type="checkbox" ${it.measured ? 'checked' : ''}> Size is measured, not an estimate</label>
+    <div class="actions"><button class="btn" id="ed-dup">Duplicate</button><button class="btn danger" id="ed-del">Remove</button></div>`;
+}
+function updateEditorPos() {
+  const it = selectedId && get(selectedId); if (!it) return;
+  const f = fp(it), W = state.caseDims.W;
+  const l = $('#ed-left'), h = $('#ed-hinge');
+  if (l && document.activeElement !== l) l.value = fmt(f.x0 + W / 2);
+  if (h && document.activeElement !== h) h.value = fmt(f.z0);
+  document.querySelectorAll('#editor [data-half]').forEach(b => b.setAttribute('aria-pressed', b.dataset.half === it.half));
+}
+$('#editor').addEventListener('input', e => {
+  const it = selectedId && get(selectedId); if (!it) return;
+  const id = e.target.id, v = parseFloat(e.target.value), W = state.caseDims.W;
+  if (id === 'ed-name') { it.name = e.target.value || 'Part'; commit(); return; }
+  if (id === 'ed-measured') { it.measured = e.target.checked; commit(); return; }
+  if (!(isFinite(v))) return;
+  if (id === 'ed-w' && v > 0) it.w = v;
+  else if (id === 'ed-d' && v > 0) it.d = v;
+  else if (id === 'ed-h' && v > 0) it.h = v;
+  else if (id === 'ed-left') it.x = r1(v + fp(it).fw / 2 - W / 2);
+  else if (id === 'ed-hinge') it.z = r1(v + fp(it).fd / 2);
+  else return;
+  commit();
+});
+$('#editor').addEventListener('click', e => {
+  const it = selectedId && get(selectedId); if (!it) return;
+  const t = e.target.closest('button'); if (!t) return;
+  if (t.dataset.half) { it.half = t.dataset.half; commit(); updateEditorPos(); }
+  else if (t.dataset.color) { it.color = t.dataset.color; commit(); renderEditor(); }
+  else if (t.id === 'ed-rot') rotate(it);
+  else if (t.id === 'ed-dup') {
+    const c = { ...it, id: uid(), name: it.name + ' copy', x: it.x + 10, z: it.z + 10 };
+    state.items.push(c); selectedId = c.id; commit(); renderEditor();
+  } else if (t.id === 'ed-del') removeItem(it.id);
+});
+function rotate(it) { it.rot = it.rot ? 0 : 1; commit(); renderEditor(); }
+function removeItem(id) { state.items = state.items.filter(i => i.id !== id); if (selectedId === id) selectedId = null; commit(); renderEditor(); }
+$('#add').addEventListener('click', () => {
+  const it = { id: uid(), name: 'New part', w: 40, d: 30, h: 10, half: 'base', x: -state.caseDims.W / 2 + 25, z: 20, rot: 0, color: COLORS[5], measured: false };
+  state.items.push(it); selectedId = it.id; commit(); renderEditor();
+  if (!lidOpen()) $('#lid-toggle').click();
+});
+
+function renderChecks() {
+  const { msgs } = lastRes;
+  const nb = msgs.filter(m => m.level === 'bad').length, nw = msgs.filter(m => m.level === 'warn').length;
+  $('#summary').innerHTML = (nb + nw === 0)
+    ? `<span class="chip ok">Everything fits and the lid closes</span>`
+    : `${nb ? `<span class="chip bad">${nb} placement problem${nb > 1 ? 's' : ''}</span>` : ''}${nw ? `<span class="chip warn">${nw} clash${nw > 1 ? 'es' : ''} when closed</span>` : ''}`;
+  const order = { bad: 0, warn: 1, info: 2 };
+  $('#msgs').innerHTML = msgs.slice().sort((a, b) => order[a.level] - order[b.level]).map(m => `<li class="${m.level}">${esc(m.text)}</li>`).join('');
+  const { W, D, H, handleW, handleStart } = state.caseDims;
+  const usable = W * D - Math.max(0, handleW) * Math.max(0, D - handleStart);
+  const rows = ['lid', 'base'].map(h => {
+    const its = state.items.filter(i => i.half === h);
+    const area = its.reduce((s, i) => { const f = fp(i); return s + f.fw * f.fd; }, 0);
+    const pct = usable > 0 ? area / usable * 100 : 0;
+    const tall = its.reduce((m, i) => Math.max(m, seatBottom(i) + i.h), 0);
+    return `<tr><th>${h === 'lid' ? 'Lid' : 'Base'}</th><td>${its.length} parts</td><td>${Math.round(pct)}% floor<div class="bar"><i style="width:${Math.min(100, pct)}%"></i></div></td><td>${fmt(tall)} / ${fmt(H)} mm</td></tr>`;
+  }).join('');
+  $('#stats').innerHTML = `<tr><th></th><th>Count</th><th>Footprint</th><th>Tallest</th></tr>${rows}`;
+}
+
+/* ---------- case form ---------- */
+const CS = { 'cs-W': 'W', 'cs-D': 'D', 'cs-H': 'H', 'cs-hw': 'handleW', 'cs-hs': 'handleStart', 'cs-c': 'clearance', 'cs-seat': 'seat' };
+function renderCaseForm() { for (const [id, k] of Object.entries(CS)) $('#' + id).value = state.caseDims[k]; }
+$('#case-details').addEventListener('input', e => {
+  const k = CS[e.target.id]; if (!k) return;
+  if (k === 'seat') state.caseDims.seat = e.target.value;
+  else { const v = parseFloat(e.target.value); if (!isFinite(v) || v < 0) return; state.caseDims[k] = v; }
+  buildCase(); setLid(lidDeg); commit();
+});
+
+/* ---------- export / import ---------- */
+const io = $('#io'), ioMsg = t => { $('#io-msg').textContent = t; };
+function copyOut(text, label) {
+  io.value = text;
+  const fallback = () => { io.focus(); io.select(); ioMsg(`This view blocks the clipboard. The ${label} is selected in the box below. Press Ctrl+C to copy it.`); };
+  try { navigator.clipboard.writeText(text).then(() => ioMsg(`Copied the ${label} to the clipboard.`), fallback); } catch (e) { fallback(); }
+}
+$('#copy-json').addEventListener('click', () => copyOut(JSON.stringify({ version: 1, caseDims: state.caseDims, items: state.items }, null, 2), 'layout JSON'));
+$('#copy-scad').addEventListener('click', () => copyOut(scad(), 'OpenSCAD filler'));
+$('#load-json').addEventListener('click', () => {
+  try {
+    const data = JSON.parse(io.value);
+    const items = Array.isArray(data) ? data : data.items;
+    if (!Array.isArray(items)) throw new Error('no items');
+    const clean = items.map(i => ({
+      id: i.id || uid(), name: String(i.name || 'Part'), w: +i.w || 10, d: +i.d || 10, h: +i.h || 5,
+      half: i.half === 'lid' ? 'lid' : 'base', x: +i.x || 0, z: +i.z || 10, rot: i.rot ? 1 : 0,
+      color: COLORS.includes(i.color) ? i.color : COLORS[5], measured: !!i.measured }));
+    state = { caseDims: { ...DEFAULT_CASE, ...(data.caseDims || state.caseDims) }, items: clean };
+    selectedId = null; renderCaseForm(); buildCase(); setLid(lidDeg); commit(); renderEditor();
+    ioMsg(`Loaded ${clean.length} parts.`);
+  } catch (e) { ioMsg('That text isn\'t a layout. Paste the JSON from "Copy layout JSON" and try again.'); }
+});
+let resetArmed = null;
+$('#reset').addEventListener('click', e => {
+  const b = e.currentTarget;
+  if (!resetArmed) { b.classList.add('armed'); b.textContent = 'Click again to reset'; resetArmed = setTimeout(() => { resetArmed = null; b.classList.remove('armed'); b.textContent = 'Reset to example'; }, 3000); return; }
+  clearTimeout(resetArmed); resetArmed = null; b.classList.remove('armed'); b.textContent = 'Reset to example';
+  state = fresh(); selectedId = null; renderCaseForm(); buildCase(); setLid(lidDeg); commit(); renderEditor(); ioMsg('Reset to the example layout.');
+});
+
+function scad() {
+  const { W, D, H, handleW, handleStart, clearance: c, seat } = state.caseDims;
+  const n = v => String(r1(v));
+  let s = `// CyberDeck case filler, generated by Case Planner on ${new Date().toISOString().slice(0, 10)}\n`;
+  s += `// Units mm. X = from left wall, Y = from hinge wall, Z = up from the tray floor.\n`;
+  s += `// Each pocket = part footprint + ${c} mm gap per side. Parts sit ${seat === 'rim' ? 'flush with the rim' : 'on the tray floor'}.\n\n`;
+  for (const half of ['lid', 'base']) {
+    s += `module ${half}_filler() {\n  difference() {\n    cube([${n(W)}, ${n(D)}, ${n(H)}]);\n`;
+    if (handleW > 0 && handleStart < D) s += `    // handle recess\n    translate([${n((W - handleW) / 2)}, ${n(handleStart)}, -1]) cube([${n(handleW)}, ${n(D - handleStart + 1)}, ${n(H + 2)}]);\n`;
+    for (const it of state.items.filter(i => i.half === half)) {
+      const f = fp(it), b = seatBottom(it), z0 = b <= 0 ? -1 : b;
+      s += `    // ${it.name.replace(/\n/g, ' ')}${it.measured ? '' : ' (size estimated)'}\n`;
+      s += `    translate([${n(f.x0 + W / 2 - c)}, ${n(f.z0 - c)}, ${n(z0)}]) cube([${n(f.fw + 2 * c)}, ${n(f.fd + 2 * c)}, ${n(H - z0 + 1)}]);\n`;
+    }
+    s += `  }\n}\n\n`;
+  }
+  s += `base_filler();\ntranslate([0, -${n(D + 20)}, 0]) lid_filler();\n`;
+  return s;
+}
+
+/* ---------- boot ---------- */
+function resize() {
+  const r = stage.getBoundingClientRect();
+  if (!r.width || !r.height) return;
+  renderer.setSize(r.width, r.height, false);
+  camera.aspect = r.width / r.height; camera.updateProjectionMatrix();
+}
+new ResizeObserver(resize).observe(stage);
+resize();
+renderCaseForm();
+buildCase();
+setLid(180);
+commit(false);
+renderEditor();
+const g0 = cameraGoal('3d'); camera.position.copy(g0.pos); controls.target.copy(g0.target); controls.update();
+(function loop() { controls.update(); renderer.render(scene, camera); requestAnimationFrame(loop); })();
+if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => { views.forEach(disposeView); views.clear(); buildCase(); setLid(lidDeg); commit(false); });
+})();
+</script>
+</body>
+</html>

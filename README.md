@@ -71,6 +71,7 @@ SPECTRE wiring is documented in [`docs/hardware-layout.md`](docs/hardware-layout
 |---|---|
 | [`docs/OVERVIEW.md`](docs/OVERVIEW.md) | **Start here.** Goals, decisions, capabilities, status and next steps |
 | [`docs/hardware-layout.md`](docs/hardware-layout.md) | The current build: board names, HUB pins, power, case |
+| [`docs/case-planner.html`](docs/case-planner.html) | 3D case layout planner: size parts, drag them around the clamshell, check fit, export an OpenSCAD filler (live on the Pages site) |
 | [`cad/wiring/`](cad/wiring/) | Script that draws the HUB wiring diagrams |
 | [`docs/build-page.html`](docs/build-page.html) | Source of the build page (deployed by `.github/workflows/pages.yml`) |
 | [`spectre/v1/`](spectre/v1/) | **SPECTRE firmware** — the orchestrator on one ESP32-WROOM-32U (see [`STATUS.md`](spectre/v1/STATUS.md)) |

@@ -6,6 +6,7 @@ on:
     paths:
       - "docs/build-page.html"
       - "docs/case-layout.svg"
+      - "docs/case-planner.html"
       - "docs/wiring*.svg"
       - "docs/spectre-pcb-*.png"
       - ".github/workflows/pages.yml"
@@ -33,7 +34,7 @@ jobs:
         run: |
           mkdir -p _site
           cp docs/build-page.html _site/index.html
-          cp docs/case-layout.svg docs/wiring*.svg _site/
+          cp docs/case-layout.svg docs/wiring*.svg docs/case-planner.html _site/
           cp docs/spectre-pcb-*.png _site/
           touch _site/.nojekyll
 
